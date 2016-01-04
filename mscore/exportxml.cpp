@@ -1447,8 +1447,11 @@ void ExportMusicXml::barlineRight(Measure* m)
       const Measure* mmR1 = m->mmRest1(); // the multi measure rest this measure is covered by
       const Measure* mmRLst = mmR1->isMMRest() ? mmR1->mmRestLast() : 0; // last measure of replaced sequence of empty measures
       // note: use barlinetype as found in multi measure rest for last measure of replaced sequence
-      BarLineType bst = m == mmRLst ? mmR1->endBarLineType() : m->endBarLineType();
-      bool visible = m->endBarLineVisible();
+//TODO-WS      BarLineType bst = m == mmRLst ? mmR1->endBarLineType() : m->endBarLineType();
+//      bool visible = m->endBarLineVisible();
+      BarLineType bst = BarLineType::NORMAL;
+      bool visible = true;
+
       bool needBarStyle = (bst != BarLineType::NORMAL && bst != BarLineType::START_REPEAT) || !visible;
       Volta* volta = findVolta(m, false);
       if (!needBarStyle && !volta)
@@ -4678,7 +4681,8 @@ void ExportMusicXml::write(QIODevice* dev)
                               for (int staffIdx = (staffCount == 0) ? 1 : 0; staffIdx < staves; staffIdx++) {
                                     xml.stag(QString("staff-layout number=\"%1\"").arg(staffIdx + 1));
                                     const double staffDist =
-                                          getTenthsFromDots(system->staff(staffCount + staffIdx - 1)->distanceDown());
+                                          // getTenthsFromDots(system->staff(staffCount + staffIdx - 1)->distanceDown());
+                                          0.0;
                                     xml.tag("staff-distance", QString("%1").arg(QString::number(staffDist,'f',2)));
                                     xml.etag();
                                     }
