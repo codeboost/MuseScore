@@ -324,7 +324,7 @@ class Text : public Element {
       static QString convertToHtml(const QString&, const TextStyle&);
 
       void undoSetText(const QString& s) { undoChangeProperty(P_ID::TEXT, s); }
-      virtual QString accessibleInfo() override;
+      virtual QString accessibleInfo() const override;
 
       virtual int subtype() const;
       virtual QString subtypeName() const;

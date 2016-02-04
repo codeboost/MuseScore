@@ -399,7 +399,7 @@ int Note::tpc() const
 //   tpcUserName
 //---------------------------------------------------------
 
-QString Note::tpcUserName(bool explicitAccidental)
+QString Note::tpcUserName(bool explicitAccidental) const
       {
       QString pitchName = tpc2name(tpc(), NoteSpellingType::STANDARD, NoteCaseType::AUTO, explicitAccidental);
       QString octaveName = QString::number((pitch() / 12) - 1);
@@ -1871,7 +1871,7 @@ NoteType Note::noteType() const
 //   noteTypeUserName
 //---------------------------------------------------------
 
-QString Note::noteTypeUserName()
+QString Note::noteTypeUserName() const
       {
       switch (noteType()) {
             case NoteType::ACCIACCATURA:
@@ -2511,7 +2511,7 @@ void Note::setScore(Score* s)
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Note::accessibleInfo()
+QString Note::accessibleInfo() const
       {
       QString duration = chord()->durationUserName();
       QString voice = tr("Voice: %1").arg(QString::number(track() % VOICES + 1));
@@ -2530,7 +2530,7 @@ QString Note::accessibleInfo()
 //   screenReaderInfo
 //---------------------------------------------------------
 
-QString Note::screenReaderInfo()
+QString Note::screenReaderInfo() const
       {
       QString duration = chord()->durationUserName();
       QString voice = tr("Voice: %1").arg(QString::number(track() % VOICES + 1));
@@ -2549,7 +2549,7 @@ QString Note::screenReaderInfo()
 //   accessibleExtraInfo
 //---------------------------------------------------------
 
-QString Note::accessibleExtraInfo()
+QString Note::accessibleExtraInfo() const
       {
       QString rez = "";
       if (accidental()) {

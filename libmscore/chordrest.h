@@ -137,7 +137,7 @@ class ChordRest : public DurationElement {
       int actualDots() const  { return _durationType.dots(); }
       int durationTypeTicks() { return _crossMeasure == CrossMeasure::FIRST ? _crossMeasureTDur.ticks()
                                     : _durationType.ticks(); }
-      QString durationUserName();
+      QString durationUserName() const;
 
       virtual void setTrack(int val);
       virtual int tick() const;
@@ -169,7 +169,7 @@ class ChordRest : public DurationElement {
 
       virtual Element* nextElement() override;
       virtual Element* prevElement() override;
-      virtual QString accessibleExtraInfo() override;
+      virtual QString accessibleExtraInfo() const override;
       virtual Shape shape() const override;
       };
 

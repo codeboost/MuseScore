@@ -309,7 +309,7 @@ void TempoText::layout()
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString TempoText::accessibleInfo()
+QString TempoText::accessibleInfo() const
       {
       TDuration t;
       int len;
