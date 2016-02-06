@@ -286,14 +286,14 @@ class ExportMusicXml {
       int findBracket(const TextLine* tl) const;
       int findOttava(const Ottava* tl) const;
       int findTrill(const Trill* tl) const;
-      void chord(Chord* chord, int staff, const QList<Lyrics*>* ll, bool useDrumset);
+      void chord(Chord* chord, int staff, const QVector<Lyrics*>* ll, bool useDrumset);
       void rest(Rest* chord, int staff);
       void clef(int staff, const Clef* clef);
       void timesig(TimeSig* tsig);
       void keysig(const KeySig* ks, ClefType ct, int staff = 0, bool visible = true);
       void barlineLeft(Measure* m);
       void barlineRight(Measure* m);
-      void lyrics(const QList<Lyrics*>* ll, const int trk);
+      void lyrics(const QVector<Lyrics*>* ll, const int trk);
       void work(const MeasureBase* measure);
       void calcDivMoveToTick(int t);
       void calcDivisions();
@@ -1823,7 +1823,7 @@ static void tremoloSingleStartStop(Chord* chord, Notations& notations, Ornaments
 //   fermatas
 //---------------------------------------------------------
 
-static void fermatas(const QList<Articulation*>& cra, Xml& xml, Notations& notations)
+static void fermatas(const QVector<Articulation*>& cra, Xml& xml, Notations& notations)
       {
       for (const Articulation* a : cra) {
             ArticulationType at = a->articulationType();
@@ -1855,7 +1855,7 @@ static void fermatas(const QList<Articulation*>& cra, Xml& xml, Notations& notat
 void ExportMusicXml::chordAttributes(Chord* chord, Notations& notations, Technical& technical,
                                      TrillHash& trillStart, TrillHash& trillStop)
       {
-      const QList<Articulation*>& na = chord->articulations();
+      const QVector<Articulation*>& na = chord->articulations();
       // first output the fermatas
       fermatas(na, xml, notations);
 
@@ -2335,7 +2335,7 @@ static QString instrId(int partNr, int instrNr)
  For a single-staff part, \a staff equals zero, suppressing the <staff> element.
  */
 
-void ExportMusicXml::chord(Chord* chord, int staff, const QList<Lyrics*>* ll, bool useDrumset)
+void ExportMusicXml::chord(Chord* chord, int staff, const QVector<Lyrics*>* ll, bool useDrumset)
       {
       Part* part = chord->score()->staff(chord->track() / VOICES)->part();
       int partNr = _score->parts().indexOf(part);
@@ -2348,7 +2348,7 @@ void ExportMusicXml::chord(Chord* chord, int staff, const QList<Lyrics*>* ll, bo
       for (Element* e : chord->el())
             qDebug("chord %p el %p", chord, e);
        */
-      QList<Note*> nl = chord->notes();
+      std::vector<Note*> nl = chord->notes();
       bool grace = chord->isGrace();
       int tremCorr = 1; // duration correction for two note tremolo
       if (isTwoNoteTremolo(chord)) tremCorr = 2;
@@ -3558,7 +3558,7 @@ void ExportMusicXml::symbol(Symbol const* const sym, int staff)
 //   lyrics
 //---------------------------------------------------------
 
-void ExportMusicXml::lyrics(const QList<Lyrics*>* ll, const int trk)
+void ExportMusicXml::lyrics(const QVector<Lyrics*>* ll, const int trk)
       {
       for (const Lyrics* l : *ll) {
             if (l && !l->xmlText().isEmpty()) {
@@ -4919,7 +4919,7 @@ void ExportMusicXml::write(QIODevice* dev)
                                     case Element::Type::CHORD:
                                           {
                                           Chord* c                 = static_cast<Chord*>(el);
-                                          const QList<Lyrics*>* ll = &c->lyricsList();
+                                          const QVector<Lyrics*>* ll = &c->lyricsList();
                                           // ise grace after
                                           if (c) {
                                                 for (Chord* g : c->graceNotesBefore()) {
