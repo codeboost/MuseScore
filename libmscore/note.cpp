@@ -1704,7 +1704,6 @@ void Note::layout2()
             qreal d  = score()->point(score()->styleS(StyleIdx::dotNoteDistance)) * mag();
             qreal dd = score()->point(score()->styleS(StyleIdx::dotDotDistance)) * mag();
             qreal x  = chord()->dotPosX() - pos().x() - chord()->pos().x();
-            bool layoutDots = true;
             // if TAB and stems through staff
             if (staff()->isTabStaff()) {
                   StaffType* tab = staff()->staffType();
@@ -1718,18 +1717,13 @@ void Note::layout2()
                         dd = STAFFTYPE_TAB_DEFAULTDOTDIST_X * spatium();
                         d = dd * 0.5;
                         }
-                  else {
-                        layoutDots = false; // if !stemThrough, there are no dots at all
-                        }
                   }
-            if (layoutDots) {
-                  // apply to dots
-                  qreal xx = x + d;
-                  for (NoteDot* dot : _dots) {
-                        dot->rxpos() = xx;
-                        dot->adjustReadPos();
-                        xx += dd;
-                        }
+            // apply to dots
+            qreal xx = x + d;
+            for (NoteDot* dot : _dots) {
+                  dot->rxpos() = xx;
+                  dot->adjustReadPos();
+                  xx += dd;
                   }
             }
 
@@ -1891,29 +1885,6 @@ QString Note::noteTypeUserName() const
             default:
                   return tr("Note");
             }
-      }
-
-//---------------------------------------------------------
-//   pagePos
-//---------------------------------------------------------
-
-QPointF Note::pagePos() const
-      {
-      if (parent() == 0)
-            return pos();
-
-      return parent()->pagePos() + pos();
-      }
-
-//---------------------------------------------------------
-//   canvasPos
-//---------------------------------------------------------
-
-QPointF Note::canvasPos() const
-      {
-      if (parent() == 0)
-            return pos();
-      return parent()->canvasPos() + pos();
       }
 
 //---------------------------------------------------------
@@ -2604,13 +2575,10 @@ NoteVal Note::noteVal() const
 //   qmlDotsCount
 //    returns number of dots for plugins
 //---------------------------------------------------------
+
 int Note::qmlDotsCount()
       {
-      int i = 0;
-      for (NoteDot* dot : _dots)
-            if (dot)
-                  ++i;
-      return i;
+      return _dots.size();
       }
 
 //---------------------------------------------------------
@@ -2748,12 +2716,12 @@ void Note::setAccidentalType(AccidentalType type)
 Shape Note::shape() const
       {
       Shape shape;
-      shape.add(symBbox(noteHead()).translated(pos()));
+      shape.add(symBbox(noteHead()));
       for (NoteDot* dot : _dots)
-            shape.add(symBbox(SymId::augmentationDot).translated(dot->pos()+pos()));
+            shape.add(symBbox(SymId::augmentationDot).translated(dot->pos()));
       if (_accidental)
-            shape.add(_accidental->bbox().translated(_accidental->pos() + pos()));
-      return shape;
+            shape.add(_accidental->bbox().translated(_accidental->pos()));
+      return shape.translated(pos());
       }
 
 }
