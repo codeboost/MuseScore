@@ -3194,7 +3194,7 @@ qreal Measure::userStretch() const
 
 Element* Measure::nextElementStaff(int staff)
       {
-      Segment* firstSeg = segments()->first();
+      Segment* firstSeg = segments().first();
       if (firstSeg)
             return firstSeg->firstElement(staff);
       return score()->firstElement();
