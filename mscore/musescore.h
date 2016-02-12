@@ -72,6 +72,7 @@ class KeyEditor;
 class ChordStyleEditor;
 class Navigator;
 class PianoTools;
+    class GuitarFretboard;
 class MediaDialog;
 class Workspace;
 class AlbumManager;
@@ -249,6 +250,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QToolBar* entryTools;
       TextTools* _textTools                { 0 };
       PianoTools* _pianoTools              { 0 };
+      GuitarFretboard* _guitarFretboard    { 0 };
       MediaDialog* _mediaDialog            { 0 };
       DrumTools* _drumTools                { 0 };
       QToolBar* voiceTools;
@@ -406,6 +408,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void startExcerptsDialog();
       void initOsc();
       void editRaster();
+      void showGuitarFretboard(bool);
       void showPianoKeyboard(bool);
       void showMediaDialog();
       void showAlbumManager();
@@ -537,6 +540,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       PianorollEditor* getPianorollEditor() const { return pianorollEditor; }
       DrumrollEditor* getDrumrollEditor() const   { return drumrollEditor; }
       PianoTools* pianoTools() const              { return _pianoTools; }
+      GuitarFretboard* guitarFretboard() const { return _guitarFretboard; }
       void writeSessionFile(bool);
       bool restoreSession(bool);
       bool splitScreen() const { return _splitScreen; }

@@ -1453,6 +1453,13 @@ void Seq::heartBeatTimeout()
       PianoTools* piano = mscore->pianoTools();
       if (piano && piano->isVisible())
             piano->heartBeat(markedNotes);
+          
+          
+      GuitarFretboard* fretboard = mscore->guitarFretboard();
+      if (fretboard && fretboard->isVisible())
+      {
+          fretboard->heartBeat(markedNotes);
+      }
 
       cv->update(cv->toPhysical(r));
       }

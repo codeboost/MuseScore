@@ -237,7 +237,7 @@ add_executable ( ${ExecutableName}
       updatechecker.cpp importove.cpp ove.cpp ruler.cpp
       importgtp.cpp importgtp-gp4.cpp importgtp-gp5.cpp importgtp-gp6.cpp fotomode.cpp drumtools.cpp
       selinstrument.cpp texteditor.cpp editstafftype.cpp texttools.cpp
-      editpitch.cpp editstringdata.cpp editraster.cpp pianotools.cpp mediadialog.cpp
+      editpitch.cpp editstringdata.cpp editraster.cpp pianotools.cpp mediadialog.cpp guitartools.cpp
       workspace.cpp chordview.cpp
       album.cpp albummanager.cpp
       textstyle.cpp
@@ -282,6 +282,8 @@ add_executable ( ${ExecutableName}
       startcenter.cpp scoreBrowser.cpp scorePreview.cpp scoreInfo.cpp
       logindialog.cpp loginmanager.cpp uploadscoredialog.cpp breaksdialog.cpp searchComboBox.cpp
       help.cpp help.h
+      fretboard/fingerboard.cpp fretboard/fretboard.cpp
+      fretboard/fretboardmodel.cpp
 
       ${OMR_FILES}
       ${AUDIO}
