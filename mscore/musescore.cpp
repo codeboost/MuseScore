@@ -61,6 +61,7 @@
 #include "libmscore/segment.h"
 #include "editraster.h"
 #include "pianotools.h"
+#include "guitartools.h"
 #include "mediadialog.h"
 #include "workspace.h"
 #include "selectdialog.h"
@@ -106,6 +107,8 @@
 #include "startcenter.h"
 #include "help.h"
 #include "awl/aslider.h"
+
+
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -570,6 +573,11 @@ MuseScore::MuseScore()
 
       transportTools = addToolBar(tr("Transport Tools"));
       transportTools->setObjectName("transport-tools");
+
+      transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("zoomin")));
+      transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("zoomout")));
+
+
 #ifdef HAS_MIDI
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("midi-on")));
       transportTools->addSeparator();
@@ -786,6 +794,11 @@ MuseScore::MuseScore()
       menuView->addAction(a);
 
       a = getAction("toggle-piano");
+      a->setCheckable(true);
+      menuView->addAction(a);
+      
+            
+      a = getAction("toggle-fretboard");
       a->setCheckable(true);
       menuView->addAction(a);
 
@@ -3556,6 +3569,25 @@ void MuseScore::editRaster()
             }
       }
 
+void MuseScore::showGuitarFretboard(bool on)
+    {
+        if (_guitarFretboard == nullptr)
+        {
+              QAction* a = getAction("toggle-fretboard");
+              _guitarFretboard = new GuitarFretboard(this);
+              addDockWidget(Qt::BottomDockWidgetArea, _guitarFretboard);
+              connect(_guitarFretboard, SIGNAL(visibilityChanged(bool)), a, SLOT(setChecked(bool)));
+        }
+        if (on)
+        {
+              _guitarFretboard->show();
+        }
+        else if (_guitarFretboard != nullptr)
+        {
+              _guitarFretboard->hide();
+        }
+    }
+    
 //---------------------------------------------------------
 //   showPianoKeyboard
 //---------------------------------------------------------
@@ -4191,6 +4223,8 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             ;
       else if (cmd == "toggle-piano")
             showPianoKeyboard(a->isChecked());
+      else if (cmd == "toggle-fretboard")
+            showGuitarFretboard(a->isChecked());
       else if (cmd == "plugin-creator")
             showPluginCreator(a);
       else if (cmd == "plugin-manager")

@@ -43,6 +43,7 @@
 #include "synthcontrol.h"
 #include "pianoroll.h"
 #include "pianotools.h"
+#include "guitartools.h"
 
 #include "click.h"
 

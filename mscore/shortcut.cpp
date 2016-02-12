@@ -2262,7 +2262,9 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
          "zoomin",
          QT_TRANSLATE_NOOP("action","Zoom In"),
-         QT_TRANSLATE_NOOP("action","Zoom in")
+         QT_TRANSLATE_NOOP("action","Zoom in"),
+         0,
+         Icons::zoomIn_ICON
          },
       {
          MsWidget::MAIN_WINDOW,
@@ -2270,7 +2272,9 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_PLAY,
          "zoomout",
          QT_TRANSLATE_NOOP("action","Zoom Out"),
-         QT_TRANSLATE_NOOP("action","Zoom out")
+         QT_TRANSLATE_NOOP("action","Zoom out"),
+         0,
+         Icons::zoomOut_ICON
          },
       {
          MsWidget::MAIN_WINDOW,
@@ -2508,6 +2512,15 @@ Shortcut Shortcut::_sc[] = {
          QT_TRANSLATE_NOOP("action","Piano Keyboard"),
          QT_TRANSLATE_NOOP("action","Piano keyboard")
          },
+      {
+          MsWidget::MAIN_WINDOW,
+          STATE_NORMAL | STATE_NOTE_ENTRY,
+          "toggle-fretboard",
+          QT_TRANSLATE_NOOP("action","Guitar Fretboard"),
+          QT_TRANSLATE_NOOP("action","Guitar Fretboard")
+    
+      },
+    
       {
          MsWidget::MAIN_WINDOW,
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY | STATE_FOTO,

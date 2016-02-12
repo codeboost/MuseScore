@@ -158,5 +158,7 @@
         <file>data/icons/arrow_down.svg</file>
         <file>data/icons/arrow_up.svg</file>
         <file>data/icons/clef-bass.svg</file>
-    </qresource>
+        <file>data/icons/zoomin.svg</file>
+        <file>data/icons/zoomout.svg</file>
+</qresource>
 </RCC>

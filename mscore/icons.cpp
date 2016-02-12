@@ -147,7 +147,9 @@ static const char* iconNames[] = {
       "edit-reset.svg",
       "window-close.svg",
       "arrow_up.svg",
-      "arrow_down.svg"
+      "arrow_down.svg",
+      "zoomin.svg",
+      "zoomout.svg"
       };
 
 void genIcons()
