@@ -22,11 +22,15 @@ namespace vg
 
     void Fretboard::setOrientation(Qt::Orientation orientation)
     {
-        if (fingerboard->model.orientation != orientation)
-            fingerboard->model.orientation = orientation;
+        if (model.orientation != orientation)
+        {
+            model.orientation = orientation;
+            model.update();
+            fingerboard->repaint();
+        }
     }
 
-    void Fretboard::paintEvent(QPaintEvent *event)
+    void Fretboard::paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
         paintHighlights(painter);
@@ -35,7 +39,7 @@ namespace vg
     void Fretboard::paintHighlights(QPainter &painter)
     {
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(64,128,32));
+        painter.setBrush(Qt::green);
         painter.setRenderHint(QPainter::Antialiasing);
 
         for (const Highlight& highlight : highlights)
@@ -66,12 +70,24 @@ namespace vg
         }
     }
 
+    void Fretboard::resizeEvent(QResizeEvent *)
+    {
+        if (rect().height() > rect().width())
+        {
+            setOrientation(Qt::Vertical);
+        }
+        else
+        {
+            setOrientation(Qt::Horizontal);
+        }
+    }
+
+
     void Fretboard::onRotate()
     {
         qDebug() << "onRotate";
-        model.orientation = (model.orientation == Qt::Horizontal) ? Qt::Vertical : Qt::Horizontal;
-        model.update();
-        fingerboard->repaint();
+        Qt::Orientation orientation = (model.orientation == Qt::Horizontal) ? Qt::Vertical : Qt::Horizontal;
+        setOrientation(orientation);
     }
 
     void Fretboard::onSwapSides()

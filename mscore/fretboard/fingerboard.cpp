@@ -19,6 +19,7 @@ namespace vg
     void Fingerboard::paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
+        //painter.fillRect(rect(), bgColor);
         paintNut(painter);
         paintFrets(painter);
         paintWhiteDots(painter);
@@ -30,15 +31,16 @@ namespace vg
         //Actual paint
         painter.save();
         QPen pen = painter.pen();
-        pen.setColor(Qt::darkYellow);
+        pen.setColor(stringColor);
         pen.setWidth(2);
         painter.setPen(pen);
 
         for (int i = 0; i < model.numberOfStrings; i++)
         {
-            float thickRate = model.widthForString(i);
-            pen.setWidth((int)round(thickRate * 5.0));
-            painter.setPen(pen);
+                float thickRate = model.widthForString(i);
+                pen.setWidth((int)round(thickRate * 5.0));
+                painter.setPen(pen);
+
             float position = model.posForString(i);
 
             if (model.orientation == Qt::Horizontal)
@@ -80,14 +82,26 @@ namespace vg
         painter.save();
         int fretThickness = model.fretThickness;
         QRect r;
-        QLinearGradient gradient;
 
-        if (model.orientation == Qt::Horizontal)
+        QPen pen = painter.pen();
+        pen.setWidth(fretThickness);
+        pen.setColor(fretColor);
+        painter.setPen(pen);
+
+        if (model.orientation == Qt::Horizontal){
             r.setRect(position, 0, fretThickness, rect().height());
+            painter.drawLine(r.topLeft(), r.bottomLeft());
+        }
         else
+        {
             r.setRect(0, position, rect().width(), fretThickness);
+            painter.drawLine(r.topLeft(), r.topRight());
+        }
 
-        paintGradientRect(painter, r, model.orientation, QColor("#ccc"), QColor("#ddd"));
+        if (fancy)
+        {
+            paintGradientRect(painter, r, model.orientation, QColor("#ccc"), QColor("#ddd"));
+        }
         painter.restore();
     }
 
@@ -107,7 +121,9 @@ namespace vg
 
         QPen pen = painter.pen();
         pen.setWidth(model.nutThickness);
+        pen.setColor(nutColor);
         painter.setPen(pen);
+
 
         if (model.orientation == Qt::Horizontal)
             painter.drawLine(0, 0, 0, rect().height());
@@ -132,7 +148,7 @@ namespace vg
 
         painter.save();
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(180,180,180));
+        painter.setBrush(dotsColor);
         painter.setRenderHint(QPainter::Antialiasing);
 
         for (size_t k = 0; k < dotPositions.size(); k++)

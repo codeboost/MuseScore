@@ -6,11 +6,21 @@
 
 namespace vg
 {
+    //Comment?
     class Fingerboard : public QWidget
     {
     public:
+        bool fancy = false;
         FretboardModel& model;
         Fingerboard(QWidget* parent, FretboardModel& aModel);
+
+    public:
+        QColor stringColor = Qt::darkGray;
+        QColor fretColor = Qt::darkGray;
+        QColor nutColor = Qt::black;
+        QColor bgColor = Qt::white;
+        QColor dotsColor = QColor(180,180,180);
+
     protected:
         void paintEvent(QPaintEvent *event) override;
         void resizeEvent(QResizeEvent *) override;

@@ -12,7 +12,7 @@ namespace vg
         int numberOfFrets = 16;
         int numberOfStrings = 6;
         int nutThickness = 15;
-        int fretThickness = 5;
+        int fretThickness = 4;
         int maxStringThickness = 4;
 
         Qt::Orientation orientation = Qt::Horizontal;

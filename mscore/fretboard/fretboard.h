@@ -25,9 +25,10 @@ namespace vg
         Fretboard(QWidget* parent);
         void setOrientation(Qt::Orientation orientation);
     protected:
-        void paintEvent(QPaintEvent *event) override;
+        void paintEvent(QPaintEvent *) override;
         void paintHighlights(QPainter& p);
         void paintHighlight(QPainter &painter, const Highlight &highlight);
+        void resizeEvent(QResizeEvent *) override;
     public slots:
         void onSwapSides();
         void onRotate();
