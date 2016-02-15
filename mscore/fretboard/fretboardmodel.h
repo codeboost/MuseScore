@@ -48,7 +48,35 @@ namespace vg
         float posForFret(int i)
         {
             Q_ASSERT(i>=0 && i < numberOfFrets);
+
+            if (stringOrder == Qt::DescendingOrder)
+            {
+                //Not -1, because the fretPositions contains one extra element (0).
+                //return fretPositions[numberOfFrets - i];
+
+                if (orientation == Qt::Horizontal)
+                {
+                    return fretboardRect.width() - fretPositions[i];
+                }
+                else
+                {
+                    return fretboardRect.height() - fretPositions[i];
+                }
+            }
+
             return fretPositions[i];
+        }
+
+        int posForNut()
+        {
+            if (stringOrder == Qt::DescendingOrder)
+            {
+                if (orientation == Qt::Horizontal)
+                    return fretboardRect.width();
+                else
+                    return fretboardRect.height();
+            }
+            return 0;
         }
 
     protected:

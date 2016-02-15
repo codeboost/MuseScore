@@ -41,29 +41,11 @@ namespace vg
         }
         
         return QRect(start, end);
-//        
-//        
-//        
-//        
-//
-//        float startFret = posForFret(fretNumber - 1);
-//        float startString = posForString(stringNumber - 1);
-//        float endFret = posForFret(fretNumber);
-//        float endString = posForString(stringNumber);
-//
-//        QRect result = (orientation == Qt::Horizontal) ?
-//                    QRect(startFret, startString, endFret - startFret, endString - startString):
-//                    QRect(startString, startFret, endString - startString, endFret - startFret);
-//
-//        return result;
     }
 
     float FretboardModel::widthForString(int stringIndex)
     {
         Q_ASSERT(stringIndex >= 0 && stringIndex < numberOfStrings);
-
-//        if (stringOrder == Qt::DescendingOrder)
-//            stringIndex = numberOfStrings - stringIndex - 1;
 
         return (float)(stringIndex + 1) / (float)numberOfStrings;
     }
@@ -114,9 +96,7 @@ namespace vg
         float last = positions.back();
 
         std::transform(positions.begin(), positions.end(), positions.begin(), [last, length](float x){
-            return x / last * length;
+            return (x / last) * length;
         });
-
-        fretPositions = positions;
     }
 }

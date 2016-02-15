@@ -52,32 +52,7 @@ namespace vg
         painter.restore();
     }
 
-    void paintGradientRect(QPainter& painter, QRect& r, Qt::Orientation orientation, const QColor& darkColor, const QColor& lightColor)
-    {
-
-        QLinearGradient gradient;
-
-        if (orientation == Qt::Horizontal)
-        {
-            gradient = QLinearGradient(QPoint(r.x(), r.height() / 2),
-                                       QPoint(r.x() + r.width(), r.height() / 2));
-        }
-        else
-        {
-            gradient = QLinearGradient(QPoint(r.width()/2, r.y()),
-                                       QPoint(r.width()/2, r.y() + r.height()));
-        }
-
-        gradient.setColorAt(0, darkColor);
-        gradient.setColorAt(0.5, lightColor);
-        gradient.setColorAt(1, darkColor);
-
-        gradient.setSpread(QGradient::PadSpread);
-
-        painter.fillRect(r, QBrush(gradient));
-    }
-
-    void Fingerboard::paintFret(QPainter& painter, float position)
+     void Fingerboard::paintFret(QPainter& painter, float position)
     {
         painter.save();
         int fretThickness = model.fretThickness;
@@ -96,11 +71,6 @@ namespace vg
         {
             r.setRect(0, position, rect().width(), fretThickness);
             painter.drawLine(r.topLeft(), r.topRight());
-        }
-
-        if (fancy)
-        {
-            paintGradientRect(painter, r, model.orientation, QColor("#ccc"), QColor("#ddd"));
         }
         painter.restore();
     }
@@ -125,13 +95,27 @@ namespace vg
         painter.setPen(pen);
 
 
+        int pos = model.posForNut();
+
         if (model.orientation == Qt::Horizontal)
-            painter.drawLine(0, 0, 0, rect().height());
+            painter.drawLine(pos, 0, pos, rect().height());
         else
-            painter.drawLine(0, 0, rect().width(), 0);
+            painter.drawLine(0, pos, rect().width(), pos);
 
         painter.restore();
     }
+
+//    void Fingerboard::paintNoteNames(QPainter& painter)
+//    {
+//        int xpos = model.posForNut();
+
+//        for (int k = 0; k < model.numberOfStrings; k++)
+//        {
+//            QRect r = model.getFretRect(0, k);
+//        }
+
+//    }
+
 
     void Fingerboard::paintDotForFret(QPainter& painter, int fretNumber, int stringNumber)
     {
