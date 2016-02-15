@@ -70,6 +70,32 @@ namespace vg
         }
     }
 
+
+
+    void Fretboard::paintNoteNames(QPainter& painter)
+    {
+        int dotSize = 15;
+        int xpos = model.posForNut();
+
+        painter.save();
+
+        QBrush brush = QBrush(Qt::blue);
+        QPen pen = QPen(Qt::white);
+
+        painter.setBrush(brush);
+        painter.setPen(pen);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+
+        for (int k = 0; k < model.numberOfStrings; k++)
+        {
+            float ypos = model.posForString(k);
+            painter.drawEllipse(xpos - dotSize / 2, ypos - dotSize / 2, dotSize, dotSize);
+
+        }
+        painter.restore();
+    }
+
     void Fretboard::resizeEvent(QResizeEvent *)
     {
         if (rect().height() > rect().width())

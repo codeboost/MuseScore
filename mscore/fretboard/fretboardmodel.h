@@ -3,6 +3,7 @@
 
 #include <QRect>
 #include <QVector>
+#include <QString>
 
 namespace vg
 {
@@ -14,6 +15,13 @@ namespace vg
         int nutThickness = 15;
         int fretThickness = 4;
         int maxStringThickness = 4;
+        int noteNameRadius = 8;
+
+        //The 'common' 6-string guitar note order is used here
+        //Other stringed instruments might have different notes, so make sure you configure it properly.
+        QString noteNames = "EAdgbe";
+
+        bool shouldDrawNoteNames = true;
 
         Qt::Orientation orientation = Qt::Horizontal;
 
@@ -32,53 +40,35 @@ namespace vg
         float widthForString(int stringIndex);
         void update();
 
+        //Returns the string position for string i (0-based).
+        //The value returned may be the horizontal x or vertical y coordinate of the string,
+        //depending on the orientation.
+        float posForString(int i);
 
-        float posForString(int i)
+        //Returns the position for fret i (0-based).
+        //The value returned may be horizontal or vertical, depending on the orientation.
+        float posForFret(int i);
+
+        //Nut starting position, depending on orientation and stringOrder.
+        int posForNut();
+
+        //Returns the note name for guitar string i (0-based).
+        //The note name returned depends on the stringOrder value.
+        QString noteNameForString(int i)
         {
-            Q_ASSERT(i>=0 && i < numberOfStrings);
+            Q_ASSERT(i >=0);
 
-            if (stringOrder == Qt::DescendingOrder)
+            if (i < noteNames.size())
             {
-                return stringPositions[numberOfStrings - i - 1];
-            }
-
-            return stringPositions[i];
-        }
-
-        float posForFret(int i)
-        {
-            Q_ASSERT(i>=0 && i < numberOfFrets);
-
-            if (stringOrder == Qt::DescendingOrder)
-            {
-                //Not -1, because the fretPositions contains one extra element (0).
-                //return fretPositions[numberOfFrets - i];
-
-                if (orientation == Qt::Horizontal)
+                if (stringOrder == Qt::AscendingOrder)
                 {
-                    return fretboardRect.width() - fretPositions[i];
+                    return QString(noteNames[noteNames.size() - i - 1]);
                 }
-                else
-                {
-                    return fretboardRect.height() - fretPositions[i];
-                }
+                return QString(noteNames[i]);
             }
 
-            return fretPositions[i];
+            return "?";
         }
-
-        int posForNut()
-        {
-            if (stringOrder == Qt::DescendingOrder)
-            {
-                if (orientation == Qt::Horizontal)
-                    return fretboardRect.width();
-                else
-                    return fretboardRect.height();
-            }
-            return 0;
-        }
-
     protected:
         QRect fretboardRect;
         QVector<float> fretPositions;

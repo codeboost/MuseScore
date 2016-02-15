@@ -29,6 +29,7 @@ namespace vg
         void paintHighlights(QPainter& p);
         void paintHighlight(QPainter &painter, const Highlight &highlight);
         void resizeEvent(QResizeEvent *) override;
+        void paintNoteNames(QPainter &painter);
     public slots:
         void onSwapSides();
         void onRotate();

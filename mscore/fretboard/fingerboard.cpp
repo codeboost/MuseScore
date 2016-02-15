@@ -19,11 +19,67 @@ namespace vg
     void Fingerboard::paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
-        //painter.fillRect(rect(), bgColor);
+
+        painter.save();
+
+        if (model.orientation == Qt::Horizontal)
+        {
+            if (model.stringOrder == Qt::AscendingOrder)
+                painter.translate(model.noteNameRadius, 0);
+            else
+                painter.translate(-model.noteNameRadius, 0);
+        }
+        else
+        {
+            if (model.stringOrder == Qt::AscendingOrder)
+                painter.translate(0, model.noteNameRadius);
+            else
+                painter.translate(0, -model.noteNameRadius);
+        }
+
         paintNut(painter);
         paintFrets(painter);
         paintWhiteDots(painter);
         paintStrings(painter);
+
+        paintNoteNames(painter);
+
+        painter.restore();
+    }
+
+
+    void Fingerboard::paintNoteNames(QPainter& painter)
+    {
+        painter.save();
+        QBrush brush = QBrush(Qt::blue);
+        QPen pen = QPen(Qt::white);
+
+        painter.setBrush(brush);
+        painter.setPen(pen);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        int noteNameDiameter = model.noteNameRadius * 2;
+
+        for (int k = 0; k < model.numberOfStrings; k++)
+        {
+            QString noteName = model.noteNameForString(k);
+
+            if (model.orientation == Qt::Horizontal)
+            {
+                int xpos = model.posForNut() - model.noteNameRadius;
+                int ypos = model.posForString(k) - model.noteNameRadius;
+                painter.drawEllipse(xpos, ypos, noteNameDiameter, noteNameDiameter);
+                painter.drawText(xpos, ypos, noteNameDiameter, noteNameDiameter, Qt::AlignHCenter | Qt::AlignVCenter, noteName);
+            }
+            else
+            {
+                int ypos = model.posForNut() - model.noteNameRadius;
+                int xpos = model.posForString(k) - model.noteNameRadius;
+                painter.drawEllipse(xpos, ypos, noteNameDiameter, noteNameDiameter);
+                painter.drawText(xpos, ypos, noteNameDiameter, noteNameDiameter, Qt::AlignHCenter | Qt::AlignVCenter, noteName);
+            }
+        }
+        painter.restore();
     }
 
     void Fingerboard::paintStrings(QPainter &painter)
@@ -104,17 +160,6 @@ namespace vg
 
         painter.restore();
     }
-
-//    void Fingerboard::paintNoteNames(QPainter& painter)
-//    {
-//        int xpos = model.posForNut();
-
-//        for (int k = 0; k < model.numberOfStrings; k++)
-//        {
-//            QRect r = model.getFretRect(0, k);
-//        }
-
-//    }
 
 
     void Fingerboard::paintDotForFret(QPainter& painter, int fretNumber, int stringNumber)

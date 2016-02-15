@@ -31,6 +31,7 @@ namespace vg
         void paintDotForFret(QPainter &painter, int fretNumber, int stringNumber);
         void paintNut(QPainter &painter);
         void paintFret(QPainter &painter, float position);
+        void paintNoteNames(QPainter &painter);
     };
 }
 
