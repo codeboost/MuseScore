@@ -593,13 +593,33 @@ MuseScore::MuseScore()
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("pan")));
       transportTools->addWidget(new AccessibleToolButton(transportTools, metronomeAction));
 
-      cpitchTools = addToolBar(tr("Concert Pitch"));
-      cpitchTools->setObjectName("pitch-tools");
-      cpitchTools->addWidget(new AccessibleToolButton( cpitchTools, getAction("concert-pitch")));
+        
+      addToolBarBreak();
 
-      QToolBar* foto = addToolBar(tr("Image Capture"));
-      foto->setObjectName("foto-tools");
-      foto->addWidget(new AccessibleToolButton(foto, getAction("fotomode")));
+      QComboBox* playbackSpeedCombo = new QComboBox(this);
+#if defined(Q_OS_MAC)
+      playbackSpeedCombo->setFocusPolicy(Qt::StrongFocus);
+#else
+      playbackSpeedCombo->setFocusPolicy(Qt::TabFocus);
+#endif
+      playbackSpeedCombo->setAccessibleName(tr("Playback speed"));
+      playbackSpeedCombo->setFixedHeight(preferences.iconHeight + 8);  // hack
+
+      for (int k = 1; k < 15; k++){
+          playbackSpeedCombo->addItem(QString("%1%").arg(k * 10), (float)k/100);
+      }
+//      connect(playbackSpeedCombo, SIGNAL(activated(int)), SLOT(switchPlaybackSpeed(float)));
+      transportTools->addWidget(playbackSpeedCombo);
+
+
+
+//      cpitchTools = addToolBar(tr("Concert Pitch"));
+//      cpitchTools->setObjectName("pitch-tools");
+//      cpitchTools->addWidget(new AccessibleToolButton( cpitchTools, getAction("concert-pitch")));
+
+//      QToolBar* foto = addToolBar(tr("Image Capture"));
+//      foto->setObjectName("foto-tools");
+//      foto->addWidget(new AccessibleToolButton(foto, getAction("fotomode")));
 
       addToolBarBreak();
 
@@ -1647,7 +1667,17 @@ void MuseScore::showPlayPanel(bool visible)
       if (playPanel == 0) {
             if (!visible)
                   return;
-            playPanel = new PlayPanel(this);
+
+            playPanelDock = new PlayPanelDockWidget(this);
+            addDockWidget(Qt::TopDockWidgetArea, playPanelDock);
+
+//            QAction* a = getAction("toggle-fretboard");
+//            _guitarFretboard = new GuitarFretboard(this);
+//            addDockWidget(Qt::BottomDockWidgetArea, _guitarFretboard);
+//            connect(_guitarFretboard, SIGNAL(visibilityChanged(bool)), a, SLOT(setChecked(bool)));
+
+            playPanel = playPanelDock->getPlayPanel();
+
             connect(playPanel, SIGNAL(gainChange(float)),     synti, SLOT(setGain(float)));
             connect(playPanel, SIGNAL(relTempoChanged(double)),seq, SLOT(setRelTempo(double)));
             connect(playPanel, SIGNAL(posChange(int)),         seq, SLOT(seek(int)));
@@ -1655,7 +1685,7 @@ void MuseScore::showPlayPanel(bool visible)
             connect(synti,     SIGNAL(gainChanged(float)), playPanel, SLOT(setGain(float)));
             playPanel->setGain(synti->gain());
             playPanel->setScore(cs);
-            mscore->stackUnder(playPanel);
+            //mscore->stackUnder(playPanel);
             }
       playPanel->setVisible(visible);
       playId->setChecked(visible);
@@ -2600,7 +2630,7 @@ void MuseScore::changeState(ScoreState val)
       menuWorkspaces->setEnabled(enable);
 
       transportTools->setEnabled(enable && !noSeq && seq && seq->isRunning());
-      cpitchTools->setEnabled(enable);
+      //cpitchTools->setEnabled(enable);
       mag->setEnabled(enable);
       entryTools->setEnabled(enable);
 
@@ -4632,7 +4662,9 @@ QFileInfoList MuseScore::recentScores() const
                   fil.append(fi);
             }
       return fil;
-      }
+}
+
+PlayPanel *MuseScore::getPlayPanel() const { return playPanelDock ? playPanelDock->getPlayPanel() : nullptr; }
 
 }
 

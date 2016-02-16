@@ -35,15 +35,14 @@ static const int DEFAULT_POS_Y  = 100;
 //   PlayPanel
 //---------------------------------------------------------
 
-PlayPanel::PlayPanel(QWidget* parent)
-   : QWidget(parent, Qt::Dialog)
+PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
+   : QWidget(parent, windowType)
       {
       cachedTickPosition = -1;
       cachedTimePosition = -1;
       cs                 = 0;
       tempoSliderIsPressed = false;
       setupUi(this);
-      setWindowFlags(Qt::Tool);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
       QSettings settings;
@@ -64,6 +63,9 @@ PlayPanel::PlayPanel(QWidget* parent)
       tempoSlider->setDclickValue1(100.0);
       tempoSlider->setDclickValue2(100.0);
       tempoSlider->setUseActualValue(true);
+          
+          tempoSlider->setOrientation(Qt::Horizontal);
+          volumeSlider->setOrientation(Qt::Horizontal);
 
       connect(volumeSlider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double,int)));
       connect(posSlider,    SIGNAL(sliderMoved(int)),         SLOT(setPos(int)));
@@ -334,5 +336,13 @@ void PlayPanel::tempoSliderReleased(int)
       {
       tempoSliderIsPressed = false;
       }
+
+
+    //---------------------------------------------------------
+    //   Dock widget version
+    //---------------------------------------------------------
 }
+
+
+
 
