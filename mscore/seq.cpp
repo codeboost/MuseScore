@@ -1501,43 +1501,48 @@ double Seq::curTempo() const
 //   set Loop in position
 //---------------------------------------------------------
 
-void Seq::setLoopIn()
-      {
-      int tick;
-      if (state == Transport::PLAY) {      // If in playback mode, set the In position where note is being played
+    void Seq::setLoopIn()
+    {
+        int tick;
+        if (state == Transport::PLAY) {      // If in playback mode, set the In position where note is being played
             auto ppos = playPos;
             if (ppos != events.cbegin())
-                  --ppos;                 // We have to go back one pos to get the correct note that has just been played
+                --ppos;                 // We have to go back one pos to get the correct note that has just been played
             tick = cs->repeatList()->utick2tick(ppos->first);
-            }
-      else
+        }
+        else
             tick = cs->pos();             // Otherwise, use the selected note.
-      if (tick >= cs->loopOutTick())   // If In pos >= Out pos, reset Out pos to end of score
-            cs->setPos(POS::RIGHT, cs->lastMeasure()->endTick());
-      cs->setPos(POS::LEFT, tick);
-      }
+        
+        if (tick >= cs->loopOutTick())   
+            cs->setPos(POS::RIGHT, tick);
+        
+        cs->setPos(POS::LEFT, tick);
+    }
 
 //---------------------------------------------------------
 //   set Loop Out position
 //---------------------------------------------------------
 
-void Seq::setLoopOut()
-      {
-      int tick;
-      if (state == Transport::PLAY) {    // If in playback mode, set the Out position where note is being played
+    void Seq::setLoopOut()
+    {
+        int tick;
+        if (state == Transport::PLAY) {    // If in playback mode, set the Out position where note is being played
             tick = cs->repeatList()->utick2tick(playPos->first);
-            }
-      else
+        }
+        else
             tick = cs->pos() + cs->inputState().ticks();   // Otherwise, use the selected note.
-      if (tick <= cs->loopInTick())   // If Out pos <= In pos, reset In pos to beginning of score
+        if (tick <= cs->loopInTick())   // If Out pos <= In pos, reset In pos to beginning of score
             cs->setPos(POS::LEFT, 0);
-      else
-          if (tick > cs->lastMeasure()->endTick())
-              tick = cs->lastMeasure()->endTick();
-      cs->setPos(POS::RIGHT, tick);
-      if (state == Transport::PLAY)
+        else
+        {
+            //if (tick > cs->lastMeasure()->endTick())
+            //    tick = cs->lastMeasure()->endTick();
+        }
+        
+        cs->setPos(POS::RIGHT, tick);
+        if (state == Transport::PLAY)
             guiToSeq(SeqMsg(SeqMsgId::SEEK, tick));
-      }
+    }
 
 void Seq::setPos(POS, unsigned tick)
       {
