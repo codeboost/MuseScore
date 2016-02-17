@@ -29,7 +29,7 @@ namespace vg
 
         //The 'common' 6-string guitar note order is used here
         //Other stringed instruments might have different notes, so make sure you configure it properly.
-        QString noteNames = "EAdgbe";
+        QString noteNames = "ebgdAE";
 
         bool shouldDrawNoteNames = true;
 
@@ -67,21 +67,7 @@ namespace vg
 
         //Returns the note name for guitar string i (0-based).
         //The note name returned depends on the stringOrder value.
-        QString noteNameForString(int i)
-        {
-            Q_ASSERT(i >=0);
-
-            if (i < noteNames.size())
-            {
-                if (stringOrder == Qt::AscendingOrder)
-                {
-                    return QString(noteNames[noteNames.size() - i - 1]);
-                }
-                return QString(noteNames[i]);
-            }
-
-            return "?";
-        }
+        QString noteNameForString(int i);
     protected:
         QRect fretboardRect;
         QVector<float> fretPositions;

@@ -27,22 +27,6 @@ namespace vg
         return result;
     }
 
-//    QRect FretboardModel::getFretRect(int fretNumber, int stringNumber)
-//    {
-//        Q_ASSERT(fretNumber >= 0 && fretNumber < (int)fretPositions.size());
-//        Q_ASSERT(stringNumber >= 0 && stringNumber < (int)stringPositions.size());
-        
-//        QPoint start = intersectionPoint(fretNumber, stringNumber);
-//        QPoint end = start;
-  
-//        if (stringNumber < numberOfStrings && fretNumber < numberOfFrets)
-//        {
-//            end = intersectionPoint(fretNumber + 1, stringNumber + 1);
-//        }
-        
-//        return QRect(start, end);
-//    }
-
     float FretboardModel::widthForString(int stringIndex)
     {
         Q_ASSERT(stringIndex >= 0 && stringIndex < numberOfStrings);
@@ -74,17 +58,10 @@ namespace vg
 
         if (stringOrder == Qt::DescendingOrder)
         {
-            //Not -1, because the fretPositions contains one extra element (0).
-            //return fretPositions[numberOfFrets - i];
-
             if (orientation == Qt::Horizontal)
             {
                 return fretboardRect.width() - fretPositions[i];
             }
-//            else
-//            {
-//                return fretboardRect.height() - fretPositions[i];
-//            }
         }
 
         return fretPositions[i];
@@ -96,10 +73,20 @@ namespace vg
         {
             if (orientation == Qt::Horizontal)
                 return fretboardRect.width();
-//            else
-//                return fretboardRect.height();
         }
         return 0;
+    }
+
+    QString FretboardModel::noteNameForString(int i)
+    {
+        Q_ASSERT(i >=0);
+
+        if (i < noteNames.size())
+        {
+            return QString(noteNames[i]);
+        }
+
+        return "?";
     }
 
     void FretboardModel::updateStringPositions()
