@@ -682,6 +682,7 @@ ScoreView::ScoreView(QWidget* parent)
 
       _cursor     = new PositionCursor(this);
       _cursor->setType(CursorType::POS);
+      _cursor->setVisible(true);
       _continuousPanel = new ContinuousPanel(this);
       _continuousPanel->setActive(true);
 
@@ -1517,6 +1518,7 @@ int ScoreView::cursorTick() const
 
 void ScoreView::setCursorOn(bool val)
       {
+          val = true; //HACK
       if (_cursor && (_cursor->visible() != val)) {
             _cursor->setVisible(val);
             update(_matrix.mapRect(_cursor->rect()).toRect().adjusted(-1,-1,1,1));
@@ -3385,7 +3387,7 @@ void ScoreView::endNoteEntry()
             }
       setMouseTracking(false);
       shadowNote->setVisible(false);
-      setCursorOn(false);
+      //setCursorOn(false);
       _score->setUpdateAll();
       _score->end();
       }
