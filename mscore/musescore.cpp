@@ -169,7 +169,7 @@ void MuseScore::cmdInsertMeasures()
       {
       if (cs) {
             if (cs->selection().isNone() && !cs->selection().findMeasure()) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "VirtualGuitar",
                         tr("No measure selected:\n" "Please select a measure and try again"));
                   }
             else {
@@ -2269,7 +2269,7 @@ StartDialog::StartDialog(QWidget* parent)
       {
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setWindowTitle(tr("MuseScore Startup Dialog"));
+      setWindowTitle(tr("VirtualGuitar Startup Dialog"));
       connect(createScore, SIGNAL(clicked()), SLOT(createScoreClicked()));
       connect(loadScore, SIGNAL(clicked()), SLOT(loadScoreClicked()));
       }
@@ -2478,7 +2478,7 @@ bool MuseScore::readLanguages(const QString& path)
                 error.sprintf(qPrintable(tr("Error reading language file %s at line %d column %d: %s\n")),
                    qPrintable(qf.fileName()), line, column, qPrintable(err));
                 QMessageBox::warning(0,
-                   QWidget::tr("MuseScore: Load Languages Failed:"),
+                   QWidget::tr("VirtualGuitar: Load Languages Failed:"),
                    error,
                    QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
                 return false;
@@ -2538,9 +2538,9 @@ void MuseScore::showModeText(const QString& s)
 
 void MuseScore::changeState(ScoreState val)
       {
-// printf("MuseScore::changeState: %s\n", stateName(val));
+// printf("VirtualGuitar::changeState: %s\n", stateName(val));
       if (MScore::debugMode)
-            qDebug("MuseScore::changeState: %s", stateName(val));
+            qDebug("VirtualGuitar::changeState: %s", stateName(val));
 
 //      if (_sstate == val)
 //            return;
@@ -2687,7 +2687,7 @@ void MuseScore::changeState(ScoreState val)
                   showModeText(tr("Score locked"));
                   break;
             default:
-                  qFatal("MuseScore::changeState: illegal state %d", val);
+                  qFatal("VirtualGuitar::changeState: illegal state %d", val);
                   break;
             }
       if (paletteBox)
@@ -3225,7 +3225,7 @@ void MuseScore::writeSessionFile(bool cleanExit)
             }
       Xml xml(&f);
       xml.header();
-      xml.stag("museScore version=\"" MSC_VERSION "\"");
+      xml.stag("virtualGuitar version=\"" MSC_VERSION "\"");
       xml.tagE(cleanExit ? "clean" : "dirty");
       foreach(Score* score, scoreList) {
             xml.stag("Score");
@@ -3382,7 +3382,7 @@ bool MuseScore::restoreSession(bool always)
       int idx = -1;
       bool cleanExit = false;
       while (e.readNextStartElement()) {
-            if (e.name() == "museScore") {
+            if (e.name() == "virtualGuitar") {
                   /* QString version = e.attribute(QString("version"));
                   QStringList sl  = version.split('.');
                   int v           = sl[0].toInt() * 100 + sl[1].toInt();
@@ -3397,7 +3397,7 @@ bool MuseScore::restoreSession(bool always)
                               }
                         else if (tag == "dirty") {
                               QMessageBox::StandardButton b = QMessageBox::question(0,
-                                 tr("MuseScore"),
+                                 tr("VirtualGuitar"),
                                  tr("The previous session quit unexpectedly.\n\nRestore session?"),
                                  QMessageBox::Yes | QMessageBox::No,
                                  QMessageBox::Yes
@@ -3986,16 +3986,16 @@ void MuseScore::cmd(QAction* a)
       QString cmdn(a->data().toString());
 
       if (MScore::debugMode)
-            qDebug("MuseScore::cmd <%s>", cmdn.toLatin1().data());
+            qDebug("VirtualGuitar::cmd <%s>", cmdn.toLatin1().data());
 
       const Shortcut* sc = Shortcut::getShortcut(cmdn.toLatin1().data());
       if (sc == 0) {
-            qDebug("MuseScore::cmd(): unknown action <%s>", qPrintable(cmdn));
+            qDebug("VirtualGuitar::cmd(): unknown action <%s>", qPrintable(cmdn));
             return;
             }
       if (cs && (sc->state() & _sstate) == 0) {
             QMessageBox::warning(0,
-               QWidget::tr("MuseScore: Invalid Command"),
+               QWidget::tr("VirtualGuitar: Invalid Command"),
                QString("Command %1 not valid in current state").arg(cmdn));
             return;
             }
@@ -4278,7 +4278,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             if (!name.isEmpty()) {
                   if (!cs->saveStyle(name)) {
                         QMessageBox::critical(this,
-                           tr("MuseScore: Save Style"), MScore::lastError);
+                           tr("VirtualGuitar: Save Style"), MScore::lastError);
                         }
                   }
             }
@@ -4288,7 +4288,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
                   cs->startCmd();
                   if (!cs->loadStyle(name)) {
                         QMessageBox::critical(this,
-                           tr("MuseScore: Load Style"), MScore::lastError);
+                           tr("VirtualGuitar: Load Style"), MScore::lastError);
                         }
                   cs->endCmd();
                   }
@@ -4470,7 +4470,7 @@ void MuseScore::closeScore(Score* score)
 
 void MuseScore::noteTooShortForTupletDialog()
       {
-      QMessageBox::warning(this, tr("MuseScore: Warning"),
+      QMessageBox::warning(this, tr("VirtualGuitar: Warning"),
         tr("Cannot create tuplet: Note value is too short")
         );
       }
@@ -4688,15 +4688,15 @@ int main(int argc, char* av[])
 
       MuseScoreApplication* app;
       if (MuseScore::unstable()) {
-            app = new MuseScoreApplication("mscore-dev", argc, av);
-            QCoreApplication::setApplicationName("MuseScoreDevelopment");
+            app = new MuseScoreApplication("virtualguitar-dev", argc, av);
+            QCoreApplication::setApplicationName("VirtualGuitarDevelopment");
             }
       else {
-            app = new MuseScoreApplication("mscore2", argc, av);
-            QCoreApplication::setApplicationName("MuseScore2");
+            app = new MuseScoreApplication("virtualguitar", argc, av);
+            QCoreApplication::setApplicationName("VirtualGuitar2");
             }
-      QCoreApplication::setOrganizationName("MuseScore");
-      QCoreApplication::setOrganizationDomain("musescore.org");
+      QCoreApplication::setOrganizationName("VirtualGuitar");
+      QCoreApplication::setOrganizationDomain("virtualguitar.org");
       QCoreApplication::setApplicationVersion(VERSION);
       QAccessible::installFactory(AccessibleScoreView::ScoreViewFactory);
       QAccessible::installFactory(AccessibleSearchBox::SearchBoxFactory);
@@ -4746,7 +4746,7 @@ int main(int argc, char* av[])
 
     //if (parser.isSet("v")) parser.showVersion(); // a) needs Qt >= 5.4 , b) instead we use addVersionOption()
       if (parser.isSet("long-version")) {
-            printVersion("MuseScore");
+            printVersion("VirtualGuitar");
             return EXIT_SUCCESS;
             }
       MScore::debugMode = parser.isSet("d");
@@ -4892,7 +4892,7 @@ int main(int argc, char* av[])
             }
 
 #ifdef SCRIPT_INTERFACE
-      qmlRegisterType<QmlPlugin>  ("MuseScore", 1, 0, "MuseScore");
+      qmlRegisterType<QmlPlugin>  ("VirtualGuitar", 1, 0, "VirtualGuitar");
 #endif
       if (MScore::debugMode) {
             qDebug("DPI %f", DPI);
@@ -4931,7 +4931,7 @@ int main(int argc, char* av[])
       if (!MScore::noGui && preferences.showSplashScreen) {
             QPixmap pm(":/data/splash.png");
             sc = new QSplashScreen(pm);
-            sc->setWindowTitle(QString("MuseScore Startup"));
+            sc->setWindowTitle(QString("VirtualGuitar Startup"));
 #ifdef Q_OS_MAC // to have session dialog on top of splashscreen on mac
             sc->setWindowFlags(Qt::FramelessWindowHint);
 #endif
