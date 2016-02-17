@@ -17,8 +17,8 @@ namespace vg
     
     QPoint FretboardModel::intersectionPoint(int fretNumber, int stringNumber)
     {
-        Q_ASSERT(fretNumber >= 0 && fretNumber < numberOfFrets);
-        Q_ASSERT(stringNumber >= 0 && stringNumber < numberOfStrings);
+        Q_ASSERT(fretNumber >= 0 && fretNumber <= numberOfFrets);
+        Q_ASSERT(stringNumber >= 0 && stringNumber <= numberOfStrings);
         
         float fretPos = posForFret(fretNumber);
         float stringPos = posForString(stringNumber);
@@ -27,21 +27,21 @@ namespace vg
         return result;
     }
 
-    QRect FretboardModel::getFretRect(int fretNumber, int stringNumber)
-    {
-        Q_ASSERT(fretNumber > 0 && fretNumber < (int)fretPositions.size());
-        Q_ASSERT(stringNumber > 0 && stringNumber < (int)stringPositions.size());
+//    QRect FretboardModel::getFretRect(int fretNumber, int stringNumber)
+//    {
+//        Q_ASSERT(fretNumber >= 0 && fretNumber < (int)fretPositions.size());
+//        Q_ASSERT(stringNumber >= 0 && stringNumber < (int)stringPositions.size());
         
-        QPoint start = intersectionPoint(fretNumber - 1, stringNumber - 1);
-        QPoint end = start;
+//        QPoint start = intersectionPoint(fretNumber, stringNumber);
+//        QPoint end = start;
   
-        if (stringNumber < numberOfStrings && fretNumber < numberOfFrets)
-        {
-            end = intersectionPoint(fretNumber, stringNumber);
-        }
+//        if (stringNumber < numberOfStrings && fretNumber < numberOfFrets)
+//        {
+//            end = intersectionPoint(fretNumber + 1, stringNumber + 1);
+//        }
         
-        return QRect(start, end);
-    }
+//        return QRect(start, end);
+//    }
 
     float FretboardModel::widthForString(int stringIndex)
     {
@@ -70,7 +70,7 @@ namespace vg
 
     float FretboardModel::posForFret(int i)
     {
-        Q_ASSERT(i>=0 && i < numberOfFrets);
+        Q_ASSERT(i>=0 && i <= numberOfFrets);
 
         if (stringOrder == Qt::DescendingOrder)
         {

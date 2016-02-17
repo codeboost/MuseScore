@@ -45,7 +45,7 @@ namespace vg
         void setRect(const QRect& r);
         //Returns the rect for the fret and string.
         //Fret and strings indices are 1-based.
-        QRect getFretRect(int fretNumber, int stringNumber);
+        //QRect getFretRect(int fretNumber, int stringNumber);
         
         //indices are 0-based
         QPoint intersectionPoint(int fretNumber, int stringNumber);

@@ -166,7 +166,11 @@ namespace vg
 
     void Fingerboard::paintDotForFret(QPainter& painter, int fretNumber, int stringNumber)
     {
-        QRect r = model.getFretRect(fretNumber,  stringNumber);
+        Q_ASSERT(fretNumber <= model.numberOfFrets);
+        Q_ASSERT(stringNumber > 0 && stringNumber <= model.numberOfStrings);
+        QPoint p1 = model.intersectionPoint(fretNumber - 1, stringNumber - 1);
+        QPoint p2 = model.intersectionPoint(fretNumber, stringNumber);
+        QRect r(p1, p2);
         QPoint fretCenter = r.center();
         int dotSize = 10;
         painter.drawEllipse(fretCenter.x() - dotSize / 2, fretCenter.y() - dotSize / 2, dotSize, dotSize);
@@ -217,11 +221,21 @@ namespace vg
 
     void Fingerboard::paintHighlight(QPainter& painter, const FingerHighlight& highlight)
     {
-        qDebug() << "fret: " << highlight.fretNumber << "; string:" << highlight.stringNumber;
+        qDebug() << "Highlight -> fret: " << highlight.fretNumber << "; string:" << highlight.stringNumber;
 
-        QRect r = model.getFretRect(highlight.fretNumber + 1,  highlight.stringNumber + 1);
+        QRect r(0, 0, 0, 0);
 
-        qDebug() << "rect=" << r;
+        if (highlight.fretNumber > 0)
+        {
+            QPoint p1 = model.intersectionPoint(highlight.fretNumber - 1, highlight.stringNumber);
+            QPoint p2 = model.intersectionPoint(highlight.fretNumber, highlight.stringNumber);
+            r = QRect(p1, p2);
+        }
+        else
+        {
+            QPoint p1 = model.intersectionPoint(0, highlight.stringNumber);
+            r = QRect(p1, p1);
+        }
 
         int dotSize = 20;
         QPoint fretCenter = r.center();
