@@ -7,6 +7,16 @@
 
 namespace vg
 {
+
+
+    struct FingerHighlight
+    {
+        int stringNumber = 0;
+        int fretNumber = 0;
+        //Maybe something else, like color or note name
+        FingerHighlight(int stringN = 0, int fretN = 0): stringNumber(stringN), fretNumber(fretN){}
+    };
+
     class FretboardModel
     {
     public:
@@ -15,7 +25,7 @@ namespace vg
         int nutThickness = 15;
         int fretThickness = 4;
         int maxStringThickness = 4;
-        int noteNameRadius = 8;
+        int noteNameRadius = 10;
 
         //The 'common' 6-string guitar note order is used here
         //Other stringed instruments might have different notes, so make sure you configure it properly.
@@ -27,6 +37,9 @@ namespace vg
 
         //AscendingOrder: e string on top (or left) , E string on bottom (or right)
         Qt::SortOrder stringOrder = Qt::AscendingOrder;
+
+        QVector<FingerHighlight> highlights;
+
     public:
         QRect& rect();
         void setRect(const QRect& r);

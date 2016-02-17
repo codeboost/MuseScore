@@ -40,7 +40,7 @@ namespace Ms
     
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
     {
-        fretboard->highlights.clear();
+        fretboard->model.highlights.clear();
         QString fullmsg;
         for (const Ms::Note* note : notes)
         {
@@ -48,14 +48,14 @@ namespace Ms
             
             if (1 || tablature)
             {
-                vg::Fretboard::Highlight highlight(note->string(), note->fret());
-                fretboard->highlights.push_back(highlight);
+                vg::FingerHighlight highlight(note->string(), note->fret());
+                fretboard->model.highlights.push_back(highlight);
                 
                 QString msg = QString("[%1:%2],").arg(note->string()).arg(note->fret());
                 fullmsg.append(msg);
             }
         }
         qDebug() << fullmsg;
-        fretboard->repaint();
+        fretboard->update();
     }
 }

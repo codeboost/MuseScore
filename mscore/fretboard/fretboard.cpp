@@ -33,67 +33,6 @@ namespace vg
     void Fretboard::paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
-        paintHighlights(painter);
-    }
-
-    void Fretboard::paintHighlights(QPainter &painter)
-    {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::green);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        for (const Highlight& highlight : highlights)
-        {
-            paintHighlight(painter, highlight);
-        }
-    }
-
-    void Fretboard::paintHighlight(QPainter& painter, const Highlight& highlight)
-    {
-        qDebug() << "fret: " << highlight.fretNumber << "; string:" << highlight.stringNumber;
-
-        QRect r = fingerboard->model.getFretRect(highlight.fretNumber + 1,  highlight.stringNumber + 1);
-
-        qDebug() << "rect=" << r;
-
-        int dotSize = 15;
-        QPoint fretCenter = fingerboard->mapToParent(r.center());
-        QPoint topLeft = fingerboard->mapToParent(r.topLeft());
-
-        if (model.orientation == Qt::Horizontal)
-        {
-            painter.drawEllipse(fretCenter.x() - dotSize / 2, topLeft.y() - dotSize / 2, dotSize, dotSize);
-        }
-        else
-        {
-            painter.drawEllipse(topLeft.x() - dotSize / 2, fretCenter.y() - dotSize / 2, dotSize, dotSize);
-        }
-    }
-
-
-
-    void Fretboard::paintNoteNames(QPainter& painter)
-    {
-        int dotSize = 15;
-        int xpos = model.posForNut();
-
-        painter.save();
-
-        QBrush brush = QBrush(Qt::blue);
-        QPen pen = QPen(Qt::white);
-
-        painter.setBrush(brush);
-        painter.setPen(pen);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-
-        for (int k = 0; k < model.numberOfStrings; k++)
-        {
-            float ypos = model.posForString(k);
-            painter.drawEllipse(xpos - dotSize / 2, ypos - dotSize / 2, dotSize, dotSize);
-
-        }
-        painter.restore();
     }
 
     void Fretboard::resizeEvent(QResizeEvent *)

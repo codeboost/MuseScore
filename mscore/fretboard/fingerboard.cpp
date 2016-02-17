@@ -44,6 +44,8 @@ namespace vg
 
         paintNoteNames(painter);
 
+        paintHighlights(painter);
+
         painter.restore();
     }
 
@@ -51,7 +53,7 @@ namespace vg
     void Fingerboard::paintNoteNames(QPainter& painter)
     {
         painter.save();
-        QBrush brush = QBrush(Qt::blue);
+        QBrush brush = nutColor;
         QPen pen = QPen(Qt::white);
 
         painter.setBrush(brush);
@@ -200,4 +202,39 @@ namespace vg
         }
         painter.restore();
     }
+
+    void Fingerboard::paintHighlights(QPainter &painter)
+    {
+        painter.setPen(Qt::black);
+        painter.setBrush(Qt::green);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        for (const auto& highlight : model.highlights)
+        {
+            paintHighlight(painter, highlight);
+        }
+    }
+
+    void Fingerboard::paintHighlight(QPainter& painter, const FingerHighlight& highlight)
+    {
+        qDebug() << "fret: " << highlight.fretNumber << "; string:" << highlight.stringNumber;
+
+        QRect r = model.getFretRect(highlight.fretNumber + 1,  highlight.stringNumber + 1);
+
+        qDebug() << "rect=" << r;
+
+        int dotSize = 20;
+        QPoint fretCenter = r.center();
+        QPoint topLeft = r.topLeft();
+
+        if (model.orientation == Qt::Horizontal)
+        {
+            painter.drawEllipse(fretCenter.x() - dotSize / 2, topLeft.y() - dotSize / 2, dotSize, dotSize);
+        }
+        else
+        {
+            painter.drawEllipse(topLeft.x() - dotSize / 2, fretCenter.y() - dotSize / 2, dotSize, dotSize);
+        }
+    }
+
 }
