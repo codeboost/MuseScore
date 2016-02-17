@@ -4401,6 +4401,17 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
                   switchLayoutMode(mode);
                   }
             }
+      else if (cmd == "fretboard-mirror")
+      {
+            _guitarFretboard->mirror();
+      }
+      else if (cmd == "fretboard-rotate")
+      {
+            _guitarFretboard->rotate();
+      }
+
+          
+    
       else {
             if (cv) {
                   //isAncestorOf is called to see if a widget from inspector has focus

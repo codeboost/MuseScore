@@ -12,6 +12,9 @@
 #include "libmscore/part.h"
 #include "libmscore/instrument.h"
 #include "libmscore/stringdata.h"
+#include "accessibletoolbutton.h"
+#include "shortcut.h"
+
 
 //---------------------------------------------------------
 //   Guitar tools
@@ -20,24 +23,43 @@
 
 namespace Ms
 {
+    extern QAction* getAction(const char*);
+    
+    class FretContainer : public QWidget
+    {
+        vg::Fretboard* fretboard;
+        QToolBar* toolbar;
+    public:
+        
+        FretContainer(QWidget* parent, vg::Fretboard* aFretboard): QWidget(parent), fretboard(aFretboard)
+        {
+            toolbar = new QToolBar(this);
+            toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-rotate")));
+            toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-mirror")));
+            toolbar->setMaximumHeight(32);
+            
+            QBoxLayout* layout = new QVBoxLayout();
+            layout->addWidget(toolbar);
+            layout->addWidget(fretboard);
+            setLayout(layout);
+        }
+        
+    };
+    
+    
     GuitarFretboard::GuitarFretboard(QWidget* parent) : QDockWidget(parent)
     {
         setObjectName("fretboard");
-        setWindowTitle(tr("Guitar Fretboard"));
-        setAllowedAreas(Qt::DockWidgetAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea));
-        
+        //setWindowTitle(tr("Guitar Fretboard"));
+        //setAllowedAreas(Qt::DockWidgetAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea));
         fretboard = new vg::Fretboard(this);
-        
-//        QBoxLayout* layout = new QVBoxLayout();
-//        layout->addWidget(fretboard);
-//        
-//        setLayout(layout);
-        
+        fretContainer = new FretContainer(this, fretboard);
     }
     
     void GuitarFretboard::resizeEvent(QResizeEvent *event)
     {
-        fretboard->setGeometry(rect());
+        //fretboard->setGeometry(rect());
+        fretContainer->setGeometry(rect());
     }
     
     void GuitarFretboard::addHighlight(const Note* note)
