@@ -21,6 +21,9 @@ namespace Ms
         void heartBeat(QList<const Note*> notes);
         vg::Fretboard* fretboard;
         
+        void highlightNote(const Note* note);
+        void addHighlight(const Note* note);
+        
     protected:
         void resizeEvent(QResizeEvent* event) override;
     };

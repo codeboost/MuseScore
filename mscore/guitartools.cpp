@@ -9,6 +9,10 @@
 #include "guitartools.h"
 #include "libmscore/staff.h"
 #include <QVBoxLayout>
+#include "libmscore/part.h"
+#include "libmscore/instrument.h"
+#include "libmscore/stringdata.h"
+
 //---------------------------------------------------------
 //   Guitar tools
 //---------------------------------------------------------
@@ -36,7 +40,22 @@ namespace Ms
         fretboard->setGeometry(rect());
     }
     
+    void GuitarFretboard::addHighlight(const Note* note)
+    {
+        if (note->string() >=0 && note->fret() >= 0)
+        {
+            vg::FingerHighlight highlight(note->string(), note->fret());
+            fretboard->model.highlights.push_back(highlight);
+        }
+    }
     
+    
+    void GuitarFretboard::highlightNote(const Note* note)
+    {
+        fretboard->model.highlights.clear();
+        addHighlight(note);
+        fretboard->update();
+    }
     
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
     {
@@ -46,11 +65,33 @@ namespace Ms
         {
             bool tablature = note->staff() && note->staff()->isTabStaff();
             
-            if (1 || tablature)
+            bool hasStrings = false;
+            
+            Instrument* instrument = note->staff()->part()->instrument();
+            if (instrument)
             {
-                vg::FingerHighlight highlight(note->string(), note->fret());
-                fretboard->model.highlights.push_back(highlight);
-                
+                const StringData* stringData = instrument->stringData();
+                if (stringData)
+                {
+                    int numberOfStrings = stringData->strings();
+                    int numberOfFrets = stringData->frets();
+                    
+                    if (numberOfStrings > 0 && numberOfFrets > 0)
+                    {
+                        hasStrings = true;
+                        if (fretboard->model.numberOfStrings != numberOfStrings || fretboard->model.numberOfFrets != numberOfFrets)
+                        {
+                            fretboard->model.numberOfStrings = numberOfStrings;
+                            fretboard->model.numberOfFrets = numberOfFrets;
+                            fretboard->model.update();
+                        }
+                    }
+                }
+            }
+            
+            if (hasStrings)
+            {
+                addHighlight(note);
                 QString msg = QString("[%1:%2],").arg(note->string()).arg(note->fret());
                 fullmsg.append(msg);
             }

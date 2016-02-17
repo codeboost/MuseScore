@@ -4054,6 +4054,8 @@ void MuseScore::endCmd()
                   cs->rootScore()->setExcerptsChanged(false);
                   }
             if (cs->instrumentsChanged()) {
+                //TODO: Update guitar fretboard
+                qDebug() << "Instruments changed, update fretboard()!";
                   if (!noSeq && (seq && seq->isRunning()))
                         seq->initInstruments();
                   instrumentChanged();                // update mixer
@@ -4071,6 +4073,24 @@ void MuseScore::endCmd()
             updateViewModeCombo();
             cs->end();
             ScoreAccessibility::instance()->updateAccessibilityInfo();
+          
+              ScoreView* scoreView = currentScoreView();
+              
+              if (scoreView)
+              {
+                  
+                  const Score* score = scoreView->score();
+
+                  if (score->selection().isSingle()) {
+                      Element* e = score->selection().element();
+                      
+                      if (e->type() == Element::Type::NOTE)
+                      {
+                          Note* note = (Note*)e;
+                          _guitarFretboard->highlightNote(note);
+                      }
+                  }
+              }
             }
       else {
             if (_inspector)
