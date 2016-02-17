@@ -585,7 +585,11 @@ MuseScore::MuseScore()
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("rewind")));
       _playButton = new AccessibleToolButton(transportTools, getAction("play"));
       transportTools->addWidget(_playButton);
+          
+          transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop-in")));
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop")));
+          transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop-out")));
+
       transportTools->addSeparator();
       QAction* repeatAction = getAction("repeat");
       repeatAction->setChecked(MScore::playRepeats);
@@ -608,7 +612,8 @@ MuseScore::MuseScore()
       for (int k = 1; k < 15; k++){
           playbackSpeedCombo->addItem(QString("%1%").arg(k * 10), (float)k/100);
       }
-//      connect(playbackSpeedCombo, SIGNAL(activated(int)), SLOT(switchPlaybackSpeed(float)));
+          playbackSpeedCombo->setCurrentIndex(9);
+      connect(playbackSpeedCombo, SIGNAL(activated(int)), SLOT(switchPlaybackSpeed(int)));
       transportTools->addWidget(playbackSpeedCombo);
 
 
@@ -4537,6 +4542,15 @@ void MuseScore::changeScore(int step)
             index = n - 1;
       setCurrentScoreView(index);
       }
+
+void MuseScore::switchPlaybackSpeed(int index)
+    {
+        double speed = (double)(index + 1) / 10;
+        qDebug() << "Setting tempo: " << speed;
+        seq->setRelTempo((double)speed);
+    }
+
+    
 
 //---------------------------------------------------------
 //   switchLayoutMode

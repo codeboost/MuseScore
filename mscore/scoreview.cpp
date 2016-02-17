@@ -2486,7 +2486,7 @@ void ScoreView::editCut()
 bool ScoreView::checkCopyOrCut()
       {
       if (!_score->selection().canCopy()) {
-            QMessageBox::information(0, "MuseScore",
+            QMessageBox::information(0, "Virtual Guitar",
                tr("Please select the complete tuplet/tremolo and retry the command"),
                QMessageBox::Ok, QMessageBox::NoButton);
             return false;
@@ -2987,7 +2987,7 @@ void ScoreView::cmd(const QAction* a)
       else if (cmd == "split-measure") {
             Element* e = _score->selection().element();
             if (!(e && (e->type() == Element::Type::NOTE || e->type() == Element::Type::REST))) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "Virtual Guitar",
                      tr("No chord/rest selected:\n"
                      "Please select a chord/rest and try again"));
                   }
@@ -2996,12 +2996,12 @@ void ScoreView::cmd(const QAction* a)
                         e = static_cast<Note*>(e)->chord();
                   ChordRest* cr = static_cast<ChordRest*>(e);
                   if (cr->segment()->rtick() == 0) {
-                        QMessageBox::warning(0, "MuseScore",
+                        QMessageBox::warning(0, "Virtual Guitar",
                            tr("Cannot split measure here:\n"
                            "First beat of measure"));
                         }
                   else if (cr->segment()->splitsTuplet()) {
-                        QMessageBox::warning(0, "MuseScore",
+                        QMessageBox::warning(0, "Virtual Guitar",
                            tr("Cannot split measure here:\n"
                            "Cannot split tuplet"));
                         }
@@ -3013,7 +3013,7 @@ void ScoreView::cmd(const QAction* a)
             Measure* m1;
             Measure* m2;
             if (!_score->selection().measureRange(&m1, &m2) || m1 == m2) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "Virtual Guitar",
                      tr("No measures selected:\n"
                      "Please select a range of measures to join and try again"));
                   }
@@ -5330,7 +5330,7 @@ MeasureBase* ScoreView::appendMeasure(Element::Type type)
 void ScoreView::appendMeasures(int n, Element::Type type)
       {
       if (_score->noStaves()) {
-            QMessageBox::warning(0, "MuseScore",
+            QMessageBox::warning(0, "Virtual Guitar",
                tr("No staves found:\n"
                   "please use the instruments dialog to\n"
                   "first create some staves"));
@@ -5404,7 +5404,7 @@ MeasureBase* ScoreView::checkSelectionStateForInsertMeasure()
             if (e->type() == Element::Type::VBOX || e->type() == Element::Type::TBOX)
                   return static_cast<MeasureBase*>(e);
             }
-      QMessageBox::warning(0, "MuseScore",
+      QMessageBox::warning(0, "Virtual Guitar",
             tr("No measure selected:\n" "Please select a measure and try again"));
       return 0;
       }
