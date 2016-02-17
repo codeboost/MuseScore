@@ -664,6 +664,8 @@ MuseScore::MuseScore()
             entryTools->addWidget(tb);
             }
 
+          
+          showGuitarFretboard(true);
 
       //---------------------
       //    Menus
