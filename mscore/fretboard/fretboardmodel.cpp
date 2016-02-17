@@ -81,10 +81,10 @@ namespace vg
             {
                 return fretboardRect.width() - fretPositions[i];
             }
-            else
-            {
-                return fretboardRect.height() - fretPositions[i];
-            }
+//            else
+//            {
+//                return fretboardRect.height() - fretPositions[i];
+//            }
         }
 
         return fretPositions[i];
@@ -96,8 +96,8 @@ namespace vg
         {
             if (orientation == Qt::Horizontal)
                 return fretboardRect.width();
-            else
-                return fretboardRect.height();
+//            else
+//                return fretboardRect.height();
         }
         return 0;
     }

@@ -34,7 +34,7 @@ namespace vg
             if (model.stringOrder == Qt::AscendingOrder)
                 painter.translate(0, model.noteNameRadius);
             else
-                painter.translate(0, -model.noteNameRadius);
+                painter.translate(0, model.noteNameRadius);
         }
 
         paintNut(painter);
