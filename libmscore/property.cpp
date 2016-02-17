@@ -378,13 +378,8 @@ QVariant getProperty(P_ID id, XmlReader& e)
                   if (ok)
                         return QVariant(ct);
                   else {
-                        for (unsigned i = 0; i < BarLine::barLineTableSize(); ++i) {
-                              if (BarLine::barLineTypeName(BarLineType(i)) == val) {
-                                    ct = i;
-                                    break;
-                                    }
-                              }
-                        return QVariant(ct);
+                        BarLineType t = BarLine::barLineType(val);
+                        return QVariant::fromValue(t);
                         }
                   }
                   break;
@@ -403,7 +398,6 @@ QVariant getProperty(P_ID id, XmlReader& e)
             case P_TYPE::SYMID:
             case P_TYPE::TEXT_STYLE:
             case P_TYPE::INT_LIST:
-            case P_TYPE::BARLINE_TYPE:
                   return QVariant();
             }
       return QVariant();
