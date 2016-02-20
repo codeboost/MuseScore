@@ -123,7 +123,7 @@ void PartEdit::setPart(Part* p, Channel* a)
 Mixer::Mixer(QWidget* parent)
    : QScrollArea(parent)
       {
-      setWindowTitle(tr("MuseScore: Mixer"));
+      setWindowTitle(tr("Virtual Guitar: Mixer"));
       setWidgetResizable(true);
       setWindowFlags(Qt::Tool);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);

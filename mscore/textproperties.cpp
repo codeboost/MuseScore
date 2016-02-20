@@ -50,7 +50,7 @@ TextProperties::TextProperties(Text* t, QWidget* parent)
    : QDialog(parent)
       {
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setWindowTitle(tr("MuseScore: Text Properties"));
+      setWindowTitle(tr("Virtual Guitar: Text Properties"));
       QGridLayout* layout = new QGridLayout;
 
       tp = new TextProp;

@@ -1137,7 +1137,7 @@ QString MuseScore::getAudioFile(const QString& d)
             loadAudioDialog = new QFileDialog(this);
             loadAudioDialog->setFileMode(QFileDialog::ExistingFile);
             loadAudioDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-            loadAudioDialog->setWindowTitle(tr("MuseScore: Choose Ogg Audio File"));
+            loadAudioDialog->setWindowTitle(tr("Virtual Guitar: Choose Ogg Audio File"));
             loadAudioDialog->setNameFilter(filter);
             loadAudioDialog->setDirectory(defaultPath);
 
@@ -1167,7 +1167,7 @@ QString MuseScore::getAudioFile(const QString& d)
 
 QString MuseScore::getFotoFilename(QString& filter, QString* selectedFilter)
       {
-      QString title = tr("MuseScore: Save Image");
+      QString title = tr("Virtual Guitar: Save Image");
 
       QFileInfo myImages(preferences.myImagesPath);
       if (myImages.isRelative())
@@ -1227,11 +1227,11 @@ QString MuseScore::getPaletteFilename(bool open, const QString& name)
       QString filter;
       QString wd      = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)).arg(QCoreApplication::applicationName());
       if (open) {
-            title  = tr("MuseScore: Load Palette");
+            title  = tr("Virtual Guitar: Load Palette");
             filter = tr("MuseScore Palette (*.mpal)");
             }
       else {
-            title  = tr("MuseScore: Save Palette");
+            title  = tr("Virtual Guitar: Save Palette");
             filter = tr("MuseScore Palette (*.mpal)");
             }
 
@@ -1309,11 +1309,11 @@ QString MuseScore::getPluginFilename(bool open)
       QString title;
       QString filter;
       if (open) {
-            title  = tr("MuseScore: Load Plugin");
+            title  = tr("Virtual Guitar: Load Plugin");
             filter = tr("MuseScore Plugin (*.qml)");
             }
       else {
-            title  = tr("MuseScore: Save Plugin");
+            title  = tr("Virtual Guitar: Save Plugin");
             filter = tr("MuseScore Plugin File (*.qml)");
             }
 
@@ -1363,7 +1363,7 @@ QString MuseScore::getPluginFilename(bool open)
                   savePluginDialog->setFileMode(QFileDialog::AnyFile);
                   savePluginDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
                   savePluginDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  savePluginDialog->setWindowTitle(tr("MuseScore: Save Plugin"));
+                  savePluginDialog->setWindowTitle(tr("Virtual Guitar: Save Plugin"));
                   savePluginDialog->setNameFilter(filter);
                   savePluginDialog->setDirectory(defaultPath);
                   savePluginDialog->selectFile(fname);
@@ -1392,11 +1392,11 @@ QString MuseScore::getDrumsetFilename(bool open)
       QString title;
       QString filter;
       if (open) {
-            title  = tr("MuseScore: Load Drumset");
+            title  = tr("Virtual Guitar: Load Drumset");
             filter = tr("MuseScore Drumset (*.drm)");
             }
       else {
-            title  = tr("MuseScore: Save Drumset");
+            title  = tr("Virtual Guitar: Save Drumset");
             filter = tr("MuseScore Drumset File (*.drm)");
             }
 
@@ -1472,7 +1472,7 @@ void MuseScore::printFile()
       const PageFormat* pf = cs->pageFormat();
       printerDev.setPaperSize(pf->size(), QPrinter::Inch);
 
-      printerDev.setCreator("MuseScore Version: " VERSION);
+      printerDev.setCreator("Virtual Guitar (MuseScore) Version: " VERSION);
       printerDev.setFullPage(true);
       if (!printerDev.setPageMargins(QMarginsF()))
             qDebug("unable to clear printer margins");
@@ -1600,7 +1600,7 @@ void MuseScore::exportFile()
       lastSaveCopyFormat = fi.suffix();
 
       if (fi.suffix().isEmpty())
-            QMessageBox::critical(this, tr("MuseScore: Export"), tr("Cannot determine file type"));
+            QMessageBox::critical(this, tr("Virtual Guitar: Export"), tr("Cannot determine file type"));
       else
             saveAs(cs, true, fn, fi.suffix());
       }
@@ -1676,7 +1676,7 @@ bool MuseScore::exportParts()
 
       QString ext = fi.suffix();
       if (ext.isEmpty()) {
-            QMessageBox::critical(this, tr("MuseScore: Export Parts"), tr("Cannot determine file type"));
+            QMessageBox::critical(this, tr("Virtual Guitar: Export Parts"), tr("Cannot determine file type"));
             return false;
             }
 
@@ -1743,7 +1743,7 @@ bool MuseScore::exportParts()
                   return false;
       }
       if(!noToAll)
-            QMessageBox::information(this, tr("MuseScore: Export Parts"), tr("Parts were successfully exported"));
+            QMessageBox::information(this, tr("Virtual Guitar: Export Parts"), tr("Parts were successfully exported"));
       return true;
       }
 
@@ -1776,13 +1776,13 @@ bool MuseScore::saveAs(Score* cs, bool saveCopy, const QString& path, const QStr
                   }
             catch (QString s) {
                   rv = false;
-                  QMessageBox::critical(this, tr("MuseScore: Save As"), s);
+                  QMessageBox::critical(this, tr("Virtual Guitar: Save As"), s);
                   }
             cs->fileInfo()->setFile(originalScoreFName);          // restore original file name
 
             if (rv && !saveCopy) {
                   cs->fileInfo()->setFile(fn);
-                  setWindowTitle("MuseScore: " + cs->name());
+                  setWindowTitle("Virtual Guitar: " + cs->name());
                   cs->undo()->setClean();
                   dirtyChanged(cs);
                   cs->setCreated(false);
@@ -1844,7 +1844,7 @@ bool MuseScore::saveAs(Score* cs, bool saveCopy, const QString& path, const QStr
             return false;
             }
       if (!rv && !MScore::noGui)
-            QMessageBox::critical(this, tr("MuseScore:"), tr("Cannot write into %1").arg(fn));
+            QMessageBox::critical(this, tr("Virtual Guitar:"), tr("Cannot write into %1").arg(fn));
       if (layoutMode != cs->layoutMode())
             cs->endCmd(true);       // rollback
       return rv;
@@ -1878,7 +1878,7 @@ bool MuseScore::savePdf(Score* cs, const QString& saveName)
       const PageFormat* pf = cs->pageFormat();
       printerDev.setPageSize(QPageSize(pf->size(), QPageSize::Inch));
 
-      printerDev.setCreator("MuseScore Version: " VERSION);
+      printerDev.setCreator("Virtual Guitar Version: " VERSION);
       if (!printerDev.setPageMargins(QMarginsF()))
             qDebug("unable to clear printer margins");
       printerDev.setTitle(cs->name());

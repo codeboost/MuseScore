@@ -83,7 +83,7 @@ SymbolDialog::SymbolDialog(QWidget* parent)
             }
       fontList->setCurrentIndex(currentIndex);
 
-      setWindowTitle(tr("MuseScore: Symbols"));
+      setWindowTitle(tr("Virtual Guitar: Symbols"));
       QLayout* l = new QVBoxLayout();
       frame->setLayout(l);
       createSymbolPalette();

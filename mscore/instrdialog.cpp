@@ -79,7 +79,7 @@ void InstrumentsDialog::on_saveButton_clicked()
       {
       QString name = QFileDialog::getSaveFileName(
          this,
-         tr("MuseScore: Save Instrument List"),
+         tr("Virtual Guitar: Save Instrument List"),
          ".",
          tr("MuseScore Instruments (*.xml)")
          );
@@ -121,16 +121,16 @@ void InstrumentsDialog::on_saveButton_clicked()
 void InstrumentsDialog::on_loadButton_clicked()
       {
       QString fn = QFileDialog::getOpenFileName(
-         this, tr("MuseScore: Load Instrument List"),
+         this, tr("Virtual Guitar: Load Instrument List"),
           mscoreGlobalShare + "/templates",
-         tr("MuseScore Instruments (*.xml)")
+         tr("Virtual Guitar Instruments (*.xml)")
          );
       if (fn.isEmpty())
             return;
       QFile f(fn);
       if (!loadInstrumentTemplates(fn)) {
             QMessageBox::warning(0,
-               QWidget::tr("MuseScore: Load Style Failed"),
+               QWidget::tr("Virtual Guitar: Load Style Failed"),
                QString(strerror(errno)),
                QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
             return;
