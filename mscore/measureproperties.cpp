@@ -253,7 +253,7 @@ void MeasureProperties::apply()
                   m->adjustToLen(len());
             else if (!MScore::noGui) {
                   QMessageBox::warning(0,
-                     QT_TRANSLATE_NOOP("MeasureProperties", "MuseScore"),
+                     QT_TRANSLATE_NOOP("MeasureProperties", "Virtual Guitar"),
                      QT_TRANSLATE_NOOP("MeasureProperties", "cannot change measure length:\n"
                      "tuplet would cross measure")
                      );

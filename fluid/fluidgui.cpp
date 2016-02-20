@@ -198,7 +198,7 @@ void FluidGui::soundFontAddClicked()
 
       if (sl.contains(sfPath)) {
             QMessageBox::warning(this,
-            tr("MuseScore"),
+            tr("Virtual Guitar"),
             tr("SoundFont %1 already loaded").arg(sfPath));
             }
       else {

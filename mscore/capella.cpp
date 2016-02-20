@@ -2657,7 +2657,7 @@ Score::FileError importCapella(Score* score, const QString& name)
       catch (Capella::Error errNo) {
             if (!MScore::noGui) {
                   QMessageBox::warning(0,
-                     QWidget::tr("MuseScore: Import Capella"),
+                     QWidget::tr("Virtual Guitar: Import Capella"),
                      QWidget::tr("Load failed: ") + cf.error(errNo),
                      QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
                   }

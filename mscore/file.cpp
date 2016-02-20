@@ -207,7 +207,7 @@ static bool readScoreError(const QString& name, Score::FileError error, bool ask
             return rv;
             }
       QMessageBox msgBox;
-      msgBox.setWindowTitle(QObject::tr("MuseScore: Load Error"));
+      msgBox.setWindowTitle(QObject::tr("Virtual Guitar: Load Error"));
       msgBox.setText(msg);
       msgBox.setDetailedText(detailedMsg);
       msgBox.setTextFormat(Qt::RichText);
@@ -237,7 +237,7 @@ static bool readScoreError(const QString& name, Score::FileError error, bool ask
 bool MuseScore::checkDirty(Score* s)
       {
       if (s->dirty() || s->created()) {
-            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("MuseScore"),
+            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("Virtual Guitar"),
                tr("Save changes to the score \"%1\"\n"
                "before closing?").arg(s->name()),
                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
@@ -277,7 +277,7 @@ void MuseScore::loadFiles()
 #else
          tr("All Supported Files (*.mscz *.mscx *.xml *.mxl *.mid *.midi *.kar *.md *.mgu *.MGU *.sgu *.SGU *.cap *.capx *.ove *.scw *.bww *.GTP *.GP3 *.GP4 *.GP5 *.GPX);;")+
 #endif
-         tr("MuseScore Files (*.mscz *.mscx);;")+
+         tr("VG/MuseScore Files (*.mscz *.mscx);;")+
          tr("MusicXML Files (*.xml *.mxl);;")+
          tr("MIDI Files (*.mid *.midi *.kar);;")+
          tr("Muse Data Files (*.md);;")+
@@ -289,7 +289,7 @@ void MuseScore::loadFiles()
          tr("Overture / Score Writer Files <experimental> (*.ove *.scw);;")+
          tr("Bagpipe Music Writer Files <experimental> (*.bww);;")+
          tr("Guitar Pro (*.GTP *.GP3 *.GP4 *.GP5 *.GPX)"),
-         tr("MuseScore: Load Score")
+         tr("Virtual Guitar: Load Score")
          );
       for (const QString& s : files)
             openScore(s);
@@ -387,8 +387,8 @@ bool MuseScore::saveFile(Score* score)
             if (t)
                   fn = t->plainText(true);
             QString name = createDefaultFileName(fn);
-            QString f1 = tr("MuseScore File (*.mscz)");
-            QString f2 = tr("Uncompressed MuseScore File (*.mscx)");
+            QString f1 = tr("VG/MuseScore File (*.mscz)");
+            QString f2 = tr("Uncompressed VG/MuseScore File (*.mscx)");
 
             QSettings settings;
             if (mscore->lastSaveDirectory.isEmpty())
@@ -403,7 +403,7 @@ bool MuseScore::saveFile(Score* score)
             if (QFileInfo(fname).suffix().isEmpty())
                   fname += ".mscz";
 
-            fn = mscore->getSaveScoreName(tr("MuseScore: Save Score"), fname, filter);
+            fn = mscore->getSaveScoreName(tr("Virtual Guitar: Save Score"), fname, filter);
             if (fn.isEmpty())
                   return false;
             score->fileInfo()->setFile(fn);
@@ -411,18 +411,18 @@ bool MuseScore::saveFile(Score* score)
             mscore->lastSaveDirectory = score->fileInfo()->absolutePath();
 
             if (!score->saveFile()) {
-                  QMessageBox::critical(mscore, tr("MuseScore: Save File"), MScore::lastError);
+                  QMessageBox::critical(mscore, tr("Virtual Guitar: Save File"), MScore::lastError);
                   return false;
                   }
             addRecentScore(score);
             writeSessionFile(false);
             }
       else if (!score->saveFile()) {
-            QMessageBox::critical(mscore, tr("MuseScore: Save File"), MScore::lastError);
+            QMessageBox::critical(mscore, tr("Virtual Guitar: Save File"), MScore::lastError);
             return false;
             }
       score->setCreated(false);
-      setWindowTitle("MuseScore: " + score->name());
+      setWindowTitle("Virtual Guitar: " + score->name());
       int idx = scoreList.indexOf(score);
       tab1->setTabText(idx, score->name());
       if (tab2)
@@ -924,16 +924,16 @@ QString MuseScore::getStyleFilename(bool open, const QString& title)
             QString fn;
             if (open) {
                   fn = QFileDialog::getOpenFileName(
-                     this, tr("MuseScore: Load Style"),
+                     this, tr("Virtual Guitar: Load Style"),
                      defaultPath,
-                     tr("MuseScore Styles (*.mss)")
+                     tr("VG/MuseScore Styles (*.mss)")
                      );
                   }
             else {
                   fn = QFileDialog::getSaveFileName(
                      this, tr("MuseScore: Save Style"),
                      defaultPath,
-                     tr("MuseScore Style File (*.mss)")
+                     tr("VG/MuseScore Style File (*.mss)")
                      );
                   }
             return fn;
@@ -951,8 +951,8 @@ QString MuseScore::getStyleFilename(bool open, const QString& title)
                   loadStyleDialog = new QFileDialog(this);
                   loadStyleDialog->setFileMode(QFileDialog::ExistingFile);
                   loadStyleDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  loadStyleDialog->setWindowTitle(title.isEmpty() ? tr("MuseScore: Load Style") : title);
-                  loadStyleDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
+                  loadStyleDialog->setWindowTitle(title.isEmpty() ? tr("Virtual Guitar: Load Style") : title);
+                  loadStyleDialog->setNameFilter(tr("VG/MuseScore Style File (*.mss)"));
                   loadStyleDialog->setDirectory(defaultPath);
 
                   restoreDialogState("loadStyleDialog", loadStyleDialog);
@@ -968,7 +968,7 @@ QString MuseScore::getStyleFilename(bool open, const QString& title)
                   saveStyleDialog->setFileMode(QFileDialog::AnyFile);
                   saveStyleDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
                   saveStyleDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  saveStyleDialog->setWindowTitle(title.isEmpty() ? tr("MuseScore: Save Style") : title);
+                  saveStyleDialog->setWindowTitle(title.isEmpty() ? tr("Virtual Guitar: Save Style") : title);
                   saveStyleDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
                   saveStyleDialog->setDirectory(defaultPath);
 
@@ -1004,14 +1004,14 @@ QString MuseScore::getChordStyleFilename(bool open)
             QString fn;
             if (open) {
                   fn = QFileDialog::getOpenFileName(
-                     this, tr("MuseScore: Load Chord Symbols Style"),
+                     this, tr("Virtual Guitar: Load Chord Symbols Style"),
                      defaultPath,
                      filter
                      );
                   }
             else {
                   fn = QFileDialog::getSaveFileName(
-                     this, tr("MuseScore: Save Chord Symbols Style"),
+                     this, tr("Virtual Guitar: Save Chord Symbols Style"),
                      defaultPath,
                      filter
                      );
@@ -1032,7 +1032,7 @@ QString MuseScore::getChordStyleFilename(bool open)
                   loadChordStyleDialog = new QFileDialog(this);
                   loadChordStyleDialog->setFileMode(QFileDialog::ExistingFile);
                   loadChordStyleDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  loadChordStyleDialog->setWindowTitle(tr("MuseScore: Load Chord Symbols Style"));
+                  loadChordStyleDialog->setWindowTitle(tr("Virtual Guitar: Load Chord Symbols Style"));
                   loadChordStyleDialog->setNameFilter(filter);
                   loadChordStyleDialog->setDirectory(defaultPath);
 
@@ -1051,7 +1051,7 @@ QString MuseScore::getChordStyleFilename(bool open)
                   saveChordStyleDialog->setFileMode(QFileDialog::AnyFile);
                   saveChordStyleDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
                   saveChordStyleDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  saveChordStyleDialog->setWindowTitle(tr("MuseScore: Save Style"));
+                  saveChordStyleDialog->setWindowTitle(tr("Virtual Guitar: Save Style"));
                   saveChordStyleDialog->setNameFilter(filter);
                   saveChordStyleDialog->setDirectory(defaultPath);
 
@@ -1091,7 +1091,7 @@ QString MuseScore::getScanFile(const QString& d)
             loadScanDialog = new QFileDialog(this);
             loadScanDialog->setFileMode(QFileDialog::ExistingFile);
             loadScanDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-            loadScanDialog->setWindowTitle(tr("MuseScore: Choose PDF Scan"));
+            loadScanDialog->setWindowTitle(tr("Virtual Guitar: Choose PDF Scan"));
             loadScanDialog->setNameFilter(filter);
             loadScanDialog->setDirectory(defaultPath);
 

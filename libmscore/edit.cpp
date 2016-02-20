@@ -2479,7 +2479,7 @@ Lyrics* Score::addLyrics()
       Element* el = selection().element();
       if (el == 0 || (el->type() != Element::Type::NOTE && el->type() != Element::Type::LYRICS)) {
             QMessageBox::information(0,
-               QMessageBox::tr("MuseScore"),
+               QMessageBox::tr("Virtual Guitar"),
                QMessageBox::tr("No note or lyrics selected:\n"
                   "Please select a single note or lyrics and retry operation\n"),
                QMessageBox::Ok, QMessageBox::NoButton);

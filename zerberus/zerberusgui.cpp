@@ -173,7 +173,7 @@ void ZerberusGui::addClicked()
 
       if (sl.contains(sfPath)) {
             QMessageBox::warning(this,
-            tr("MuseScore"),
+            tr("Virtual Guitar"),
             tr("SoundFont %1 already loaded").arg(sfPath));
             }
       else {
@@ -234,7 +234,7 @@ void ZerberusGui::onSoundFontLoaded()
             }
       else if (wasNotCanceled) {
             QMessageBox::warning(this,
-            tr("MuseScore"),
+            tr("Virtual Guitar"),
             tr("Cannot load SoundFont %1").arg(_loadedSfPath));
             }
       }

@@ -4245,11 +4245,11 @@ static void identification(Xml& xml, Score const* const score)
       xml.stag("encoding");
 
       if (MScore::debugMode) {
-            xml.tag("software", QString("MuseScore 0.7.0"));
+            xml.tag("software", QString("MuseScore/VG 0.7.0"));
             xml.tag("encoding-date", QString("2007-09-10"));
             }
       else {
-            xml.tag("software", QString("MuseScore ") + QString(VERSION));
+            xml.tag("software", QString("MuseScore (Virtual Guitar fork) ") + QString(VERSION));
             xml.tag("encoding-date", QDate::currentDate().toString(Qt::ISODate));
             }
 

@@ -430,7 +430,7 @@ void selectNoteMessage()
       {
       if (!MScore::noGui)
             QMessageBox::information(0,
-               QMessageBox::tr("MuseScore"),
+               QMessageBox::tr("Virtual Guitar"),
                QMessageBox::tr("No note selected:\n"
                                "Please select a single note and retry operation\n"),
                QMessageBox::Ok, QMessageBox::NoButton);
@@ -440,7 +440,7 @@ void selectNoteRestMessage()
       {
       if (!MScore::noGui)
             QMessageBox::information(0,
-               QMessageBox::tr("MuseScore"),
+               QMessageBox::tr("Virtual Guitar"),
                QMessageBox::tr("No note or rest selected:\n"
                                "Please select a single note or rest and retry operation\n"),
                QMessageBox::Ok, QMessageBox::NoButton);
@@ -450,7 +450,7 @@ void selectNoteSlurMessage()
       {
       if (!MScore::noGui)
             QMessageBox::information(0,
-               QMessageBox::tr("MuseScore"),
+               QMessageBox::tr("Virtual Guitar"),
                QMessageBox::tr("Please select a single note or slur and retry operation\n"),
                QMessageBox::Ok, QMessageBox::NoButton);
       }
@@ -459,7 +459,7 @@ void selectStavesMessage()
       {
       if (!MScore::noGui)
             QMessageBox::information(0,
-               QMessageBox::tr("MuseScore"),
+               QMessageBox::tr("Virtual Guitar"),
                QMessageBox::tr("Please select one or more staves and retry operation\n"),
                QMessageBox::Ok, QMessageBox::NoButton);
       }

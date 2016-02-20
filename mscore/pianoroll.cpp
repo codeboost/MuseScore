@@ -42,7 +42,7 @@ extern bool useFactorySettings;
 PianorollEditor::PianorollEditor(QWidget* parent)
    : QMainWindow(parent)
       {
-      setWindowTitle(QString("MuseScore"));
+      setWindowTitle(QString("Virtual Guitar"));
 
       waveView = 0;
       _score   = 0;

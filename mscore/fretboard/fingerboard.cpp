@@ -9,6 +9,7 @@ namespace vg
 {
     Fingerboard::Fingerboard(QWidget *parent, FretboardModel& aModel): QWidget(parent), model(aModel)
     {
+
     }
 
     void Fingerboard::resizeEvent(QResizeEvent *)
@@ -212,15 +213,43 @@ namespace vg
         painter.setPen(Qt::black);
         painter.setBrush(Qt::green);
         painter.setRenderHint(QPainter::Antialiasing);
+        int index = 0;
 
-        for (const auto& highlight : model.highlights)
+        for (const auto& highlight : model.getHighlights())
         {
+//            HighlightWidget* widget = highlightWidgets[index++];
+//            positionHighlight(widget, highlight);
             paintHighlight(painter, highlight);
         }
     }
 
+    void Fingerboard::positionHighlight(HighlightWidget* widget, const FingerHighlight& highlight)
+    {
+        QRect r(0, 0, 0, 0);
+        if (highlight.fretNumber > 0)
+        {
+            QPoint p1 = model.intersectionPoint(highlight.fretNumber - 1, highlight.stringNumber);
+            QPoint p2 = model.intersectionPoint(highlight.fretNumber, highlight.stringNumber);
+            r = QRect(p1, p2);
+        }
+        else
+        {
+            QPoint p1 = model.intersectionPoint(0, highlight.stringNumber);
+            r = QRect(p1, p1);
+        }
+
+        widget->move(r.topLeft());
+    }
+
     void Fingerboard::paintHighlight(QPainter& painter, const FingerHighlight& highlight)
     {
+
+        if (!model.isValidHighlight(highlight))
+        {
+            //Q_ASSERT(false);
+            return;
+        }
+
         qDebug() << "Highlight -> fret: " << highlight.fretNumber << "; string:" << highlight.stringNumber;
 
         QRect r(0, 0, 0, 0);
