@@ -8,10 +8,8 @@
 
 #ifndef guitartools_h
 #define guitartools_h
-
-#include "libmscore/note.h"
 #include "fretboard/fretboard.h"
-#include <QToolBar>
+
 
 namespace Ms
 {
@@ -20,25 +18,34 @@ namespace Ms
     class GuitarFretboard : public QDockWidget {
         Q_OBJECT
     protected:
-
-
+        
+        
     public:
         explicit GuitarFretboard(QWidget* parent = 0);
         void heartBeat(QList<const Note*> notes);
         vg::Fretboard* fretboard;
         
         void highlightNote(const Note* note);
+        void highlightChord(const Chord* chord);
         void addHighlight(const Note* note);
-          
-          void mirror(){
-              fretboard->onSwapSides();
-          }
-          void rotate()
-          {
-              fretboard->onRotate();
-          }
-          
+        void addHighlight(int nString, int nFret);
+        
+        void mirror(){
+            fretboard->onSwapSides();
+        }
+        void rotate()
+        {
+            fretboard->onRotate();
+        }
+        
+        void changeSelection(SelState state);
+        
+        void setDisplayedPart(const Ms::Part* part);
+        void setDisplayedInstrument(const Ms::Instrument* instrument);
+        
         FretContainer* fretContainer;
+        const Part* part;
+        const Instrument* instrument; 
         
     protected:
         void resizeEvent(QResizeEvent* event) override;

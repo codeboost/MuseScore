@@ -6,14 +6,25 @@
 //
 //
 
-#include "guitartools.h"
-#include "libmscore/staff.h"
 #include <QVBoxLayout>
+#include <QList>
+#include <QTimer>
+
+#include "accessibletoolbutton.h"
+#include "libmscore/note.h"
+#include "libmscore/staff.h"
 #include "libmscore/part.h"
 #include "libmscore/instrument.h"
 #include "libmscore/stringdata.h"
-#include "accessibletoolbutton.h"
+#include "libmscore/score.h"
+#include "libmscore/instrument.h"
+#include "libmscore/chord.h"
+
 #include "shortcut.h"
+#include "scoreview.h"
+#include "musescore.h"
+
+#include "guitartools.h"
 
 
 //---------------------------------------------------------
@@ -31,6 +42,7 @@ namespace Ms
         QToolBar* toolbar;
     public:
         
+        
         FretContainer(QWidget* parent, vg::Fretboard* aFretboard): QWidget(parent), fretboard(aFretboard)
         {
             toolbar = new QToolBar(this);
@@ -38,17 +50,24 @@ namespace Ms
             toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-mirror")));
             toolbar->setMaximumHeight(32);
             
+            
             QBoxLayout* layout = new QVBoxLayout();
             layout->addWidget(toolbar);
             layout->addWidget(fretboard);
             setLayout(layout);
+
         }
+        
+    protected slots:
         
     };
     
+    ///////////////////////
     
     GuitarFretboard::GuitarFretboard(QWidget* parent) : QDockWidget(parent)
     {
+        instrument = nullptr;
+        part = nullptr;
         setObjectName("fretboard");
         //setWindowTitle(tr("Guitar Fretboard"));
         //setAllowedAreas(Qt::DockWidgetAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea));
@@ -58,67 +77,159 @@ namespace Ms
     
     void GuitarFretboard::resizeEvent(QResizeEvent *event)
     {
-        //fretboard->setGeometry(rect());
         fretContainer->setGeometry(rect());
+    }
+    
+    void GuitarFretboard::highlightNote(const Note* note)
+    {
+        fretboard->model.clearHighlights();
+        addHighlight(note);
+        fretboard->update();
     }
     
     void GuitarFretboard::addHighlight(const Note* note)
     {
         if (note->string() >=0 && note->fret() >= 0)
         {
-            vg::FingerHighlight highlight(note->string(), note->fret());
-            fretboard->model.highlights.push_back(highlight);
+            addHighlight(note->string(), note->fret());
+        }
+        else
+        {
+            const StringData* stringData = note->staff()->part()->instrument()->stringData();
+            int nString = 0;
+            int nFret = 0;
+            if (stringData->convertPitch(note->pitch(), note->staff(), note->chord()->tick(), &nString, &nFret))
+            {
+                addHighlight(nString, nFret);
+            }
+            else
+            {
+                qDebug() << "No strings/frets for note " << note;
+            }
+        }
+
+    }
+    
+    void GuitarFretboard::addHighlight(int nString, int nFret)
+    {
+        static int counter = 0;
+        qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
+        
+        vg::FingerHighlight highlight(nString, nFret);
+        fretboard->model.addHighlight(highlight);
+    }
+    
+    void GuitarFretboard::setDisplayedPart(const Part* part)
+    {
+        
+    }
+    
+    bool isStringedInstrument(const Ms::Instrument* aInstrument)
+    {
+        const StringData* stringData = aInstrument->stringData();
+        return stringData->strings() > 0 && stringData->frets() > 0;
+    }
+
+    void GuitarFretboard::setDisplayedInstrument(const Ms::Instrument *aInstrument)
+    {
+        instrument = aInstrument;
+        
+        if (instrument && isStringedInstrument(instrument))
+        {
+            QString instrumentName = instrument->trackName();
+            setWindowTitle(instrumentName);
+
+            const StringData* stringData = instrument->stringData();
+            
+            qDebug() << "Instrument selected: " << instrumentName;
+            qDebug() << "minPitchA: " << instrument->minPitchA() << ";minPitchP: " << instrument->minPitchP();
+            qDebug() << "Frets: " << stringData->frets() << "; Strings: " << stringData->strings();
+            
+            fretboard->model.numberOfFrets = stringData->frets();
+            fretboard->model.numberOfStrings = stringData->strings();
+            fretboard->model.update();
+            fretboard->update();
+            fretboard->setEnabled(true);
+        }
+        else
+        {
+            instrument = nullptr; 
+            fretboard->setEnabled(false);
+            setWindowTitle("");
         }
     }
     
-    
-    void GuitarFretboard::highlightNote(const Note* note)
+    void GuitarFretboard::changeSelection(Ms::SelState state)
     {
-        fretboard->model.highlights.clear();
-        addHighlight(note);
-        fretboard->update();
-    }
-    
-    void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
-    {
-        fretboard->model.highlights.clear();
-        QString fullmsg;
-        for (const Ms::Note* note : notes)
+        if (!mscore || !mscore->currentScore())
+            return;
+        
+        const Selection sel = mscore->currentScore()->selection();
+        
+        if (sel.isNone())
         {
-            bool tablature = note->staff() && note->staff()->isTabStaff();
+            //TODO: Find first suitable instrument
+            return;
+        }
+        
+        if (sel.isSingle())
+        {
+            setDisplayedInstrument(sel.element()->staff()->part()->instrument());
+        }
+        else
+        {
+            qDebug() << "Selection not single. isList = " << sel.isList() << "; isRange = " << sel.isRange();
             
-            bool hasStrings = false;
-            
-            Instrument* instrument = note->staff()->part()->instrument();
-            if (instrument)
+            bool same = true;
+            const Element* first = sel.elements().first();
+            for (auto element : sel.elements())
             {
-                const StringData* stringData = instrument->stringData();
-                if (stringData)
+                if (first->staff()->part() != element->staff()->part())
                 {
-                    int numberOfStrings = stringData->strings();
-                    int numberOfFrets = stringData->frets();
-                    
-                    if (numberOfStrings > 0 && numberOfFrets > 0)
-                    {
-                        hasStrings = true;
-                        if (fretboard->model.numberOfStrings != numberOfStrings || fretboard->model.numberOfFrets != numberOfFrets)
-                        {
-                            fretboard->model.numberOfStrings = numberOfStrings;
-                            fretboard->model.numberOfFrets = numberOfFrets;
-                            fretboard->model.update();
-                        }
-                    }
+                    same = false;
                 }
             }
             
-            if (hasStrings)
+            if (!same)
             {
-                addHighlight(note);
-                QString msg = QString("[%1:%2],").arg(note->string()).arg(note->fret());
-                fullmsg.append(msg);
+                qDebug() << "There are multiple parts selected";
+                setDisplayedInstrument(nullptr);
+            }
+            else
+            {
+                setDisplayedInstrument(first->staff()->part()->instrument());
             }
         }
-        qDebug() << fullmsg;
+    }
+    
+    void GuitarFretboard::highlightChord(const Chord* chord)
+    {
+        qDebug() << "Highlight chord with  " << chord->notes().size() << " notes";
+
+        //TODO: Is this conversion really necessary ?
+        QList<const Note*> displayNotes;
+        auto notes = chord->notes();
+        for (const Note* note: notes)
+        {
+            displayNotes.push_back(note);
+        }
+        
+        heartBeat(displayNotes);
+    }
+    
+
+    void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
+    {
+        fretboard->model.clearHighlights();
+        QString fullmsg;
+        
+        for (const Ms::Note* note : notes)
+        {
+            if (note->staff()->part()->instrument() == this->instrument)
+            {
+                addHighlight(note);
+            }
+        }
         fretboard->update();
     }
 }

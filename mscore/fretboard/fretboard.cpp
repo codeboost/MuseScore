@@ -6,6 +6,7 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QToolButton>
+#include <QTimer>
 
 namespace vg
 {
@@ -18,6 +19,10 @@ namespace vg
           setAutoFillBackground(true);
 
         setLayout(layout);
+
+        repaintTimer = new QTimer(this);
+        connect(repaintTimer, SIGNAL(timeout()), this, SLOT(repaintTimerCallback()));
+
     }
 
     void Fretboard::setOrientation(Qt::Orientation orientation)
@@ -33,6 +38,15 @@ namespace vg
     void Fretboard::paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
+        
+        if (isEnabled())
+        {
+            painter.fillRect(rect(), QBrush(QColor("#eee")));
+        }
+        else
+        {
+            painter.fillRect(rect(), QBrush(QColor("#999")));
+        }
     }
 
     void Fretboard::resizeEvent(QResizeEvent *)
@@ -98,6 +112,14 @@ namespace vg
             fingerboard->repaint();
         }
 
+    }
+
+    void Fretboard::repaintTimerCallback()
+    {
+        if (model.getHighlights().count() > 0 && isVisible())
+        {
+            fingerboard->update();
+        }
     }
 }
 

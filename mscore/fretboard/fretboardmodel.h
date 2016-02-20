@@ -15,6 +15,11 @@ namespace vg
         int fretNumber = 0;
         //Maybe something else, like color or note name
         FingerHighlight(int stringN = 0, int fretN = 0): stringNumber(stringN), fretNumber(fretN){}
+        bool operator == (const FingerHighlight& rhs)
+        {
+            return rhs.stringNumber == stringNumber &&
+                   rhs.fretNumber == fretNumber;
+        }
     };
 
     class FretboardModel
@@ -37,9 +42,6 @@ namespace vg
 
         //AscendingOrder: e string on top (or left) , E string on bottom (or right)
         Qt::SortOrder stringOrder = Qt::AscendingOrder;
-
-        QVector<FingerHighlight> highlights;
-
     public:
         QRect& rect();
         void setRect(const QRect& r);
@@ -68,10 +70,45 @@ namespace vg
         //Returns the note name for guitar string i (0-based).
         //The note name returned depends on the stringOrder value.
         QString noteNameForString(int i);
+
+        const QVector<FingerHighlight>& getHighlights() const
+        {
+            return highlights;
+        }
+
+        bool isValidHighlight(const FingerHighlight& highlight)
+        {
+            if (highlight.stringNumber > numberOfStrings ||
+                highlight.fretNumber > numberOfFrets)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        void addHighlight(const FingerHighlight& highlight)
+        {
+            if (highlights.contains(highlight))
+                return;
+
+            if (!isValidHighlight(highlight))
+                return;
+
+            highlights.push_back(highlight);
+        }
+
+
+        void clearHighlights()
+        {
+            highlights.clear();
+        }
+
     protected:
         QRect fretboardRect;
         QVector<float> fretPositions;
         QVector<float> stringPositions;
+        QVector<FingerHighlight> highlights;
 
         void updateFretPositions();
         void updateStringPositions();

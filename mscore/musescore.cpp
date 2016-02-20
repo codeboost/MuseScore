@@ -1195,19 +1195,27 @@ void MuseScore::selectScore(QAction* action)
 //   selectionChanged
 //---------------------------------------------------------
 
-void MuseScore::selectionChanged(SelState selectionState)
-      {
-      bool enable = selectionState != SelState::NONE;
-      getAction("cut")->setEnabled(enable);
-      getAction("copy")->setEnabled(enable);
-      getAction("select-similar-range")->setEnabled(selectionState == SelState::RANGE);
-      if (pianorollEditor)
+    void MuseScore::selectionChanged(SelState selectionState)
+    {
+        bool enable = selectionState != SelState::NONE;
+        getAction("cut")->setEnabled(enable);
+        getAction("copy")->setEnabled(enable);
+        getAction("select-similar-range")->setEnabled(selectionState == SelState::RANGE);
+        if (pianorollEditor)
             pianorollEditor->changeSelection(selectionState);
-      if (drumrollEditor)
+        if (drumrollEditor)
             drumrollEditor->changeSelection(selectionState);
-      if (_inspector && _inspector->isVisible())
+        if (_inspector && _inspector->isVisible())
             updateInspector();
-      }
+        
+        if (_guitarFretboard)
+        {
+            _guitarFretboard->changeSelection(selectionState);
+        }
+        
+    }
+    
+    
 
 //---------------------------------------------------------
 //   updateInspector
@@ -4039,72 +4047,78 @@ void MuseScore::cmd(QAction* a)
 //    Updates the UI after a possible score change.
 //---------------------------------------------------------
 
-void MuseScore::endCmd()
-      {
-      if (cs) {
+    void MuseScore::endCmd()
+    {
+        if (cs) {
             setPos(cs->inputState().tick());
             updateInputState(cs);
             updateUndoRedo();
             dirtyChanged(cs);
             Element* e = cs->selection().element();
             if (e && (cs->playNote() || cs->playChord())) {
-                  if (cs->playChord() && preferences.playChordOnAddNote &&  e->type() == Element::Type::NOTE)
-                        play(static_cast<Note*>(e)->chord());
-                  else
-                        play(e);
-                  cs->setPlayNote(false);
-                  cs->setPlayChord(false);
-                  }
+                if (cs->playChord() && preferences.playChordOnAddNote &&  e->type() == Element::Type::NOTE)
+                    play(static_cast<Note*>(e)->chord());
+                else
+                    play(e);
+                cs->setPlayNote(false);
+                cs->setPlayChord(false);
+            }
             if (cs->rootScore()->excerptsChanged()) {
-                  //Q_ASSERT(cs == cs->rootScore());
-                  excerptsChanged(cs->rootScore());
-                  cs->rootScore()->setExcerptsChanged(false);
-                  }
+                //Q_ASSERT(cs == cs->rootScore());
+                excerptsChanged(cs->rootScore());
+                cs->rootScore()->setExcerptsChanged(false);
+            }
             if (cs->instrumentsChanged()) {
                 //TODO: Update guitar fretboard
                 qDebug() << "Instruments changed, update fretboard()!";
-                  if (!noSeq && (seq && seq->isRunning()))
-                        seq->initInstruments();
-                  instrumentChanged();                // update mixer
-                  cs->setInstrumentsChanged(false);
-                  }
+                if (!noSeq && (seq && seq->isRunning()))
+                    seq->initInstruments();
+                instrumentChanged();                // update mixer
+                cs->setInstrumentsChanged(false);
+            }
             if (cs->selectionChanged()) {
-                  cs->setSelectionChanged(false);
-                  SelState ss = cs->selection().state();
-                  selectionChanged(ss);
-                  }
+                cs->setSelectionChanged(false);
+                SelState ss = cs->selection().state();
+                selectionChanged(ss);
+            }
             getAction("concert-pitch")->setChecked(cs->styleB(StyleIdx::concertPitch));
-
+            
             if (e == 0 && cs->noteEntryMode())
-                  e = cs->inputState().cr();
+                e = cs->inputState().cr();
             updateViewModeCombo();
             cs->end();
             ScoreAccessibility::instance()->updateAccessibilityInfo();
-          
-              ScoreView* scoreView = currentScoreView();
-              
-              if (scoreView)
-              {
-                  
-                  const Score* score = scoreView->score();
-
-                  if (score->selection().isSingle()) {
-                      Element* e = score->selection().element();
-                      
-                      if (e->type() == Element::Type::NOTE)
-                      {
-                          Note* note = (Note*)e;
-                          _guitarFretboard->highlightNote(note);
-                      }
-                  }
-              }
+            
+            ScoreView* scoreView = currentScoreView();
+            
+            if (scoreView)
+            {
+                
+                const Score* score = scoreView->score();
+                
+                if (score->selection().isSingle()) {
+                    Element* e = score->selection().element();
+                    
+                    if (e->type() == Element::Type::NOTE)
+                    {
+                        Note* note = (Note*)e;
+                        _guitarFretboard->highlightNote(note);
+                    }
+                    else if (e->type() == Element::Type::CHORD)
+                    {
+                        Chord* chord = (Chord*)e;
+                        _guitarFretboard->highlightChord(chord);
+                    }
+                    
+                }
             }
-      else {
+        }
+        else {
             if (_inspector)
-                  _inspector->setElement(0);
+                _inspector->setElement(0);
             selectionChanged(SelState::NONE);
-            }
-      }
+        }
+    }
 
 //---------------------------------------------------------
 //   updateUndoRedo

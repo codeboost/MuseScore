@@ -13,6 +13,7 @@ namespace vg
     public:
         Fingerboard* fingerboard;
         FretboardModel model;
+        QTimer* repaintTimer;
     public:
         Fretboard(QWidget* parent);
         void setOrientation(Qt::Orientation orientation);
@@ -27,6 +28,7 @@ namespace vg
         void decreaseStrings();
         void increaseFrets();
         void decreaseFrets();
+        void repaintTimerCallback();
     };
 }
 
