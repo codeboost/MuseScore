@@ -4750,11 +4750,11 @@ int main(int argc, char* av[])
       MuseScoreApplication* app;
       if (MuseScore::unstable()) {
             app = new MuseScoreApplication("virtualguitar-dev", argc, av);
-            QCoreApplication::setApplicationName("VirtualGuitarDevelopment");
+            QCoreApplication::setApplicationName("Virtual Guitar");
             }
       else {
             app = new MuseScoreApplication("virtualguitar", argc, av);
-            QCoreApplication::setApplicationName("VirtualGuitar2");
+            QCoreApplication::setApplicationName("Virtual Guitar");
             }
       QCoreApplication::setOrganizationName("VirtualGuitar");
       QCoreApplication::setOrganizationDomain("virtualguitar.org");
@@ -4807,7 +4807,7 @@ int main(int argc, char* av[])
 
     //if (parser.isSet("v")) parser.showVersion(); // a) needs Qt >= 5.4 , b) instead we use addVersionOption()
       if (parser.isSet("long-version")) {
-            printVersion("VirtualGuitar");
+            printVersion("Virtual Guitar");
             return EXIT_SUCCESS;
             }
       MScore::debugMode = parser.isSet("d");

@@ -205,7 +205,7 @@ void FluidGui::soundFontAddClicked()
             bool loaded = fluid()->addSoundFont(sfPath);
             if (!loaded) {
                   QMessageBox::warning(this,
-                  tr("MuseScore"),
+                  tr("Virtual Guitar"),
                   tr("Cannot load SoundFont %1").arg(sfPath));
                   }
             else {
