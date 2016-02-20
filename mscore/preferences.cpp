@@ -108,7 +108,7 @@ void Preferences::init()
       showNavigator      = false;
       showPlayPanel      = false;
       showSplashScreen   = true;
-      showStartcenter    = true;
+      showStartcenter    = false;
 
       showStatusBar      = true;
 

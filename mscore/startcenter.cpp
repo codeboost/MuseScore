@@ -19,20 +19,20 @@
 namespace Ms {
 
 //---------------------------------------------------------
-//   showStartcenter
+//   showStartcenter -- Disabled for Virtual Guitar
 //---------------------------------------------------------
 
 void MuseScore::showStartcenter(bool val)
       {
-      QAction* a = getAction("startcenter");
-      if (val && startcenter == nullptr) {
-            startcenter = new Startcenter;
-            startcenter->addAction(a);
-            startcenter->readSettings(settings);
-            connect(startcenter, SIGNAL(closed(bool)), a, SLOT(setChecked(bool)));
-            connect(startcenter, SIGNAL(rejected()), a, SLOT(toggle()));
-            }
-      startcenter->setVisible(val);
+//      QAction* a = getAction("startcenter");
+//      if (val && startcenter == nullptr) {
+//            startcenter = new Startcenter;
+//            startcenter->addAction(a);
+//            startcenter->readSettings(settings);
+//            connect(startcenter, SIGNAL(closed(bool)), a, SLOT(setChecked(bool)));
+//            connect(startcenter, SIGNAL(rejected()), a, SLOT(toggle()));
+//            }
+//      startcenter->setVisible(val);
       }
 
 //---------------------------------------------------------
