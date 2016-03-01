@@ -1,4 +1,10 @@
 #include "xhighlight.h"
+#include <QGraphicsDropShadowEffect>
+#include <QPainter>
+#include <QPen>
+
+
+static QPointF lightOffset = QPoint(1, 1);
 
 XHighlight::XHighlight(QGraphicsItem *parent): QGraphicsEllipseItem(parent)
 {
@@ -14,6 +20,26 @@ XHighlight::XHighlight(QGraphicsItem *parent): QGraphicsEllipseItem(parent)
     scaleAnimation->setStartValue(0.0);
     scaleAnimation->setEndValue(1.0);
     scaleAnimation->setDuration(50);
+
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
+    effect->setOffset(lightOffset);
+    setGraphicsEffect(effect);
+}
+
+void XHighlight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    //setGradient
+    QPointF gradientCenter = rect().center() - lightOffset;
+    QRadialGradient gradient(gradientCenter, rect().width());
+    gradient.setColorAt(0, Qt::yellow);
+    gradient.setColorAt(1, Qt::darkYellow);
+    painter->setBrush(gradient);
+    painter->setPen(Qt::NoPen);
+
+    //drawSelf
+    painter->drawEllipse(rect());
 }
 
 void XHighlight::hideAnimated()

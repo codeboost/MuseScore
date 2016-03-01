@@ -1,13 +1,7 @@
 #ifndef XHIGHLIGHT_H
 #define XHIGHLIGHT_H
 
-#include <QWidget>
 #include <QGraphicsItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QDebug>
 #include <QPropertyAnimation>
 #include <QTimer>
 
@@ -21,6 +15,7 @@ class XHighlight : public QObject, public QGraphicsEllipseItem
     QPropertyAnimation* scaleAnimation;
 public:
     XHighlight(QGraphicsItem* parent);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 public slots:
     void hideAnimated();
     void hideAfter(int msecs);

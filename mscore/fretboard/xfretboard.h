@@ -36,7 +36,17 @@ namespace vg
 
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
-            painter->fillRect(rect(), QColor("#FFB42A"));
+
+            painter->setRenderHint(QPainter::Antialiasing);
+
+            QLinearGradient gradient(rect().topLeft(), rect().topRight());
+
+            gradient.setColorAt(0, QColor("#333"));
+            gradient.setColorAt(0.5, QColor("#eee"));
+            gradient.setColorAt(1, QColor("#333"));
+
+            painter->setPen(Qt::NoPen);
+            painter->fillRect(rect(), gradient);
         }
 
     };
@@ -64,7 +74,7 @@ namespace vg
 
             int nutOffset = 8;
             int nutThickness = 13;
-            int fretThickness = 5;
+            int fretThickness = 6;
             int dotRadius = 7;
             int stringAreaMargin = 10; //Top and bottom spacing before the strings
 
