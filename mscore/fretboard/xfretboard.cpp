@@ -1,10 +1,22 @@
 #include "xfretboard.h"
+#include <QImage>
+#include <QGraphicsSceneMouseEvent>
+#include <QPropertyAnimation>
+#include <QTimer>
+#include <math.h>
+#include <QDebug>
+#include <QKeyEvent>
+#include <QPainterPath>
+#include <QGraphicsItem>
+#include <QPainter>
+
 
 namespace vg
 {
     XFretboard::XFretboard(QGraphicsItem *parentItem): QGraphicsRectItem(parentItem)
     {
         createFretboardComponents();
+        backgroundImage.load(":/wood-texture.jpg");
     }
 
     void XFretboard::createFretboardComponents()
@@ -48,11 +60,14 @@ namespace vg
 
     void XFretboard::createStrings()
     {
+        const QString notes = "EADGBeadgbEADGBeadgb";
+
         for (int k = 0; k < options.numberOfStrings; k++)
         {
             XString* string = new XString(this);
             float ratio = (float)(k + 1) / (float)options.numberOfStrings;
             string->thickness = ratio * options.thickestString;
+            string->setNoteText(notes[options.numberOfStrings - k - 1]);
             strings.push_back(string);
         }
     }
@@ -111,7 +126,9 @@ namespace vg
 
     void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
-        painter->fillRect(rect(), QColor("#551D00"));
+        //painter->fillRect(rect(), QColor("#551D00"));
+
+        painter->drawImage(rect(), backgroundImage);
     }
 
     QPointF XFretboard::intersectionPoint(int fretNumber, int stringNumber)
@@ -127,7 +144,7 @@ namespace vg
         return QPointF(fretTopLeft.x(), stringTopLeft.y());
     }
 
-    void XFretboard::putDot(XDot *dot, int fretNumber, int stringNumber)
+    void XFretboard::positionDot(XDot *dot, int fretNumber, int stringNumber)
     {
         QPointF p1 = intersectionPoint(fretNumber - 1, stringNumber - 1);
         QPointF p2 = intersectionPoint(fretNumber, stringNumber);
@@ -149,12 +166,12 @@ namespace vg
                 {
                     int firstDot = options.numberOfStrings / 3;
                     int secondDot = options.numberOfStrings - firstDot;
-                    putDot(dots[dotIndex++], fretNumber, firstDot);
-                    putDot(dots[dotIndex++], fretNumber, secondDot);
+                    positionDot(dots[dotIndex++], fretNumber, firstDot);
+                    positionDot(dots[dotIndex++], fretNumber, secondDot);
                 }
                 else
                 {
-                    putDot(dots[dotIndex++], fretNumber, options.numberOfStrings / 2);
+                    positionDot(dots[dotIndex++], fretNumber, options.numberOfStrings / 2);
                 }
             } else
                 break;

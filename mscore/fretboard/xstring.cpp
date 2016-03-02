@@ -19,6 +19,7 @@ namespace vg
     {
         setFlag(QGraphicsItem::ItemIsSelectable, true);
         setFlag(QGraphicsItem::ItemClipsToShape, true);
+        connect(&vibrator.timer, SIGNAL(timeout()), this, SLOT(vibrationCallback()));
     }
 
     void XString::paintLineString(QPainter *painter)
@@ -50,18 +51,12 @@ namespace vg
 
         QRectF stringRect(0, center.y() - thickness/2.0, rect().width(), thickness);
 
-        QLinearGradient gradient(center.x(), center.y() - thickness/2.0, center.x(), center.y() + thickness/2.0);
-
-
-//        QColor *colors = stringColors[stringType];
+        float y = center.y();
+        QLinearGradient gradient(0, y  - thickness/2.0, 0, y + thickness/2.0);
 
         gradient.setColorAt(0, stringColors[stringType][0]);
         gradient.setColorAt(0.5, stringColors[stringType][1]);
         gradient.setColorAt(1, stringColors[stringType][0]);
-
-//        gradient.setColorAt(0, QColor("#441401"));
-//        gradient.setColorAt(0.5, QColor("#ecb67b"));
-//        gradient.setColorAt(1, QColor("#441401"));
 
         QPainterPathStroker stroker;
         stroker.setWidth(thickness);
@@ -93,55 +88,34 @@ namespace vg
         stringPath.moveTo(0, y);
         stringPath.lineTo(pluckPosition, y);
         float halfLength = pluckPosition + curLength / 2.0f;
-        stringPath.quadTo(halfLength , y + (sin (phase) * amplitude),length * 2, y);
-
+        stringPath.quadTo(halfLength , y + vibrator.delta(),length * 2, y);
         return stringPath;
     }
 
     void XString::pluck(float pos)
     {
-        //amplitude = maxAmplitude * sin(relativePosition * M_PI);
-        amplitude = maxAmplitude;
-        phase = M_PI / 2.0f;
         pluckPosition = pos;
-        qDebug() << "Plucked: " << pluckPosition;
 
         //addBlurEffect();
-        startVibrationTimer();
+        if (_vibrate)
+            vibrator.startVibrating(7.0);
+
+        showHighlight(pos);
+    }
+
+    void XString::showHighlight(float x)
+    {
+        QPointF pt(x, rect().center().y());
+        pt -= QPointF(highlightSize/2, highlightSize/2);
+        highlight()->setPos(pt);
+        highlight()->showAnimated();
     }
 
     void XString::stopVibrating()
     {
-        qDebug() << "Stop vibrating";
-        vibrationTimer->stop();
+        vibrator.stop();
         setGraphicsEffect(nullptr);
         update();
-    }
-
-    void XString::updateAmplitude()
-    {
-        // this determines the decay of the visible string vibration
-        float decayPerFrame = fps * vibrationDurationMS / 1000.0;
-
-        //Reduce amplitude by a small amount each frame until we reach almost zero
-        amplitude -= amplitude/decayPerFrame;
-
-        if (amplitude <= 0.2f)
-        {
-            stopVibrating();
-        }
-    }
-
-    void XString::startVibrationTimer()
-    {
-        if (vibrationTimer == nullptr)
-        {
-            vibrationTimer = new QTimer(this);
-            connect(vibrationTimer, SIGNAL(timeout()), this, SLOT(timerCallback()));
-        }
-
-        if (!vibrationTimer->isActive())
-            vibrationTimer->start(1000/fps);
     }
 
     void XString::addBlurEffect()
@@ -152,24 +126,12 @@ namespace vg
         setGraphicsEffect(blurEffect);
     }
 
-    void XString::updatePhase()
+    void XString::vibrationCallback()
     {
-        // this determines the visible vibration frequency.
-        // just an arbitrary number chosen to look OK:
-        //const float phaseStep = 1200.0f / (rect().width() );
-
-        const float phaseStep = M_PI / 2;
-
-        phase += phaseStep;
-
-        if (phase > M_PI)
-            phase -= 2.0f * M_PI;
-    }
-
-    void XString::timerCallback()
-    {
-        updateAmplitude();
-        updatePhase();
+        if (vibrator.tick() < 0.2)
+        {
+            stopVibrating();
+        }
         update();
     }
 
@@ -178,19 +140,14 @@ namespace vg
         if (!_highlight)
         {
             _highlight = new XHighlight(this);
-            _highlight->setOpacity(0);
-            _highlight->setRect(0, 0, dotSize, dotSize);
+            _highlight->setRect(0, 0, highlightSize, highlightSize);
         }
         return _highlight;
     }
 
     void XString::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
-        QPointF pt = event->pos() - QPointF(dotSize/2, dotSize/2);
-
-        highlight()->setPos(pt);
-        highlight()->showAnimated();
-        pluck(pt.x());
+        pluck(event->pos().x());
     }
 
     void XString::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -198,4 +155,29 @@ namespace vg
         highlight()->hideAfter(2000);
     }
 
+    QVariant XString::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+    {
+        if (change == ItemVisibleChange)
+        {
+            reposition();
+        }
+        return QGraphicsItem::itemChange(change, value);
+    }
+
+    void XString::reposition()
+    {
+        qDebug() << "Reposition";
+        QPointF center = rect().center();
+        QPointF pt(0, rect().center().y() - noteNameSize / 2);
+        _noteName->setPos(pt);
+    }
+
+    void XString::setNoteText(const QString &noteText)
+    {
+        _noteName = new XHighlight(this);
+        _noteName->setRect(0, 0, noteNameSize, noteNameSize);
+        _noteName->options.text = noteText;
+        _noteName->options.gradient0 = "#5A5A85";
+        _noteName->options.gradient1 = "#03035C";
+    }
 }

@@ -27,7 +27,7 @@ namespace vg
     public:
         int numberOfFrets = 16;
         int numberOfStrings = 6;
-        int nutThickness = 15;
+        int nutThickness = 20;
         int fretThickness = 4;
         int maxStringThickness = 4;
         int noteNameRadius = 10;
