@@ -284,7 +284,12 @@ add_executable ( ${ExecutableName}
       help.cpp help.h
       fretboard/fingerboard.cpp fretboard/fretboard.cpp
       fretboard/fretboardmodel.cpp
-
+      fretboard/xfretboard.cpp 
+      fretboard/xstring.cpp 
+      fretboard/xvibrator.cpp
+      fretboard/xhighlight.cpp
+      fretboard/xfret.cpp
+      fretboard/xfretboardview.cpp
       ${OMR_FILES}
       ${AUDIO}
       ${SCRIPT_FILES}

@@ -13,10 +13,12 @@
 
 namespace vg
 {
-    XFretboard::XFretboard(QGraphicsItem *parentItem): QGraphicsRectItem(parentItem)
+    XFretboard::XFretboard(QGraphicsItem *parentItem, const Options& opt): QGraphicsRectItem(parentItem), options(opt)
     {
         createFretboardComponents();
         backgroundImage.load(":/wood-texture.jpg");
+
+        setFlag(ItemSendsGeometryChanges, true);
     }
 
     void XFretboard::createFretboardComponents()
@@ -26,6 +28,66 @@ namespace vg
         createDots();
         createFrets();
         createStrings();
+    }
+
+    void XFretboard::addHighlight(int nString, int nFret)
+    {
+        //nFret is 0 ? open string
+        //nFret is < 0 ? highlight hidden
+        //nFret > 0 ? show highlight on top of string at fret position
+        XString* theString = strings[nString];
+
+        if (nFret < 0)
+        {
+            theString->highlight()->hide();
+            return;
+        }
+
+        XFret* theFret = frets[nFret];
+        float pos = 0;
+
+
+        if (nFret == 0)
+        {
+            pos = theFret->pos().x();
+        }
+        else
+        {
+            XFret* prevFret = frets[nFret - 1]; 
+            auto delta = theFret->rect().x() - prevFret->rect().x();
+            pos = prevFret->rect().x() + delta/2;
+        }
+
+        qDebug() << "Plucking string " << nString << ", fret " << nFret << ", at pos: " << pos << ".";
+        theString->pluck(pos);
+    }
+
+    void XFretboard::hideHighlights()
+    {
+        foreach (XString* str, strings)
+        {
+            str->highlight()->hide();
+        }
+    }
+
+    void XFretboard::setHighlights(const QVector<int> highlights)
+    {
+        Q_ASSERT(highlights.size() == options.numberOfStrings);
+
+        for (int k = 0; k < options.numberOfStrings; k++)
+        {
+            addHighlight(k, highlights[k]);
+        }
+
+    }
+
+    QVariant XFretboard::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+    {
+        if (change == ItemPositionHasChanged)
+        {
+            repositionComponents();
+        }
+        return QGraphicsRectItem::itemChange(change, value);
     }
 
     void XFretboard::addDot(int dotn)
@@ -61,12 +123,13 @@ namespace vg
     void XFretboard::createStrings()
     {
         const QString notes = "EADGBeadgbEADGBeadgb";
+        float thickestString = options.numberOfStrings;
 
         for (int k = 0; k < options.numberOfStrings; k++)
         {
             XString* string = new XString(this);
             float ratio = (float)(k + 1) / (float)options.numberOfStrings;
-            string->thickness = ratio * options.thickestString;
+            string->thickness = ratio * thickestString;
             string->setNoteText(notes[options.numberOfStrings - k - 1]);
             strings.push_back(string);
         }
@@ -90,9 +153,9 @@ namespace vg
         float length = rect().width();
         length -= originx;
 
-        for (int n = 1; n <= options.numberOfFrets; n++)
+        for (int n = 0; n < options.numberOfFrets; n++)
         {
-            float root2 = pow(1.05946, n);
+            float root2 = pow(1.05946, n + 1);  //magic!
             float pos = length - length / root2;
             positions.push_back(pos);
         }
@@ -120,6 +183,7 @@ namespace vg
         for (auto& str : strings)
         {
             str->setRect(0, y, rect().width(), stringAreaHeight);
+            str->reposition();
             y+=stringAreaHeight;
         }
     }

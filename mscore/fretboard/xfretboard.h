@@ -8,6 +8,8 @@
 
 namespace vg
 {
+    typedef QVector<int> FretHighlights;
+
     class XFretboard : public QGraphicsRectItem
     {
     public:
@@ -15,7 +17,7 @@ namespace vg
         {
             int numberOfStrings = 6;
             int numberOfFrets = 19;
-            int thickestString = 6;   //The thickness of the thickest string :D
+            //int thickestString = 6;   //The thickness of the thickest string :D
 
             int nutOffset = 8;
             int nutThickness = 13;
@@ -33,9 +35,43 @@ namespace vg
         XNut* nut;
 
         void repositionComponents();
-        XFretboard(QGraphicsItem* parentItem);
-
+        XFretboard(QGraphicsItem* parentItem, const Options& options);
+ 
         void createFretboardComponents();
+
+        FretHighlights emptyHighlights()
+        {
+            FretHighlights v(options.numberOfStrings);
+            v.fill(-1);
+            return v;
+        }
+
+
+        //nFret == 0 -> open string
+        //nFret == -1 -> highlight is hidden
+        void addHighlight(int nString, int nFret);
+
+        // i -> string number
+        //v[i] -> contains fret number; v[i] < 0 ? hide
+        void setHighlights(const QVector<int> highlights);
+
+        void hideHighlights();
+
+        //debug
+        int selectedString = 1;
+        void highlightSelectedAtFret(int nFret)
+        {
+            addHighlight(selectedString, nFret);
+        }
+
+        void pluckSelected(){
+            XString* theString = strings[selectedString];
+            theString->pluck(0, false);
+        }
+
+
+        QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+
 
     private:
         void addDot(int dotn);
@@ -49,7 +85,6 @@ namespace vg
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
         QPointF intersectionPoint(int fretNumber, int stringNumber);
         QImage backgroundImage;
-
     };
 }
 

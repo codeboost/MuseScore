@@ -38,12 +38,11 @@ namespace Ms
     
     class FretContainer : public QWidget
     {
-        vg::Fretboard* fretboard;
         QToolBar* toolbar;
     public:
         
         
-        FretContainer(QWidget* parent, vg::Fretboard* aFretboard): QWidget(parent), fretboard(aFretboard)
+        FretContainer(QWidget* parent, vg::XFretboardView* fretboard): QWidget(parent)
         {
             toolbar = new QToolBar(this);
             toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-rotate")));
@@ -71,7 +70,9 @@ namespace Ms
         setObjectName("fretboard");
         //setWindowTitle(tr("Guitar Fretboard"));
         //setAllowedAreas(Qt::DockWidgetAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea));
-        fretboard = new vg::Fretboard(this);
+        //fretboard = new vg::Fretboard(this);
+        fretboard = new vg::XFretboardView(this);
+        //fretContainer = new FretContainer(this, fretboard);
         fretContainer = new FretContainer(this, fretboard);
     }
     
@@ -82,9 +83,10 @@ namespace Ms
     
     void GuitarFretboard::highlightNote(const Note* note)
     {
-        fretboard->model.clearHighlights();
+        highlights = fretboard->getFretboard()->emptyHighlights();
+        fretboard->getFretboard()->hideHighlights();
         addHighlight(note);
-        fretboard->update();
+        fretboard->getFretboard()->setHighlights(highlights);
     }
     
     void GuitarFretboard::addHighlight(const Note* note)
@@ -115,8 +117,7 @@ namespace Ms
         static int counter = 0;
         qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
         
-        vg::FingerHighlight highlight(nString, nFret);
-        fretboard->model.addHighlight(highlight);
+        highlights[nString] = nFret;
     }
     
     void GuitarFretboard::setDisplayedPart(const Part* part)
@@ -145,15 +146,18 @@ namespace Ms
             qDebug() << "minPitchA: " << instrument->minPitchA() << ";minPitchP: " << instrument->minPitchP();
             qDebug() << "Frets: " << stringData->frets() << "; Strings: " << stringData->strings();
             
-            fretboard->model.numberOfFrets = stringData->frets();
-            fretboard->model.numberOfStrings = stringData->strings();
-            fretboard->model.update();
-            fretboard->update();
+            vg::XFretboard::Options options;
+            options.numberOfFrets = stringData->frets();
+            options.numberOfStrings = stringData->strings();
             fretboard->setEnabled(true);
+            highlights.clear();
+            highlights.resize(options.numberOfStrings);
+            
         }
         else
         {
-            instrument = nullptr; 
+            highlights.clear();
+            instrument = nullptr;
             fretboard->setEnabled(false);
             setWindowTitle("");
         }
@@ -169,6 +173,18 @@ namespace Ms
         if (sel.isNone())
         {
             //TODO: Find first suitable instrument
+            
+            foreach (Ms::Staff* staff, mscore->currentScore()->staves())
+            {
+                Ms::Instrument* instrument = staff->part()->instrument();
+                
+                if (isStringedInstrument(instrument))
+                {
+                    setDisplayedInstrument(instrument);
+                }
+                    
+            }
+            
             return;
         }
         
@@ -206,7 +222,6 @@ namespace Ms
     {
         qDebug() << "Highlight chord with  " << chord->notes().size() << " notes";
 
-        //TODO: Is this conversion really necessary ?
         QList<const Note*> displayNotes;
         auto notes = chord->notes();
         for (const Note* note: notes)
@@ -220,7 +235,10 @@ namespace Ms
 
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
     {
-        fretboard->model.clearHighlights();
+        highlights.clear();
+        int numStrings = fretboard->getFretboard()->options.numberOfStrings;
+        highlights.resize(numStrings);
+        highlights.fill(-1);  //no highlights
         QString fullmsg;
         
         for (const Ms::Note* note : notes)
@@ -230,6 +248,7 @@ namespace Ms
                 addHighlight(note);
             }
         }
-        fretboard->update();
+        
+        fretboard->getFretboard()->setHighlights(highlights);
     }
 }

@@ -33,15 +33,17 @@ namespace vg
         XHighlight* highlight();
 
         void stopVibrating();
-        void pluck(float position);
+        void pluck(float position, bool shouldShowHighlight = true);
         void showHighlight(float position);
         void setNoteText(const QString& noteText);
 
-    protected:
+        void reposition();
+
+
         XHighlight* _highlight = nullptr;
         XHighlight* _noteName = nullptr;
 
-
+    protected:
         void paintLineString(QPainter *painter);
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
         QPainterPath generatePath();
@@ -49,7 +51,6 @@ namespace vg
         void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-        void reposition();
 
         //Vibration
         float pluckPosition = 0.0f;
@@ -58,6 +59,9 @@ namespace vg
         void addBlurEffect();
         void fastPaint(QPainter *painter);
         void gradientPaint(QPainter *painter);
+        void positionAtOpenFret(XHighlight *h);
+        void showHighlight(XHighlight *h, float x, bool animated);
+        QPointF ptForHighlight(XHighlight *h, float x);
     private slots:
         void vibrationCallback();
     };

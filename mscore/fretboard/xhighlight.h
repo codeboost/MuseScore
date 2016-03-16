@@ -12,8 +12,7 @@ namespace vg
         Q_OBJECT
         Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
         Q_PROPERTY(qreal scale READ scale WRITE setScale)
-        QPropertyAnimation* scaleAnimation;
-        QPropertyAnimation* hideAnimation;
+        Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     public:
         struct Options
         {
@@ -21,18 +20,21 @@ namespace vg
             QColor strokeColor = QColor("#eee");
             QColor gradient0 = QColor("#226FFC");
             QColor gradient1 = QColor("#8DB5FF");
-            QString text = "E#";
+            QString text = "";
         };
+        Options options;
+        //
         XHighlight(QGraphicsItem* parent);
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-        QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-
-        Options options;
-
-    public slots:
-        void hideAnimated();
+        void setPosAnimated(const QPointF &pos);
         void hideAfter(int msecs);
-        void showAnimated();
+    protected slots:
+        void positionFinished();
+        void hideTimerCallback()
+        {
+            hide();
+        }
+
     private:
         class Impl;
         Impl* impl;

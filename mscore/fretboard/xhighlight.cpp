@@ -10,43 +10,55 @@ static QPointF lightOffset = QPoint(1, 1);
 namespace vg
 {
 
-    class XHighlight::Impl
+    class XHighlight::Impl : public QObject
     {
     public:
+        QPropertyAnimation scaleAnimation;
+        QPropertyAnimation posAnimation;
         QTimer hideTimer;
-        Impl()
+
+        Impl(XHighlight* parent): QObject(parent), scaleAnimation(parent, "scale"), posAnimation(parent, "pos")
         {
             hideTimer.setSingleShot(true);
+            scaleAnimation.setStartValue(1.0);
+            scaleAnimation.setKeyValueAt(0.5, 1.5);
+            scaleAnimation.setEndValue(1.0);
+            posAnimation.setDuration(50);
         }
+
+        void moveAnimated(QPointF to)
+        {
+            posAnimation.setEndValue(to);
+            posAnimation.start();
+        }
+
+    public slots:
+        void runScaleAnimation()
+        {
+            scaleAnimation.start();
+        }
+
+
     };
 
     XHighlight::XHighlight(QGraphicsItem *parent): QGraphicsEllipseItem(parent)
     {
-        impl = new Impl();
+        impl = new Impl(this);
 
         setBrush(QColor("#387EFF"));
         setPen(QColor("#ddd"));
 
-        scaleAnimation = new QPropertyAnimation(this, "scale");
-        scaleAnimation->setStartValue(0.0);
-        scaleAnimation->setEndValue(1.0);
-        scaleAnimation->setDuration(50);
-
-        hideAnimation = new QPropertyAnimation(this, "opacity");
-        hideAnimation->setStartValue(1.0);
-        hideAnimation->setEndValue(0.0);
-        hideAnimation->setDuration(20);
-
-        QEasingCurve easingCurve = QEasingCurve::InOutBack;
-        easingCurve.setOvershoot(5.1); //1.70 ==> 10%
-        scaleAnimation->setEasingCurve(easingCurve);
+        setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
 
 
         QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
         effect->setOffset(lightOffset);
         setGraphicsEffect(effect);
 
-        connect(&impl->hideTimer, SIGNAL(timeout()), this, SLOT(hideAnimated()));
+        connect(&impl->hideTimer, SIGNAL(timeout()), this, SLOT(hideTimerCallback()));
+        connect(&impl->posAnimation, SIGNAL(finished()), this, SLOT(positionFinished()));
+
+
     }
 
     void XHighlight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -72,15 +84,20 @@ namespace vg
         painter->drawText(r, options.text, textOption);
     }
 
-    QVariant XHighlight::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+    void XHighlight::setPosAnimated(const QPointF &thePos)
     {
-        return QGraphicsItem::itemChange(change, value);
-    }
+        setTransformOriginPoint(rect().width() / 2, rect().height() / 2);
 
-    void XHighlight::hideAnimated()
-    {
-        hideAnimation->setStartValue(opacity());
-        hideAnimation->start();
+        if (isVisible())
+        {
+            impl->moveAnimated(thePos);
+        }
+        else
+        {
+            setPos(thePos);
+            show();
+            impl->runScaleAnimation();
+        }
     }
 
     void XHighlight::hideAfter(int msecs)
@@ -89,12 +106,9 @@ namespace vg
         impl->hideTimer.start(msecs);
     }
 
-    void XHighlight::showAnimated()
+    void XHighlight::positionFinished()
     {
-        setOpacity(1.0);
-        setTransformOriginPoint(rect().width() / 2, rect().height() / 2);
-        scaleAnimation->setDirection(QAbstractAnimation::Forward);
-        scaleAnimation->start();
+        impl->runScaleAnimation();
     }
-
 }
+

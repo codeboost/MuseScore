@@ -8,8 +8,7 @@
 
 #ifndef guitartools_h
 #define guitartools_h
-#include "fretboard/fretboard.h"
-
+#include "fretboard/xfretboardview.h"
 
 namespace Ms
 {
@@ -23,7 +22,7 @@ namespace Ms
     public:
         explicit GuitarFretboard(QWidget* parent = 0);
         void heartBeat(QList<const Note*> notes);
-        vg::Fretboard* fretboard;
+        vg::XFretboardView* fretboard;
         
         void highlightNote(const Note* note);
         void highlightChord(const Chord* chord);
@@ -31,11 +30,11 @@ namespace Ms
         void addHighlight(int nString, int nFret);
         
         void mirror(){
-            fretboard->onSwapSides();
+            //fretboard->onSwapSides();
         }
         void rotate()
         {
-            fretboard->onRotate();
+//            fretboard->onRotate();
         }
         
         void changeSelection(SelState state);
@@ -49,6 +48,8 @@ namespace Ms
         
     protected:
         void resizeEvent(QResizeEvent* event) override;
+        vg::FretHighlights highlights;
+
     };
 }
 
