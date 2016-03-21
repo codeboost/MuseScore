@@ -16,7 +16,7 @@ namespace vg
     public:
         struct Options
         {
-            int strokeSize = 4;
+            int strokeSize = 2;
             QColor strokeColor = QColor("#eee");
             QColor gradient0 = QColor("#226FFC");
             QColor gradient1 = QColor("#8DB5FF");
@@ -28,6 +28,7 @@ namespace vg
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
         void setPosAnimated(const QPointF &pos);
         void hideAfter(int msecs);
+
     protected slots:
         void positionFinished();
         void hideTimerCallback()

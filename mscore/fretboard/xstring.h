@@ -45,7 +45,7 @@ namespace vg
 
     protected:
         void paintLineString(QPainter *painter);
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
         QPainterPath generatePath();
         void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
         void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
@@ -59,7 +59,6 @@ namespace vg
         void addBlurEffect();
         void fastPaint(QPainter *painter);
         void gradientPaint(QPainter *painter);
-        void positionAtOpenFret(XHighlight *h);
         void showHighlight(XHighlight *h, float x, bool animated);
         QPointF ptForHighlight(XHighlight *h, float x);
     private slots:

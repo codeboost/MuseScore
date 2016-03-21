@@ -70,6 +70,8 @@ namespace vg
 
     void XString::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
         if (_fastPaint)
         {
             fastPaint(painter);
@@ -101,7 +103,7 @@ namespace vg
 
         //addBlurEffect();
         if (_vibrate)
-            vibrator.startVibrating(7.0);
+            vibrator.startVibrating(3.0);
 
         if (shouldShowHighlight)
             showHighlight(pos);
@@ -117,6 +119,9 @@ namespace vg
         QPointF center = rect().center();
         QPointF pt(x, center.y());
         pt -= QPointF(h->rect().width()/2, h->rect().height()/2);
+
+        pt = mapToScene(pt);
+
         return pt;
     }
 
@@ -126,7 +131,6 @@ namespace vg
         QPointF pt = ptForHighlight(h, x);
         if (animated)
         {
-            //h->showAnimated();
             h->setPosAnimated(pt);
         }
         else
@@ -185,7 +189,7 @@ namespace vg
         pluck(event->pos().x());
     }
 
-    void XString::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+    void XString::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     {
         highlight()->hideAfter(2000);
     }
@@ -199,14 +203,9 @@ namespace vg
         return QGraphicsItem::itemChange(change, value);
     }
 
-    void XString::positionAtOpenFret(XHighlight* h)
-    {
-        showHighlight(_noteName, 0, false);
-    }
-
     void XString::reposition()
     {
-        positionAtOpenFret(_noteName);
+        showHighlight(_noteName, 0, false);
     }
 
     void XString::setNoteText(const QString &noteText)

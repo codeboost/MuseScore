@@ -15,18 +15,18 @@ namespace vg
     public:
         struct Options
         {
+            int thickestString = 4;
             int numberOfStrings = 6;
             int numberOfFrets = 19;
-            //int thickestString = 6;   //The thickness of the thickest string :D
 
             int nutOffset = 8;
-            int nutThickness = 13;
-            int fretThickness = 6;
-            int dotRadius = 7;
-            int stringAreaMargin = 10; //Top and bottom spacing before the strings
+            int nutThickness = 8;
+            int fretThickness = 4;
+            int dotRadius = 5;
+            int stringAreaMargin = 5; //Top and bottom spacing before the strings
 
             QVector<int> dotPositions = {3, 5, 7, 9, 12, 15, 17, 19, 21, 24, 27, 30}; //--> model
-            int octaveFret = 12; //---> model
+            int octaveFret = 12;
         };
         Options options;
         QVector<XString*> strings;
@@ -72,6 +72,14 @@ namespace vg
 
         QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
+        void repositionHighlights()
+        {
+            for (XString* s : strings)
+            {
+                s->reposition();
+            }
+        }
+
 
     private:
         void addDot(int dotn);
@@ -82,7 +90,7 @@ namespace vg
         void positionStrings();
         void positionDot(XDot* dot, int fretNumber, int stringNumber);
         void positionDots();
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
         QPointF intersectionPoint(int fretNumber, int stringNumber);
         QImage backgroundImage;
     };

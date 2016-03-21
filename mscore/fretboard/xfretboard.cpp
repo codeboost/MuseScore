@@ -16,7 +16,7 @@ namespace vg
     XFretboard::XFretboard(QGraphicsItem *parentItem, const Options& opt): QGraphicsRectItem(parentItem), options(opt)
     {
         createFretboardComponents();
-        backgroundImage.load(":/wood-texture.jpg");
+        backgroundImage.load(":/data/wood-texture.jpg");
 
         setFlag(ItemSendsGeometryChanges, true);
     }
@@ -36,6 +36,7 @@ namespace vg
         //nFret is < 0 ? highlight hidden
         //nFret > 0 ? show highlight on top of string at fret position
         XString* theString = strings[nString];
+
 
         if (nFret < 0)
         {
@@ -57,8 +58,6 @@ namespace vg
             auto delta = theFret->rect().x() - prevFret->rect().x();
             pos = prevFret->rect().x() + delta/2;
         }
-
-        qDebug() << "Plucking string " << nString << ", fret " << nFret << ", at pos: " << pos << ".";
         theString->pluck(pos);
     }
 
@@ -123,7 +122,7 @@ namespace vg
     void XFretboard::createStrings()
     {
         const QString notes = "EADGBeadgbEADGBeadgb";
-        float thickestString = options.numberOfStrings;
+        float thickestString = options.thickestString;
 
         for (int k = 0; k < options.numberOfStrings; k++)
         {
@@ -188,7 +187,7 @@ namespace vg
         }
     }
 
-    void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
         //painter->fillRect(rect(), QColor("#551D00"));
 

@@ -18,6 +18,8 @@ namespace vg
 
         void paintEvent(QPaintEvent* e) override
         {
+            Q_UNUSED(e);
+
             QPainter painter(this);
             QBrush brush(Qt::blue);
             QPen pen(Qt::white);

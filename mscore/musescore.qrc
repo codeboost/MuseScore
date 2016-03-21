@@ -160,5 +160,6 @@
         <file>data/icons/clef-bass.svg</file>
         <file>data/icons/zoomin.svg</file>
         <file>data/icons/zoomout.svg</file>
-</qresource>
+        <file>data/wood-texture.jpg</file>
+    </qresource>
 </RCC>

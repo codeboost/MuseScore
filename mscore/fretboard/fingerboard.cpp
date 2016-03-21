@@ -213,7 +213,6 @@ namespace vg
         painter.setPen(Qt::black);
         painter.setBrush(Qt::green);
         painter.setRenderHint(QPainter::Antialiasing);
-        int index = 0;
 
         for (const auto& highlight : model.getHighlights())
         {

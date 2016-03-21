@@ -12,6 +12,8 @@ namespace vg
 
     void XFret::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
 
         painter->setRenderHint(QPainter::Antialiasing);
 
@@ -32,11 +34,9 @@ namespace vg
 
     void XNut::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
         painter->fillRect(rect(), QColor("#fff"));
-
-        QPalette pal;
-        QBrush fill = QColor("#eee");
-        QRect r = rect().toAlignedRect();
     }
 
     ///

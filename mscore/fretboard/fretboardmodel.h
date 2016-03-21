@@ -89,8 +89,9 @@ namespace vg
 
         void addHighlight(const FingerHighlight& highlight)
         {
-            if (highlights.contains(highlight))
-                return;
+
+//            if (highlights.contains(highlight))
+//                return;
 
             if (!isValidHighlight(highlight))
                 return;
