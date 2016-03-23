@@ -43,6 +43,7 @@ namespace vg
         QTransform t;
         t.scale(1, -1);
         t.translate(0, -fretboard->boundingRect().height());
+        mirrorAndFlip = t;
         fretboard->setTransform(t, true);
         fitInView(fretboard);
     }
@@ -53,21 +54,59 @@ namespace vg
         t.scale(-1, 1);
         t.translate(-fretboard->boundingRect().width(), 0);
         fretboard->setTransform(t, true);
+        mirrorAndFlip = t;
         fitInView(fretboard);
     }
 
     void XFretboardView::toggleOrientation()
     {
+//        QTransform t;
+//        t.rotate(90);
+//        t.translate(0, -fretboard->rect().height());
+//        fretboard->setTransform(t, true);
+//        fitInView(fretboard);
+
+        if (orientation == Qt::Vertical)
+            setOrientation(Qt::Horizontal);
+        else
+            setOrientation(Qt::Vertical);
+    }
+
+    void XFretboardView::setOrientation(Qt::Orientation o)
+    {
+        if (o == orientation)
+            return;
+
+        orientation = o;
+
         QTransform t;
-        t.rotate(90);
-        t.translate(0, -fretboard->rect().height());
-        fretboard->setTransform(t, true);
+
+        if (orientation == Qt::Vertical)
+        {
+            t.rotate(90);
+            t.translate(0, -fretboard->rect().height());
+        }
+
+        fretboard->setTransform(t, false);
+        fretboard->setTransform(mirrorAndFlip, true);
         fitInView(fretboard);
+
     }
 
     void XFretboardView::resizeEvent(QResizeEvent *event)
     {
         Q_UNUSED(event);
+
+        float aspect = rect().width() / rect().height();
+
+        if (aspect < 1.0f)
+        {
+            setOrientation(Qt::Vertical);
+        }
+        else
+        {
+            setOrientation(Qt::Horizontal);
+        }
         fitInView(fretboard);
     }
 

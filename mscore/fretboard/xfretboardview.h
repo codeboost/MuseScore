@@ -3,29 +3,26 @@
 
 #include <QGraphicsView>
 #include "fretboard/xfretboard.h"
+#include <QGraphicsTransform>
 
 namespace vg
 {
     class XFretboardView : public QGraphicsView
     {
     public:
+        vg::XFretboard* fretboard = nullptr;
+        Qt::Orientation orientation = Qt::Horizontal;
+    public:
         explicit XFretboardView(QWidget *parent = 0);
-        void resizeEvent(QResizeEvent *event) override;
         void setFretboardOptions(const vg::XFretboard::Options& options);
-
         void flipStrings();
         void mirrorSides();
         void toggleOrientation();
-
-        vg::XFretboard* getFretboard()
-        {
-            return fretboard;
-        }
-        
+        void setOrientation(Qt::Orientation orientation);
     protected:
-        struct Impl;
-        Impl* impl;
-        vg::XFretboard* fretboard = nullptr;
+        QTransform mirrorAndFlip;
+        void resizeEvent(QResizeEvent *event) override;
+
     };
 }
 #endif // XFRETBOARDVIEW_H
