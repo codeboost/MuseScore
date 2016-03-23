@@ -13,7 +13,7 @@ namespace vg
         void resizeEvent(QResizeEvent *event) override;
         void setFretboardOptions(const vg::XFretboard::Options& options);
 
-        void mirrorStrings();
+        void flipStrings();
         void mirrorSides();
         void toggleOrientation();
 

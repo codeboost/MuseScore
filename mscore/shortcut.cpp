@@ -3324,8 +3324,8 @@ Shortcut Shortcut::_sc[] = {
             MsWidget::MAIN_WINDOW,
             STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
             "fretboard-mirror",
-            QT_TRANSLATE_NOOP("action","Mirror fretboard"),
-            QT_TRANSLATE_NOOP("action","Mirror fretboard"),
+            QT_TRANSLATE_NOOP("action","Mirror"),
+            QT_TRANSLATE_NOOP("action","Mirror"),
             0,
             Icons::hframe_ICON,
             Qt::ApplicationShortcut
@@ -3333,9 +3333,9 @@ Shortcut Shortcut::_sc[] = {
       {
             MsWidget::MAIN_WINDOW,
             STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
-            "fretboard-rotate",
-            QT_TRANSLATE_NOOP("action","Rotate fretboard"),
-            QT_TRANSLATE_NOOP("action","Rotate fretboard"),
+            "fretboard-flip",
+            QT_TRANSLATE_NOOP("action","Flip"),
+            QT_TRANSLATE_NOOP("action","Flip"),
             0,
             Icons::vframe_ICON,
             Qt::ApplicationShortcut

@@ -4419,9 +4419,9 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
       {
             _guitarFretboard->mirror();
       }
-      else if (cmd == "fretboard-rotate")
+      else if (cmd == "fretboard-flip")
       {
-            _guitarFretboard->rotate();
+            _guitarFretboard->flip();
       }
 
           

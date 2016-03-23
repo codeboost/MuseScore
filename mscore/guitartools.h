@@ -29,13 +29,9 @@ namespace Ms
         void addHighlight(const Note* note);
         void addHighlight(int nString, int nFret);
         
-        void mirror(){
-            //fretboard->onSwapSides();
-        }
-        void rotate()
-        {
-//            fretboard->onRotate();
-        }
+        void mirror();
+        void rotate();
+        void flip(); 
         
         void changeSelection(SelState state);
         

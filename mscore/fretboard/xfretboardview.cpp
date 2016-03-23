@@ -38,7 +38,7 @@ namespace vg
         fitInView(fretboard);
     }
 
-    void XFretboardView::mirrorStrings()
+    void XFretboardView::flipStrings()
     {
         QTransform t;
         t.scale(1, -1);

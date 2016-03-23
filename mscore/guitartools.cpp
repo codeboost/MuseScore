@@ -45,7 +45,7 @@ namespace Ms
         FretContainer(QWidget* parent, vg::XFretboardView* fretboard): QWidget(parent)
         {
             toolbar = new QToolBar(this);
-            toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-rotate")));
+            toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-flip")));
             toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-mirror")));
             toolbar->setMaximumHeight(32);
             
@@ -115,7 +115,7 @@ namespace Ms
     void GuitarFretboard::addHighlight(int nString, int nFret)
     {
         static int counter = 0;
-        qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
+     //   qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
         
         highlights[nString] = nFret;
     }
@@ -232,6 +232,22 @@ namespace Ms
         heartBeat(displayNotes);
     }
     
+    void GuitarFretboard::mirror()
+    {
+        fretboard->mirrorSides();
+
+    }
+    
+    void GuitarFretboard::rotate()
+    {
+        fretboard->toggleOrientation();
+    }
+    
+    void GuitarFretboard::flip()
+    {
+        fretboard->flipStrings();
+
+    }
 
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
     {
