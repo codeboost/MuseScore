@@ -43,33 +43,20 @@ namespace vg
         Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     public:
         InnerDot innerDot;
-        float _radius = 30.0f;
-
         XHighlight(QGraphicsItem* parent, const float radius = 30.0f);
         void setPosAnimated(const QPointF &pos);
         void hideAfter(int msecs);
-
-        QRectF boundingRect() const
-        {
-           return QRectF(-_radius/2, -_radius/2, _radius, _radius);
-        }
-
-        void setText(const QString& text)
-        {
-            innerDot.textItem.text = text;
-            update();
-        }
+        QRectF boundingRect() const;
+        void setText(const QString& text);
 
     protected slots:
         void positionFinished();
-        void hideTimerCallback()
-        {
-            hide();
-        }
+        void hideTimerCallback();
 
     private:
         class Impl;
         Impl* impl;
+        float _radius = 30.0f;
     };
 }
 

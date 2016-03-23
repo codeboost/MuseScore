@@ -34,7 +34,6 @@ namespace vg
         QVector<XDot*> dots;
         XNut* nut;
 
-        void repositionComponents();
         XFretboard(QGraphicsItem* parentItem, const Options& options);
  
         void createFretboardComponents();

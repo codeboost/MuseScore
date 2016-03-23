@@ -80,9 +80,25 @@ namespace vg
         impl->hideTimer.start(msecs);
     }
 
+    QRectF XHighlight::boundingRect() const
+    {
+        return QRectF(-_radius/2, -_radius/2, _radius, _radius);
+    }
+
+    void XHighlight::setText(const QString &text)
+    {
+        innerDot.textItem.text = text;
+        update();
+    }
+
     void XHighlight::positionFinished()
     {
         impl->runScaleAnimation();
+    }
+
+    void XHighlight::hideTimerCallback()
+    {
+        hide();
     }
 
     InnerDot::InnerDot(QGraphicsItem *parent, const float radius): QGraphicsEllipseItem(parent), textItem(this), _radius(radius)

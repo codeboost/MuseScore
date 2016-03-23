@@ -11,8 +11,12 @@ namespace vg
     public:
         explicit XFretboardView(QWidget *parent = 0);
         void resizeEvent(QResizeEvent *event) override;
-        void keyPressEvent(QKeyEvent* event) override;
         void setFretboardOptions(const vg::XFretboard::Options& options);
+
+        void mirrorStrings();
+        void mirrorSides();
+        void toggleOrientation();
+
         vg::XFretboard* getFretboard()
         {
             return fretboard;

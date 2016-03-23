@@ -86,6 +86,7 @@ namespace vg
         auto xDot = new XDot(this, dotn);
         dots.push_back(xDot);
         xDot->setRect(0, 0, options.dotRadius * 2, options.dotRadius * 2);
+        xDot->setZValue(-99);
     }
 
     void XFretboard::createDots()
@@ -167,12 +168,6 @@ namespace vg
         }
     }
 
-    void XFretboard::repositionComponents()
-    {
-        //positionDots();
-    }
-
-
     void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
         painter->drawImage(boundingRect(), backgroundImage);
@@ -193,6 +188,12 @@ namespace vg
 
     void XFretboard::positionDot(XDot *dot, int fretNumber, int stringNumber)
     {
+        if (fretNumber <= 0 || stringNumber <= 0 || stringNumber >= options.numberOfStrings)
+        {
+            qDebug() << "positionDot: invalid parameters: fret = " << fretNumber << "; string=" << stringNumber;
+            return;
+        }
+
         QPointF p1 = intersectionPoint(fretNumber - 1, stringNumber - 1);
         QPointF p2 = intersectionPoint(fretNumber, stringNumber);
         QRectF r(p1, p2);
