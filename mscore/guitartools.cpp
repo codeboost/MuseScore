@@ -83,10 +83,10 @@ namespace Ms
     
     void GuitarFretboard::highlightNote(const Note* note)
     {
-        highlights = fretboard->getFretboard()->emptyHighlights();
-        fretboard->getFretboard()->hideHighlights();
+        highlights = fretboard->fretboard->emptyHighlights();
+        fretboard->fretboard->hideHighlights();
         addHighlight(note);
-        fretboard->getFretboard()->setHighlights(highlights);
+        fretboard->fretboard->setHighlights(highlights);
     }
     
     void GuitarFretboard::addHighlight(const Note* note)
@@ -252,7 +252,7 @@ namespace Ms
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)
     {
         highlights.clear();
-        int numStrings = fretboard->getFretboard()->options.numberOfStrings;
+        int numStrings = fretboard->fretboard->options.numberOfStrings;
         highlights.resize(numStrings);
         highlights.fill(-1);  //no highlights
         QString fullmsg;
@@ -265,6 +265,6 @@ namespace Ms
             }
         }
         
-        fretboard->getFretboard()->setHighlights(highlights);
+        fretboard->fretboard->setHighlights(highlights);
     }
 }

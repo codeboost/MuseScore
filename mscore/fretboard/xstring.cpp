@@ -56,7 +56,7 @@ namespace vg
 
 
         QColor color0 = stringColors[stringType][0];
-        color0.setAlpha(50);
+        color0.setAlpha(0);
         gradient.setColorAt(0, color0);
         gradient.setColorAt(0.5, stringColors[stringType][1]);
         gradient.setColorAt(1, stringColors[stringType][0]);
