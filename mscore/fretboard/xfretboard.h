@@ -30,7 +30,6 @@ namespace vg
         };
         Options options;
         QVector<XString*> strings;
-        QVector<XHighlight*> noteNames;
         QVector<XFret*> frets;
         QVector<XDot*> dots;
         XNut* nut;

@@ -190,7 +190,7 @@ namespace vg
     {
         if (!_noteName)
         {
-            _noteName = new XHighlight(this, 20);
+            _noteName = new XHighlight(this, 25);
             _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
             _noteName->setRect(_noteName->boundingRect());
 

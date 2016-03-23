@@ -28,8 +28,7 @@ namespace vg
                      boundingRect().height());
         createFrets();
         createStrings();
-
-//        createDots();
+        createDots();
     }
 
     void XFretboard::addHighlight(int nString, int nFret)
