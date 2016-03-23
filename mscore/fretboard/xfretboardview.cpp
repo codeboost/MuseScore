@@ -4,21 +4,9 @@
 
 namespace vg
 {
-    const float FretboardWidth = 640.0f;
-    const float FretboardHeight = 200.0f;
-
-    struct XFretboardView::Impl
-    {
-        QList<QTransform> transforms;
-
-        Impl()
-        {
-        }
-    };
 
     XFretboardView::XFretboardView(QWidget *parent) : QGraphicsView(parent)
     {
-        impl = new Impl();
 
         setRenderHint(QPainter::Antialiasing);
 
@@ -33,7 +21,6 @@ namespace vg
         vg::XFretboard::Options options;
         setFretboardOptions(options);
 
-
     }
 
     void XFretboardView::setFretboardOptions(const XFretboard::Options &options)
@@ -45,31 +32,21 @@ namespace vg
         }
 
         fretboard = new XFretboard(nullptr, options);
+        fretboard->setRect(fretboard->boundingRect());
         scene()->addItem(fretboard);
 
-        fretboard->setRect(0, 0, FretboardWidth, FretboardHeight);
-        fretboard->repositionComponents();
-        if (!first) positionFretboard();
-
-    }
-
-
-    void XFretboardView::centralize()
-    {
-        QPointF center = rect().center() - fretboard->rect().center();
-        fretboard->setPos(center);
-    }
-
-    void XFretboardView::positionFretboard()
-    {
-        this->fitInView(fretboard);
-        fretboard->repositionHighlights();
+        if (first)
+        {
+            fitInView(fretboard);
+            fretboard->createFretboardComponents();
+//            fretboard->repositionComponents();
+        }
     }
 
     void XFretboardView::resizeEvent(QResizeEvent *event)
     {
         Q_UNUSED(event);
-        positionFretboard();
+        fitInView(fretboard);
     }
 
     void XFretboardView::keyPressEvent(QKeyEvent *event)
@@ -93,6 +70,7 @@ namespace vg
             t.scale(1, -1);
             t.translate(0, -fretboard->rect().height());
             fretboard->setTransform(t, true);
+            fretboard->update();
         }
         else if (event->text().toLower() == "n")
         {

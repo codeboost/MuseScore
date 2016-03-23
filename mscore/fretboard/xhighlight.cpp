@@ -9,48 +9,13 @@ static QPointF lightOffset = QPoint(1, 1);
 
 namespace vg
 {
-#if 0
-    //Keep this around for a while
-    static QTransform GenerateTranslationOnlyTransform(
-        const QTransform &original_transform,
-        const QPointF &target_point) {
-      // To draw the unscaled, we desire a transform with scaling factors
-      // of 1 and shearing factors of 0 and the appropriate translation such that
-      // our icon center ends up at the same point. According to the
-      // documentation, QTransform transforms a point in the plane to another
-      // point using the following formulas:
-      // x' = m11*x + m21*y + dx
-      // y' = m22*y + m12*x + dy
-      //
-      // For our new transform, m11 and m22 (scaling) are 1, and m21 and m12
-      // (shearing) are 0. Since we want x' and y' to be the same, we have the
-      // following equations:
-      // m11*x + m21*y + dx = x + dx[new]
-      // m22*y + m12*x + dy = y + dy[new]
-      //
-      // Thus,
-      // dx[new] = m11*x - x + m21*y + dx
-      // dy[new] = m22*y - y + m12*x + dy
-      qreal dx = original_transform.m11() * target_point.x()
-                 - target_point.x()
-                 + original_transform.m21() * target_point.y()
-                 + original_transform.m31();
-      qreal dy = original_transform.m22() * target_point.y()
-                 - target_point.y()
-                 + original_transform.m12() * target_point.x()
-                 + original_transform.m32();
-
-      return QTransform::fromTranslate(dx, dy);
-    }
-#endif
-
     class XHighlight::Impl : public QObject
     {
     public:
         QPropertyAnimation scaleAnimation;
         QPropertyAnimation posAnimation;
         QTimer hideTimer;
-        Impl(XHighlight* parent): QObject(parent), scaleAnimation(parent, "scale"), posAnimation(parent, "pos")
+        Impl(XHighlight* parent): QObject(parent), scaleAnimation(&parent->innerDot, "scale"), posAnimation(parent, "pos")
         {
             hideTimer.setSingleShot(true);
             scaleAnimation.setStartValue(1.0);
@@ -72,14 +37,14 @@ namespace vg
         }
     };
 
-    XHighlight::XHighlight(QGraphicsItem *parent): QGraphicsEllipseItem(parent)
+    XHighlight::XHighlight(QGraphicsItem *parent, const float radius): QGraphicsEllipseItem(parent), innerDot(this, radius)
     {
+        _radius = radius;
+
         impl = new Impl(this);
 
-        setBrush(QColor("#387EFF"));
-        setPen(QColor("#ddd"));
-
-        setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+        setBrush(Qt::NoBrush);
+        setPen(Qt::NoPen);
 
         QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
         effect->setOffset(lightOffset);
@@ -87,39 +52,15 @@ namespace vg
 
         connect(&impl->hideTimer, SIGNAL(timeout()), this, SLOT(hideTimerCallback()));
         connect(&impl->posAnimation, SIGNAL(finished()), this, SLOT(positionFinished()));
-    }
 
-    void XHighlight::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-    {
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
-
-        painter->setRenderHint(QPainter::Antialiasing, true);
-
-        //setGradient
-        QPointF gradientCenter = rect().center() - lightOffset;
-        QRadialGradient gradient(gradientCenter, rect().width());
-        gradient.setColorAt(0, options.gradient0);
-        gradient.setColorAt(1, options.gradient1);
-        painter->setBrush(gradient);
-
-        QPen strokePen = QColor("#eee");
-        int strokeSize = options.strokeSize;
-
-        strokePen.setWidth(strokeSize);
-        painter->setPen(strokePen);
-
-        QRectF r = rect() - QMarginsF(strokeSize, strokeSize, strokeSize, strokeSize);
-
-        painter->drawEllipse(r);
-        QTextOption textOption = QTextOption(Qt::AlignHCenter | Qt::AlignVCenter);
-        painter->drawText(r, options.text, textOption);
-
+        innerDot.setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+        innerDot.setRect(boundingRect());
     }
 
     void XHighlight::setPosAnimated(const QPointF &thePos)
     {
-        setTransformOriginPoint(rect().width() / 2, rect().height() / 2);
+        setTransformOriginPoint(boundingRect().center());
+        innerDot.setTransformOriginPoint(boundingRect().center());
 
         if (isVisible())
         {
@@ -143,5 +84,39 @@ namespace vg
     {
         impl->runScaleAnimation();
     }
+
+    InnerDot::InnerDot(QGraphicsItem *parent, const float radius): QGraphicsEllipseItem(parent), textItem(this), _radius(radius)
+    {
+        setOptions(options);
+    }
+
+    QRectF InnerDot::boundingRect() const
+    {
+        return QRectF(-_radius/2, -_radius/2, _radius, _radius);
+    }
+
+    void InnerDot::setOptions(const InnerDot::Options &opts)
+    {
+        options = opts;
+        textItem.setRect(boundingRect());
+        QPointF gradientCenter = boundingRect().center() - lightOffset;
+        QRadialGradient gradient(gradientCenter, boundingRect().width());
+        gradient.setColorAt(0, options.gradient0);
+        gradient.setColorAt(1, options.gradient1);
+        setBrush(gradient);
+        QPen pen = QColor("#eee");
+        pen.setWidth(2);
+        setPen(pen);
+    }
+
+    TextItem::TextItem(QGraphicsItem *parent): QGraphicsRectItem(parent){}
+
+    void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QTextOption textOption = QTextOption(Qt::AlignHCenter | Qt::AlignVCenter);
+        painter->setPen(Qt::white);
+        painter->drawText(rect(), text, textOption);
+    }
+
 }
 

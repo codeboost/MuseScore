@@ -21,13 +21,7 @@ namespace vg
     protected:
         struct Impl;
         Impl* impl;
-        void centralize();
         vg::XFretboard* fretboard = nullptr;
-        void positionFretboard();
-
-        qreal rotation = 0.0f;
-        qreal translatex = 0.0f;
-        qreal translatey = 0.0f;
     };
 }
 #endif // XFRETBOARDVIEW_H

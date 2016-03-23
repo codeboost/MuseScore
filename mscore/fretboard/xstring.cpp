@@ -49,7 +49,7 @@ namespace vg
 
         auto center = rect().center();
 
-        QRectF stringRect(0, center.y() - thickness/2.0, rect().width(), thickness);
+        QRectF stringRect(rect().left(), center.y() - thickness/2.0, rect().width(), thickness);
 
         float y = center.y();
         QLinearGradient gradient(0, y  - thickness/2.0, 0, y + thickness/2.0);
@@ -80,6 +80,7 @@ namespace vg
         {
             gradientPaint(painter);
         }
+
     }
 
     QPainterPath XString::generatePath()
@@ -90,7 +91,7 @@ namespace vg
 
         QPainterPath stringPath;
 
-        stringPath.moveTo(0, y);
+        stringPath.moveTo(rect().left(), y);
         stringPath.lineTo(pluckPosition, y);
         float halfLength = pluckPosition + curLength / 2.0f;
         stringPath.quadTo(halfLength , y + vibrator.delta(),length * 2, y);
@@ -103,46 +104,10 @@ namespace vg
 
         //addBlurEffect();
         if (_vibrate)
-            vibrator.startVibrating(3.0);
+            vibrator.startVibrating(10.0);
 
         if (shouldShowHighlight)
             showHighlight(pos);
-    }
-
-    QPointF XString::ptForHighlight(XHighlight* h, float x)
-    {
-        if (x <= 0)
-        {
-            x = h->rect().width() / 2;
-        }
-
-        QPointF center = rect().center();
-        QPointF pt(x, center.y());
-        pt -= QPointF(h->rect().width()/2, h->rect().height()/2);
-
-        pt = mapToScene(pt);
-
-        return pt;
-    }
-
-    void XString::showHighlight(XHighlight* h, float x, bool animated)
-    {
-
-        QPointF pt = ptForHighlight(h, x);
-        if (animated)
-        {
-            h->setPosAnimated(pt);
-        }
-        else
-        {
-            h->setPos(pt);
-            h->show();
-        }
-    }
-
-    void XString::showHighlight(float x)
-    {
-        showHighlight(highlight(), x, true);
     }
 
     void XString::stopVibrating()
@@ -169,17 +134,44 @@ namespace vg
         update();
     }
 
+    //-------------------
+
+    QPointF XString::ptForHighlight(float x)
+    {
+        QPointF center = boundingRect().center();
+        QPointF pt(x, center.y());
+        return pt;
+    }
+
+    void XString::showHighlight(XHighlight* h, float x, bool animated)
+    {
+        QPointF pt = ptForHighlight(x);
+
+        if (animated)
+        {
+            h->setPosAnimated(pt);
+        }
+        else
+        {
+            h->setPos(pt);
+            h->show();
+        }
+    }
+
+    void XString::showHighlight(float x)
+    {
+        showHighlight(highlight(), x, true);
+    }
+
     XHighlight* XString::highlight()
     {
         if (!_highlight)
         {
             _highlight = new XHighlight(this);
-            _highlight->setRect(0, 0, highlightSize, highlightSize);
-
-            //position it
-            QPointF pt = ptForHighlight(_highlight, 0);
+            _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
+            _highlight->setRect(_highlight->boundingRect());
+            QPointF pt = ptForHighlight(0);
             _highlight->setPos(pt);
-
         }
         return _highlight;
     }
@@ -194,29 +186,23 @@ namespace vg
         highlight()->hideAfter(2000);
     }
 
-    QVariant XString::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
-    {
-        if (change == ItemVisibleChange)
-        {
-            reposition();
-        }
-        return QGraphicsItem::itemChange(change, value);
-    }
-
-    void XString::reposition()
-    {
-        showHighlight(_noteName, 0, false);
-    }
-
     void XString::setNoteText(const QString &noteText)
     {
         if (!_noteName)
         {
-            _noteName = new XHighlight(this);
-            _noteName->setRect(0, 0, noteNameSize, noteNameSize);
-            _noteName->options.gradient0 = "#5A5A85";
-            _noteName->options.gradient1 = "#03035C";
+            _noteName = new XHighlight(this, 20);
+            _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
+            _noteName->setRect(_noteName->boundingRect());
+
+            QPointF pt = boundingRect().center();
+            pt.setX(boundingRect().left() + _noteName->boundingRect().width() / 2);
+            _noteName->setPos(pt);
+
+            InnerDot::Options opts;
+            opts.gradient0 = "#5A5A85";
+            opts.gradient1 = "#03035C";
+            _noteName->innerDot.setOptions(opts);
         }
-        _noteName->options.text = noteText;
+        _noteName->setText(noteText);
     }
 }

@@ -15,12 +15,12 @@ namespace vg
     public:
         struct Options
         {
-            int thickestString = 4;
+            int thickestString = 6;
             int numberOfStrings = 6;
             int numberOfFrets = 19;
 
-            int nutOffset = 8;
-            int nutThickness = 8;
+            int nutOffset = 2;
+            int nutThickness = 16;
             int fretThickness = 4;
             int dotRadius = 5;
             int stringAreaMargin = 5; //Top and bottom spacing before the strings
@@ -30,6 +30,7 @@ namespace vg
         };
         Options options;
         QVector<XString*> strings;
+        QVector<XHighlight*> noteNames;
         QVector<XFret*> frets;
         QVector<XDot*> dots;
         XNut* nut;
@@ -69,15 +70,9 @@ namespace vg
             theString->pluck(0, false);
         }
 
-
-        QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-        void repositionHighlights()
+        QRectF boundingRect() const
         {
-            for (XString* s : strings)
-            {
-                s->reposition();
-            }
+            return QRectF(-320, -100, 640, 200);
         }
 
 
@@ -87,7 +82,6 @@ namespace vg
         void createFrets();
         void createStrings();
         void positionFrets();
-        void positionStrings();
         void positionDot(XDot* dot, int fretNumber, int stringNumber);
         void positionDots();
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);

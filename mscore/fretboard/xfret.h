@@ -2,6 +2,7 @@
 #define XFRET_H
 
 #include <QGraphicsItem>
+#include "xhighlight.h"
 
 namespace vg
 {

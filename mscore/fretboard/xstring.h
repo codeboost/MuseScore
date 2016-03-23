@@ -37,9 +37,6 @@ namespace vg
         void showHighlight(float position);
         void setNoteText(const QString& noteText);
 
-        void reposition();
-
-
         XHighlight* _highlight = nullptr;
         XHighlight* _noteName = nullptr;
 
@@ -49,8 +46,6 @@ namespace vg
         QPainterPath generatePath();
         void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
         void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
-        QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-
 
         //Vibration
         float pluckPosition = 0.0f;
@@ -60,7 +55,7 @@ namespace vg
         void fastPaint(QPainter *painter);
         void gradientPaint(QPainter *painter);
         void showHighlight(XHighlight *h, float x, bool animated);
-        QPointF ptForHighlight(XHighlight *h, float x);
+        QPointF ptForHighlight(float x);
     private slots:
         void vibrationCallback();
     };

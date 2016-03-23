@@ -29,15 +29,18 @@ namespace vg
 
     ///
 
-    XNut::XNut(QGraphicsItem *parent): QGraphicsRectItem(parent) {}
+    XNut::XNut(QGraphicsItem *parent): QGraphicsRectItem(parent) {
+
+    }
 
 
     void XNut::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
-        painter->fillRect(rect(), QColor("#fff"));
+        painter->fillRect(rect(), QColor("#eee"));
     }
+
 
     ///
 

@@ -15,19 +15,21 @@ namespace vg
 {
     XFretboard::XFretboard(QGraphicsItem *parentItem, const Options& opt): QGraphicsRectItem(parentItem), options(opt)
     {
-        createFretboardComponents();
         backgroundImage.load(":/data/wood-texture.jpg");
-
-        setFlag(ItemSendsGeometryChanges, true);
+        setFlag(ItemSendsGeometryChanges, false);
     }
 
     void XFretboard::createFretboardComponents()
     {
         nut = new XNut(this);
-
-        createDots();
+        nut->setRect(boundingRect().left() + options.nutOffset,
+                     boundingRect().top(),
+                     options.nutThickness,
+                     boundingRect().height());
         createFrets();
         createStrings();
+
+//        createDots();
     }
 
     void XFretboard::addHighlight(int nString, int nFret)
@@ -80,15 +82,6 @@ namespace vg
 
     }
 
-    QVariant XFretboard::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
-    {
-        if (change == ItemPositionHasChanged)
-        {
-            repositionComponents();
-        }
-        return QGraphicsRectItem::itemChange(change, value);
-    }
-
     void XFretboard::addDot(int dotn)
     {
         auto xDot = new XDot(this, dotn);
@@ -108,6 +101,7 @@ namespace vg
             if ((dotn % options.octaveFret) == 0)
                 addDot(dotn);
         }
+        positionDots();
     }
 
     void XFretboard::createFrets()
@@ -117,40 +111,18 @@ namespace vg
             XFret* fret = new XFret(this);
             frets.push_back(fret);
         }
-    }
-
-    void XFretboard::createStrings()
-    {
-        const QString notes = "EADGBeadgbEADGBeadgb";
-        float thickestString = options.thickestString;
-
-        for (int k = 0; k < options.numberOfStrings; k++)
-        {
-            XString* string = new XString(this);
-            float ratio = (float)(k + 1) / (float)options.numberOfStrings;
-            string->thickness = ratio * thickestString;
-            string->setNoteText(notes[options.numberOfStrings - k - 1]);
-            strings.push_back(string);
-        }
-    }
-
-    void XFretboard::repositionComponents()
-    {
-        nut->setRect(options.nutOffset, 0, options.nutThickness, rect().height());
         positionFrets();
-        positionStrings();
-        positionDots();
     }
+
 
     void XFretboard::positionFrets()
     {
         QVector<float> positions;
         positions.push_back(0);
 
-        float originx = options.nutOffset + options.nutThickness;
+        float originx = boundingRect().left() + options.nutOffset + options.nutThickness;
 
-        float length = rect().width();
-        length -= originx;
+        float length = boundingRect().width();
 
         for (int n = 0; n < options.numberOfFrets; n++)
         {
@@ -169,29 +141,42 @@ namespace vg
         for (int k = 1; k < options.numberOfFrets; k++)
         {
             XFret* fret = frets[k];
-            fret->setRect(positions[k] + originx, 0, options.fretThickness, rect().height());
+            fret->setRect(positions[k] + originx, boundingRect().top(), options.fretThickness, boundingRect().height());
         }
     }
 
-    void XFretboard::positionStrings()
+    void XFretboard::createStrings()
     {
-        float usableHeight = rect().height() - options.stringAreaMargin * 2;
-        float stringAreaHeight = usableHeight / options.numberOfStrings;
-        float y = options.stringAreaMargin;
+        const QString notes = "EADGBeadgbEADGBeadgb";
+        float thickestString = options.thickestString;
 
-        for (auto& str : strings)
+        float usableHeight = boundingRect().height() - options.stringAreaMargin * 2;
+        float stringAreaHeight = usableHeight / options.numberOfStrings;
+
+        float y = options.stringAreaMargin + boundingRect().top();
+        float x = boundingRect().left();
+
+        for (int k = 0; k < options.numberOfStrings; k++)
         {
-            str->setRect(0, y, rect().width(), stringAreaHeight);
-            str->reposition();
+            XString* string = new XString(this);
+            string->setRect(x, y, boundingRect().width(), stringAreaHeight);
+            float ratio = (float)(k + 1) / (float)options.numberOfStrings;
+            string->thickness = ratio * thickestString;
+            string->setNoteText(notes[options.numberOfStrings - k - 1]);
             y+=stringAreaHeight;
+            strings.push_back(string);
         }
     }
+
+    void XFretboard::repositionComponents()
+    {
+        //positionDots();
+    }
+
 
     void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
-        //painter->fillRect(rect(), QColor("#551D00"));
-
-        painter->drawImage(rect(), backgroundImage);
+        painter->drawImage(boundingRect(), backgroundImage);
     }
 
     QPointF XFretboard::intersectionPoint(int fretNumber, int stringNumber)
