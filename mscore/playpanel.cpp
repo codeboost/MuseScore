@@ -67,9 +67,9 @@ PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
           tempoSlider->setOrientation(Qt::Horizontal);
           volumeSlider->setOrientation(Qt::Horizontal);
 
-      connect(volumeSlider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double,int)));
+      connect(volumeSlider, SIGNAL(valueChanged(int)),        SLOT(volumeChangedSlot(int)));
       connect(posSlider,    SIGNAL(sliderMoved(int)),         SLOT(setPos(int)));
-      connect(tempoSlider,  SIGNAL(valueChanged(double,int)), SLOT(relTempoChanged(double,int)));
+      connect(tempoSlider,  SIGNAL(valueChanged(int)),        SLOT(relTempoChangedSlot(int)));
       connect(tempoSlider,  SIGNAL(sliderPressed(int)),       SLOT(tempoSliderPressed(int)));
       connect(tempoSlider,  SIGNAL(sliderReleased(int)),      SLOT(tempoSliderReleased(int)));
       //connect(relTempoBox,  SIGNAL(editingFinished()),        SLOT(relTempoChanged()));
@@ -91,7 +91,13 @@ PlayPanel::~PlayPanel()
 //---------------------------------------------------------
 //   relTempoChanged
 //---------------------------------------------------------
-
+    
+    
+void PlayPanel::relTempoChangedSlot(int v)
+    {
+        relTempoChanged((double)v, 0);
+    }
+    
 void PlayPanel::relTempoChanged(double d, int)
       {
       double relTempo = d * .01;
@@ -231,9 +237,7 @@ void PlayPanel::setTempo(double val)
 
 void PlayPanel::setRelTempo(qreal val)
       {
-      val *= 100;
-      //relTempoBox->setValue(val);
-      tempoSlider->setValue(val);
+      tempoSlider->setValue(val * 100);
       }
 
 //---------------------------------------------------------
@@ -242,13 +246,19 @@ void PlayPanel::setRelTempo(qreal val)
 
 void PlayPanel::setGain(float val)
       {
-      volumeSlider->setValue(val);
+        volumeSlider->setValue(val * 100.0);
       }
 
 //---------------------------------------------------------
 //   volumeChanged
 //---------------------------------------------------------
 
+void PlayPanel::volumeChangedSlot(int val)
+    {
+    emit gainChange((double)val / 100.0);
+    }
+
+    
 void PlayPanel::volumeChanged(double val, int)
       {
       emit gainChange(val);

@@ -114,7 +114,7 @@ namespace Ms
     
     void GuitarFretboard::addHighlight(int nString, int nFret)
     {
-        static int counter = 0;
+     // static int counter = 0;
      //   qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
         
         highlights[nString] = nFret;

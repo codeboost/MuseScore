@@ -50,6 +50,8 @@ class PlayPanel : public QWidget, private Ui::PlayPanelBase {
    private slots:
       void volumeChanged(double,int);
       void relTempoChanged(double,int);
+      void volumeChangedSlot(int);
+      void relTempoChangedSlot(int);
       void relTempoChanged();
       void tempoSliderReleased(int);
       void tempoSliderPressed(int);
