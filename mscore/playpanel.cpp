@@ -60,9 +60,9 @@ PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
       loopOutButton->setDefaultAction(getAction("loop-out"));
       enablePlay = new EnablePlayForWidget(this);
 
-      tempoSlider->setDclickValue1(100.0);
-      tempoSlider->setDclickValue2(100.0);
-      tempoSlider->setUseActualValue(true);
+//      tempoSlider->setDclickValue1(100.0);
+//      tempoSlider->setDclickValue2(100.0);
+//      tempoSlider->setUseActualValue(true);
           
           tempoSlider->setOrientation(Qt::Horizontal);
           volumeSlider->setOrientation(Qt::Horizontal);
@@ -96,7 +96,10 @@ void PlayPanel::relTempoChanged(double d, int)
       {
       double relTempo = d * .01;
       emit relTempoChanged(relTempo);
-
+      // Snap tempo slider to 100% when it gets close
+      if (relTempo < 1.01 && relTempo > 0.99) {
+            relTempo = 1.00;
+            }
       setTempo(seq->curTempo() * relTempo);
       setRelTempo(relTempo);
       }

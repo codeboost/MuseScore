@@ -831,6 +831,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
                               // HACK do it twice to accommodate undo
                               nsig->undoChangeProperty(P_ID::TIMESIG_TYPE, int(ts->timeSigType()));
                               nsig->undoChangeProperty(P_ID::TIMESIG_STRETCH, QVariant::fromValue(ts->stretch()));
+                              nsig->undoChangeProperty(P_ID::GROUPS,  QVariant::fromValue(ts->groups()));
                               nsig->setSelected(false);
                               nsig->setDropTarget(0);       // DEBUG
                               }
@@ -2156,6 +2157,12 @@ void Score::cmdDeleteSelection()
             Segment* s1 = selection().startSegment();
             Segment* s2 = selection().endSegment();
 
+            // delete content from measures underlying mmrests
+            if (s1 && s1->measure() && s1->measure()->isMMRest())
+                  s1 = s1->measure()->mmRestFirst()->first();
+            if (s2 && s2->measure() && s2->measure()->isMMRest())
+                  s2 = s2->measure()->mmRestLast()->last();
+
             int stick1 = selection().tickStart();
             int stick2 = selection().tickEnd();
 
@@ -2386,6 +2393,13 @@ void Score::cmdFullMeasureRest()
       else if (selection().isRange()) {
             s1 = selection().startSegment();
             s2 = selection().endSegment();
+            if (styleB(StyleIdx::createMultiMeasureRests)) {
+                   // use underlying measures
+                   if (s1 && s1->measure()->isMMRest())
+                         s1 = tick2segment(stick1);
+                   if (s2 && s2->measure()->isMMRest())
+                         s2 = tick2segment(stick2, true);
+                   }
             stick1 = selection().tickStart();
             stick2 = selection().tickEnd();
             Segment* ss1 = s1;
@@ -2450,8 +2464,12 @@ void Score::cmdFullMeasureRest()
                   }
             }
 
-      s1 = tick2segment(stick1);
-      s2 = tick2segment(stick2);
+      // selected range is probably empty now and possibly subsumed by an mmrest
+      // so updating selection requires forcing mmrests to be updated first
+      if (styleB(StyleIdx::createMultiMeasureRests))
+            createMMRests();
+      s1 = tick2segmentMM(stick1);
+      s2 = tick2segmentMM(stick2, true);
       if (selection().isRange() && s1 && s2) {
             _selection.setStartSegment(s1);
             _selection.setEndSegment(s2);
@@ -2760,8 +2778,12 @@ static MeasureBase* searchMeasureBase(Score* score, MeasureBase* mb)
                   }
             }
       else {
-            if (!mb->links())
-                  qDebug("searchMeasureBase: no links");
+            if (!mb->links()) {
+                  if (mb->score() == score)
+                        return mb;
+                  else
+                        qDebug("searchMeasureBase: no links");
+                  }
             else {
                   for (ScoreElement* m : *mb->links()) {
                         if (m->score() == score)
@@ -2829,7 +2851,7 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
                         }
 
                   Measure* m = static_cast<Measure*>(mb);
-                  Measure* mi = static_cast<Measure*>(im);
+                  Measure* mi = im ? score->tick2measure(im->tick()) : nullptr;
                   m->setTimesig(f);
                   m->setLen(f);
                   ticks = m->ticks();

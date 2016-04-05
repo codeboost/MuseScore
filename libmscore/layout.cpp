@@ -1547,8 +1547,6 @@ void Score::doLayout()
                         sp->layout();
                   }
             }
-      for (Spanner* s : _unmanagedSpanner)
-            s->layout();
 
       if (layoutMode() != LayoutMode::LINE) {
             layoutSystems2();
@@ -1556,6 +1554,9 @@ void Score::doLayout()
             }
       for (Measure* m = firstMeasureMM(); m; m = m->nextMeasureMM())
             m->layout2();
+
+      for (Spanner* s : _unmanagedSpanner)
+            s->layout();
 
       for (auto s : _spanner.map()) {           // DEBUG
             Spanner* sp = s.second;
@@ -2219,7 +2220,6 @@ bool Score::layoutSystem(qreal& minWidth, qreal systemWidth, bool isFirstSystem,
             bool hasCourtesy;
             qreal cautionaryW = 0.0;
             qreal ww          = 0.0;
-            bool systemWasNotEmpty = !system->measures().isEmpty();
 
             if (curMeasure->type() == Element::Type::HBOX) {
                   ww = point(static_cast<Box*>(curMeasure)->boxWidth());
@@ -2241,11 +2241,14 @@ bool Score::layoutSystem(qreal& minWidth, qreal systemWidth, bool isFirstSystem,
                   }
             else if (curMeasure->type() == Element::Type::MEASURE) {
                   Measure* m = static_cast<Measure*>(curMeasure);
+                  if (m->isMMRest()) { // make sure that measures below mm rest have no system
+                        for (Measure* mi = m->mmRestFirst(); mi != m->mmRestLast(); mi = mi->nextMeasure())
+                              mi->setSystem(nullptr);
+                        }
                   m->createEndBarLines();       // TODO: type not set right here
                   if (isFirstMeasure) {
                         firstMeasure = m;
                         addSystemHeader(m, isFirstSystem);
-                        system->measures().append(curMeasure);    // append measure to system before minWidth2() performs courtesy clef layout calculation
                         ww = m->minWidth2();
                         }
                   else
@@ -2284,10 +2287,12 @@ bool Score::layoutSystem(qreal& minWidth, qreal systemWidth, bool isFirstSystem,
 
                   if (ww < minMeasureWidth)
                         ww = minMeasureWidth;
+                  isFirstMeasure = false;
                   }
 
             // collect at least one measure
-            if (systemWasNotEmpty && (minWidth + ww > systemWidth)) {
+            bool empty = system->measures().isEmpty();
+            if (!empty && (minWidth + ww > systemWidth)) {
                   curMeasure->setSystem(oldSystem);
                   continueFlag = false;
                   break;
@@ -2296,11 +2301,7 @@ bool Score::layoutSystem(qreal& minWidth, qreal systemWidth, bool isFirstSystem,
             if (curMeasure->type() == Element::Type::MEASURE)
                   lastMeasure = static_cast<Measure*>(curMeasure);
 
-            // append measure if did not already append measure
-            if (curMeasure->type() == Element::Type::MEASURE && isFirstMeasure)
-                  isFirstMeasure = false;
-            else
-                  system->measures().append(curMeasure);
+            system->measures().append(curMeasure);
 
             Element::Type nt;
             if (_showVBox)
@@ -2391,6 +2392,7 @@ void Score::hideEmptyStaves(System* system, bool isFirstSystem)
                               }
                         }
                   // check if notes moved into this staff
+                  // also check whether all staves of instrument are empty
                   Part* part = staff->part();
                   int n = part->nstaves();
                   if (hideStaff && (n > 1)) {
@@ -2398,10 +2400,14 @@ void Score::hideEmptyStaves(System* system, bool isFirstSystem)
                         for (int i = 0; i < part->nstaves(); ++i) {
                               int st = idx + i;
 
-                              foreach(MeasureBase* mb, system->measures()) {
+                              for (MeasureBase* mb : system->measures()) {
                                     if (mb->type() != Element::Type::MEASURE)
                                           continue;
                                     Measure* m = static_cast<Measure*>(mb);
+                                    if (staff->hideWhenEmpty() == Staff::HideMode::INSTRUMENT && !m->isMeasureRest(st)) {
+                                          hideStaff = false;
+                                          break;
+                                          }
                                     for (Segment* s = m->first(Segment::Type::ChordRest); s; s = s->next(Segment::Type::ChordRest)) {
                                           for (int voice = 0; voice < VOICES; ++voice) {
                                                 ChordRest* cr = static_cast<ChordRest*>(s->element(st * VOICES + voice));
@@ -2741,11 +2747,20 @@ void Score::layoutFingering(Fingering* f)
       {
       if (f == 0)
             return;
-      TextStyleType tst = f->textStyleType();
-      if (tst != TextStyleType::FINGERING && tst != TextStyleType::RH_GUITAR_FINGERING && tst != TextStyleType::STRING_NUMBER)
-            return;
 
-      Note* note   = f->note();
+      Note* note      = f->note();
+      Accidental* acc = note->accidental();
+      qreal accX      = 0.0;
+      if (acc)
+            accX = acc->pos().x();
+
+      TextStyleType tst = f->textStyleType();
+      if (tst != TextStyleType::FINGERING && tst != TextStyleType::RH_GUITAR_FINGERING && tst != TextStyleType::STRING_NUMBER) {
+            // position relative to accidental if present
+            f->setUserXoffset(accX);
+            return;
+            }
+
       Chord* chord = note->chord();
       Staff* staff = chord->staff();
       Part* part   = staff->part();
@@ -2793,7 +2808,8 @@ void Score::layoutFingering(Fingering* f)
                   }
             }
       else {
-            x -= spatium();
+            // position relative to accidental if present
+            x += accX - spatium();
             }
       f->setUserOff(QPointF(x, y));
       }

@@ -1975,7 +1975,7 @@ void importSoundfont(QString name)
             QWidget::tr("Do you want to install the SoundFont %1?").arg(info.fileName()),
              QMessageBox::Yes|QMessageBox::No, QMessageBox::NoButton);
       if (ret == QMessageBox::Yes) {
-            QStringList pl = preferences.sfPath.split(";");
+            QStringList pl = preferences.mySoundfontsPath.split(";");
             QString destPath;
             for (QString s : pl) {
                   QFileInfo dest(s);
@@ -1989,7 +1989,7 @@ void importSoundfont(QString name)
                   if (destFileInfo.exists()) {
                         int ret1 = QMessageBox::question(0, QWidget::tr("Overwrite?"),
                           QWidget::tr("%1 already exists.\nDo you want to overwrite it?").arg(destFileInfo.absoluteFilePath()),
-                          QMessageBox::Yes|QMessageBox::No, QMessageBox::NoButton);
+                          QMessageBox::Yes|QMessageBox::No, QMessageBox::No);
                         if (ret1 == QMessageBox::No)
                               return;
                         destFile.remove();

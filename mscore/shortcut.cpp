@@ -1640,7 +1640,7 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
          "toggle-palette",
          QT_TRANSLATE_NOOP("action","Palettes"),
-         0,
+         QT_TRANSLATE_NOOP("action","Palettes"),
          0,
          Icons::Invalid_ICON,
          Qt::ApplicationShortcut
@@ -2088,8 +2088,8 @@ Shortcut Shortcut::_sc[] = {
          MsWidget::SCORE_TAB,
          STATE_NORMAL | STATE_NOTE_ENTRY,
          "edit-info",
-         QT_TRANSLATE_NOOP("action","Info..."),
-         QT_TRANSLATE_NOOP("action","Edit score info"),
+         QT_TRANSLATE_NOOP("action","Score Properties..."),
+         QT_TRANSLATE_NOOP("action","Edit score properties"),
          0,
          Icons::Invalid_ICON,
          Qt::WindowShortcut,
@@ -2532,15 +2532,15 @@ Shortcut Shortcut::_sc[] = {
          MsWidget::SCORE_TAB,
          STATE_NORMAL,
          "split-measure",
-         QT_TRANSLATE_NOOP("action","Split Measure"),
-         QT_TRANSLATE_NOOP("action","Split measure")
+         QT_TRANSLATE_NOOP("action","Split Measure before Selected Note"),
+         QT_TRANSLATE_NOOP("action","Split measure before selected note")
          },
       {
          MsWidget::SCORE_TAB,
          STATE_NORMAL,
          "join-measure",
-         QT_TRANSLATE_NOOP("action","Join Measures"),
-         QT_TRANSLATE_NOOP("action","Join measures")
+         QT_TRANSLATE_NOOP("action","Join Selected Measures"),
+         QT_TRANSLATE_NOOP("action","Join selected measures")
          },
       {
          MsWidget::MAIN_WINDOW,

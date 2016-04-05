@@ -58,6 +58,18 @@
 
 namespace Ms {
 
+const static std::map<QString, QString> instrumentMapping = {
+            {"e-gtr6", "electric-guitar"},
+            {"tnr-s", "voice"},
+            {"s-gtr6", "guitar-steel"},
+            {"n-gtr6", "guitar-nylon"},
+            {"snt-lead-ss", "poly-synth"},
+            {"f-bass5", "bass-guitar"},
+            {"snt-bass-ss", "metallic-synth"},
+            {"mrcs", "maracas"},
+            {"drmkt", "drumset"}
+            };
+
 //---------------------------------------------------------
 //   readBit
 //---------------------------------------------------------
@@ -398,23 +410,12 @@ void GuitarPro6::readTracks(QDomNode* track)
                         part->setPartName(currentNode.toElement().text());
                   else if (nodeName == "Instrument") {
                         QString ref = currentNode.attributes().namedItem("ref").toAttr().value();
-                        // use an array as a map instead?
-                        if (!ref.compare("e-gtr6"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("electric-guitar")));
-                        else if (!ref.compare("tnr-s"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("voice")));
-                        else if (!ref.compare("s-gtr6"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("guitar-steel")));
-                        else if (!ref.compare("snt-lead-ss"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("poly-synth")));
-                        else if (!ref.compare("f-bass5"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("bass-guitar")));
-                        else if (!ref.compare("snt-bass-ss"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("metallic-synth")));
-                        else if (!ref.compare("mrcs"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("maracas")));
-                        else if (!ref.compare("drmkt"))
-                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate("drumset")));
+                        auto it = instrumentMapping.find(ref);
+                        if (it != instrumentMapping.end()) {
+                              part->setInstrument(Instrument::fromTemplate(Ms::searchTemplate(it->second)));
+                              }
+                        else
+                              qDebug() << "Unknown instrument: " << ref;
                         if (ref.endsWith("-gs")) { // grand staff
                               Staff* s2 = new Staff(score);
                               s2->setPart(part);
@@ -1318,8 +1319,9 @@ int GuitarPro6::readBeats(QString beats, GPPartInfo* partInfo, Measure* measure,
                                     }
                                     else if (currentNode.nodeName() == "AugmentationDot") {
                                           dotted = currentNode.attributes().namedItem("count").toAttr().value().toInt();
+                                          Fraction tmp = l;
                                           for (int count = 1; count <= dotted; count++)
-                                                l = l + (l / pow(2, count));
+                                                l = l + (tmp / pow(2, count));
                                     }
                                     else if (currentNode.nodeName() == "PrimaryTuplet") {
                                           tupletSet = true;
@@ -1498,19 +1500,13 @@ void GuitarPro6::readBars(QDomNode* barList, Measure* measure, ClefType oldClefI
                               voiceNum +=1;
                               if (currentVoice.toInt() == - 1) {
                                     if (contentAdded) continue;
-                                    Fraction l = Fraction(1,1);
+                                    Fraction l = measure->len();
                                     // add a rest with length of l
                                     ChordRest* cr = new Rest(score);
                                     cr->setTrack(staffIdx * VOICES + voiceNum);
                                     TDuration d(l);
                                     cr->setDuration(l);
-                                    if (cr->type() == Element::Type::REST && l >= measure->len()) {
-                                          cr->setDurationType(TDuration::DurationType::V_MEASURE);
-                                          cr->setDuration(measure->len());
-                                          }
-                                    else
-                                          cr->setDurationType(d);
-
+                                    cr->setDurationType(TDuration::DurationType::V_MEASURE);
                                     Segment* segment = measure->getSegment(Segment::Type::ChordRest, tick);
                                     if(!segment->cr(staffIdx * VOICES + voiceNum))
                                           segment->add(cr);
@@ -1841,6 +1837,7 @@ void GuitarPro6::readMasterBars(GPPartInfo* partInfo)
 
 void GuitarPro6::readGpif(QByteArray* data)
       {
+      //qDebug() << QString(*data);
       QDomDocument qdomDoc;
       qdomDoc.setContent(*data);
       QDomElement qdomElem = qdomDoc.documentElement();
