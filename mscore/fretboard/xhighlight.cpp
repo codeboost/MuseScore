@@ -34,7 +34,6 @@ namespace vg
             scaleAnimation.setEndValue(1.0);
             posAnimation.setDuration(50);
         }
-
         void moveAnimated(QPointF to)
         {
             posAnimation.setEndValue(to);
@@ -52,7 +51,7 @@ namespace vg
     {
         _radius = radius;
 
-        impl = new Impl(this);
+        impl = QSharedPointer<Impl>(new Impl(this));
 
         setBrush(Qt::NoBrush);
         setPen(Qt::NoPen);

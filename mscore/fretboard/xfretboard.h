@@ -13,6 +13,7 @@ namespace vg
     class XFretboard : public QGraphicsRectItem
     {
     public:
+        typedef QSharedPointer<XFretboard> Ptr;
         struct Options
         {
             int thickestString = 6;
@@ -31,6 +32,8 @@ namespace vg
         Options options;
 
         XFretboard(QGraphicsItem* parentItem, const Options& options);
+        ~XFretboard();
+
         //nFret == 0 -> open string
         //nFret == -1 -> highlight is hidden
         void addHighlight(int nString, int nFret);

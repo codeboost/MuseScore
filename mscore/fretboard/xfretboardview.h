@@ -10,7 +10,8 @@ namespace vg
     class XFretboardView : public QGraphicsView
     {
     public:
-        vg::XFretboard* fretboard = nullptr;
+        typedef QSharedPointer<XFretboardView> Ptr;
+        vg::XFretboard::Ptr fretboard;
         Qt::Orientation orientation = Qt::Horizontal;
     public:
         explicit XFretboardView(QWidget *parent = 0);

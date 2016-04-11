@@ -50,7 +50,7 @@ namespace vg
 
     private:
         class Impl;
-        Impl* impl;
+        QSharedPointer<Impl> impl;
         float _radius = 30.0f;
     };
 }

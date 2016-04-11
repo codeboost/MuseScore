@@ -34,15 +34,15 @@ namespace vg
 
 
         XString(QGraphicsItem* parent);
-        XHighlight* highlight();
+        XHighlight::Ptr highlight();
 
         void stopVibrating();
         void pluck(float position, bool shouldShowHighlight = true);
         void showHighlight(float position);
         void setNoteText(const QString& noteText);
 
-        XHighlight* _highlight = nullptr;
-        XHighlight* _noteName = nullptr;
+        XHighlight::Ptr _highlight;
+        XHighlight::Ptr _noteName;
 
     protected:
         void paintLineString(QPainter *painter);

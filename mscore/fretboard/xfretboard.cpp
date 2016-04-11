@@ -20,6 +20,11 @@ namespace vg
         createFretboardComponents();
     }
 
+    XFretboard::~XFretboard()
+    {
+        qDebug() << "XFretboard is being destroyed";
+    }
+
     QRectF XFretboard::boundingRect() const
     {
         return QRectF(-320, -100, 640, 200);

@@ -141,11 +141,11 @@ namespace vg
         highlight()->setPosAnimated(pt, true);
     }
 
-    XHighlight* XString::highlight()
+    XHighlight::Ptr XString::highlight()
     {
-        if (!_highlight)
+        if (!_highlight.data())
         {
-            _highlight = new XHighlight(this);
+            _highlight = XHighlight::Ptr(new XHighlight(this));
             _highlight->setRect(_highlight->boundingRect());
             _highlight->setRadialColors("#226FFC", "#8DB5FF");
             _highlight->setBorderColor("#eee");
@@ -167,9 +167,9 @@ namespace vg
 
     void XString::setNoteText(const QString &noteText)
     {
-        if (!_noteName)
+        if (!_noteName.data())
         {
-            _noteName = new XHighlight(this, 25);
+            _noteName = XHighlight::Ptr(new XHighlight(this, 25));
             _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
 
             QPointF pt = boundingRect().center();

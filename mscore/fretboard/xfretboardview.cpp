@@ -25,13 +25,14 @@ namespace vg
     {
         if (fretboard)
         {
-            scene()->removeItem(fretboard);
+            scene()->removeItem(fretboard.data());
         }
 
-        fretboard = new XFretboard(nullptr, options);
+        fretboard = XFretboard::Ptr(new XFretboard(nullptr, options));
+
         fretboard->setRect(fretboard->boundingRect());
-        scene()->addItem(fretboard);
-        fitInView(fretboard);
+        scene()->addItem(&*fretboard);
+        fitInView(&*fretboard);
     }
 
     void XFretboardView::flipStrings()
@@ -41,7 +42,7 @@ namespace vg
         t.translate(0, -fretboard->boundingRect().height());
         mirrorAndFlip = t;
         fretboard->setTransform(t, true);
-        fitInView(fretboard);
+        fitInView(&*fretboard);
     }
 
     void XFretboardView::mirrorSides()
@@ -51,7 +52,7 @@ namespace vg
         t.translate(-fretboard->boundingRect().width(), 0);
         fretboard->setTransform(t, true);
         mirrorAndFlip = t;
-        fitInView(fretboard);
+        fitInView(&*fretboard);
     }
 
     void XFretboardView::toggleOrientation()
@@ -79,7 +80,7 @@ namespace vg
 
         fretboard->setTransform(t, false);
         fretboard->setTransform(mirrorAndFlip, true);
-        fitInView(fretboard);
+        fitInView(&*fretboard);
 
     }
 
@@ -97,7 +98,7 @@ namespace vg
         {
             setOrientation(Qt::Horizontal);
         }
-        fitInView(fretboard);
+        fitInView(&*fretboard);
     }
 
 }
