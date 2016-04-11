@@ -64,6 +64,22 @@ void ScoreView::startDrag()
 //   doDragElement
 //---------------------------------------------------------
 
+void ScoreView::doDragLoopOut(QMouseEvent* ev)
+{
+    qDebug() << "Dragging loop out!";
+
+    
+//    _curLoopIn->move(_score->loopInTick());
+//    _curLoopOut->move(_score->loopOutTick());
+//    _curLoopIn->setVisible(val);
+//    _curLoopOut->setVisible(val);
+}
+
+void ScoreView::endDragLoopOut()
+{
+    qDebug() << "endDragLoopOut!";
+}
+
 void ScoreView::doDragElement(QMouseEvent* ev)
       {
       QPointF delta = toLogical(ev->pos()) - data.startMove;

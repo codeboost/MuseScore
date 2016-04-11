@@ -190,7 +190,13 @@ namespace Ms
         
         if (sel.isSingle())
         {
-            setDisplayedInstrument(sel.element()->staff()->part()->instrument());
+            Ms::Staff* staff = sel.element()->staff();
+            if (staff != nullptr &&
+                staff->part() != nullptr &&
+                staff->part()->instrument() != nullptr)
+            {
+                setDisplayedInstrument(staff->part()->instrument());
+            }
         }
         else
         {
