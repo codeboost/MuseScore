@@ -282,8 +282,6 @@ add_executable ( ${ExecutableName}
       startcenter.cpp scoreBrowser.cpp scorePreview.cpp scoreInfo.cpp
       logindialog.cpp loginmanager.cpp uploadscoredialog.cpp breaksdialog.cpp searchComboBox.cpp
       help.cpp help.h
-      fretboard/fingerboard.cpp fretboard/fretboard.cpp
-      fretboard/fretboardmodel.cpp
       fretboard/xfretboard.cpp 
       fretboard/xstring.cpp 
       fretboard/xvibrator.cpp

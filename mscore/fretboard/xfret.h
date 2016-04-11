@@ -21,7 +21,7 @@ namespace vg
     };
 
     //A dot in the center of fret 5, 7, 9...
-    class XDot : public QGraphicsEllipseItem
+    class XDot : public XHighlight
     {
     public:
         int dotNumber = 0;

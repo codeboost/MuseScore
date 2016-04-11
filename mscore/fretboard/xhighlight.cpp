@@ -121,7 +121,7 @@ namespace vg
         gradient.setColorAt(0, options.gradient0);
         gradient.setColorAt(1, options.gradient1);
         setBrush(gradient);
-        QPen pen = QColor("#eee");
+        QPen pen = options.borderColor;
         pen.setWidth(2);
         setPen(pen);
     }

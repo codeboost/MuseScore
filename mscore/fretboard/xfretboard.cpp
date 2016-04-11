@@ -193,12 +193,10 @@ namespace vg
             qDebug() << "positionDot: invalid parameters: fret = " << fretNumber << "; string=" << stringNumber;
             return;
         }
-
         QPointF p1 = intersectionPoint(fretNumber - 1, stringNumber - 1);
         QPointF p2 = intersectionPoint(fretNumber, stringNumber);
         QRectF r(p1, p2);
-        QPointF fretCenter = r.center() - QPointF(dot->rect().width() / 2, dot->rect().height() / 2);
-        dot->setPos(fretCenter);
+        dot->setPos(r.center());
     }
 
     void XFretboard::positionDots()

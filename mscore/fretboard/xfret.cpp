@@ -44,10 +44,15 @@ namespace vg
 
     ///
 
-    XDot::XDot(QGraphicsItem *parent, int n): QGraphicsEllipseItem(parent), dotNumber(n)
+    XDot::XDot(QGraphicsItem *parent, int n): XHighlight(parent, 15), dotNumber(n)
     {
-        setBrush(QColor("#aaa"));
-        setPen(QPen("#fff"));
+        InnerDot::Options options;
+
+        options.gradient0 = QColor("#999");
+        options.gradient1 = QColor("#eee");
+
+        innerDot.setOptions(options);
+
     }
 
     ///

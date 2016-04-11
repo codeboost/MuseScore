@@ -7,7 +7,6 @@
 
 namespace vg
 {
-
     class TextItem : public QGraphicsRectItem
     {
     public:
@@ -29,6 +28,7 @@ namespace vg
         {
             QColor gradient0 = QColor("#226FFC");
             QColor gradient1 = QColor("#8DB5FF");
+            QColor borderColor = QColor("#eee");
         };
         Options options;
         void setOptions(const Options& opts);
