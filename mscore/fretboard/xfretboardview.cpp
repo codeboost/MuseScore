@@ -7,9 +7,7 @@ namespace vg
 
     XFretboardView::XFretboardView(QWidget *parent) : QGraphicsView(parent)
     {
-
         setRenderHint(QPainter::Antialiasing);
-
         setScene(new QGraphicsScene(this));
 
         QPen pen = QPen(QColor("#ff0000"));
@@ -32,7 +30,6 @@ namespace vg
 
         fretboard = new XFretboard(nullptr, options);
         fretboard->setRect(fretboard->boundingRect());
-        fretboard->createFretboardComponents();
         scene()->addItem(fretboard);
         fitInView(fretboard);
     }
@@ -59,12 +56,6 @@ namespace vg
 
     void XFretboardView::toggleOrientation()
     {
-//        QTransform t;
-//        t.rotate(90);
-//        t.translate(0, -fretboard->rect().height());
-//        fretboard->setTransform(t, true);
-//        fitInView(fretboard);
-
         if (orientation == Qt::Vertical)
             setOrientation(Qt::Horizontal);
         else

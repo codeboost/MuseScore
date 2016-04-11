@@ -69,20 +69,28 @@ namespace vg
         innerDot.setRect(boundingRect());
     }
 
-    void XHighlight::setPosAnimated(const QPointF &thePos)
+    void XHighlight::setPosAnimated(const QPointF &thePos, bool animated)
     {
         setTransformOriginPoint(boundingRect().center());
         innerDot.setTransformOriginPoint(boundingRect().center());
 
-        if (isVisible())
+        if (animated)
         {
-            impl->moveAnimated(thePos);
+            if (isVisible())
+            {
+                impl->moveAnimated(thePos);
+            }
+            else
+            {
+                setPos(thePos);
+                show();
+                impl->runScaleAnimation();
+            }
         }
         else
         {
             setPos(thePos);
             show();
-            impl->runScaleAnimation();
         }
     }
 

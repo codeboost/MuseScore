@@ -6,7 +6,7 @@
 
 namespace vg
 {
-    //Simulates a vibration
+    //Computes amplitude of vibration over time
     //
     class Vibrator : public QObject
     {

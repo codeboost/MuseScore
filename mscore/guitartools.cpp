@@ -83,7 +83,7 @@ namespace Ms
     
     void GuitarFretboard::highlightNote(const Note* note)
     {
-        highlights = fretboard->fretboard->emptyHighlights();
+        highlights = vg::FretHighlights(fretboard->fretboard->options.numberOfStrings, -1);
         fretboard->fretboard->hideHighlights();
         addHighlight(note);
         fretboard->fretboard->setHighlights(highlights);

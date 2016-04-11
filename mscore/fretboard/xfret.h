@@ -9,14 +9,8 @@ namespace vg
     class XFret : public QGraphicsRectItem
     {
     public:
+        typedef QSharedPointer<XFret> Ptr;
         XFret(QGraphicsItem* parent);
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    };
-
-    class XNut : public QGraphicsRectItem
-    {
-    public:
-        XNut(QGraphicsItem* parent);
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     };
 
@@ -24,6 +18,7 @@ namespace vg
     class XDot : public XHighlight
     {
     public:
+        typedef QSharedPointer<XDot> Ptr;
         int dotNumber = 0;
         XDot(QGraphicsItem* parent, int n);
     };

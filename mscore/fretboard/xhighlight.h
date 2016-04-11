@@ -33,9 +33,10 @@ namespace vg
         Q_PROPERTY(qreal scale READ scale WRITE setScale)
         Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     public:
+        typedef QSharedPointer<XHighlight> Ptr;
         InnerDot innerDot;
         XHighlight(QGraphicsItem* parent, const float radius = 30.0f);
-        void setPosAnimated(const QPointF &pos);
+        void setPosAnimated(const QPointF &pos, bool bAnimated = true);
         void hideAfter(int msecs);
         QRectF boundingRect() const;
         void setText(const QString& text);

@@ -17,15 +17,24 @@ namespace vg
     {
         backgroundImage.load(":/data/wood-texture.jpg");
         setFlag(ItemSendsGeometryChanges, false);
+        createFretboardComponents();
+    }
+
+    QRectF XFretboard::boundingRect() const
+    {
+        return QRectF(-320, -100, 640, 200);
     }
 
     void XFretboard::createFretboardComponents()
     {
-        nut = new XNut(this);
+        nut = QSharedPointer<QGraphicsRectItem>(new QGraphicsRectItem(this));
+
+        nut->setBrush(QColor("#eee"));
         nut->setRect(boundingRect().left() + options.nutOffset,
                      boundingRect().top(),
                      options.nutThickness,
                      boundingRect().height());
+
         createFrets();
         createStrings();
         createDots();
@@ -36,7 +45,7 @@ namespace vg
         //nFret is 0 ? open string
         //nFret is < 0 ? highlight hidden
         //nFret > 0 ? show highlight on top of string at fret position
-        XString* theString = strings[nString];
+        const XString::Ptr& theString = strings[nString];
 
 
         if (nFret < 0)
@@ -45,17 +54,15 @@ namespace vg
             return;
         }
 
-        XFret* theFret = frets[nFret];
+        const XFret::Ptr& theFret = frets[nFret];
         float pos = 0;
-
-
         if (nFret == 0)
         {
             pos = theFret->pos().x();
         }
         else
         {
-            XFret* prevFret = frets[nFret - 1]; 
+            const XFret::Ptr& prevFret = frets[nFret - 1];
             auto delta = theFret->rect().x() - prevFret->rect().x();
             pos = prevFret->rect().x() + delta/2;
         }
@@ -64,11 +71,12 @@ namespace vg
 
     void XFretboard::hideHighlights()
     {
-        foreach (XString* str, strings)
+        foreach (const auto& str, strings)
         {
             str->highlight()->hide();
         }
     }
+
 
     void XFretboard::setHighlights(const QVector<int> highlights)
     {
@@ -78,12 +86,11 @@ namespace vg
         {
             addHighlight(k, highlights[k]);
         }
-
     }
 
     void XFretboard::addDot(int dotn)
     {
-        auto xDot = new XDot(this, dotn);
+        auto xDot = XDot::Ptr(new XDot(this, dotn));
         dots.push_back(xDot);
         xDot->setRect(0, 0, options.dotRadius * 2, options.dotRadius * 2);
         xDot->setZValue(-99);
@@ -108,7 +115,7 @@ namespace vg
     {
         for (int k = 0; k < options.numberOfFrets; k++)
         {
-            XFret* fret = new XFret(this);
+            XFret::Ptr fret = XFret::Ptr(new XFret(this));
             frets.push_back(fret);
         }
         positionFrets();
@@ -140,14 +147,14 @@ namespace vg
 
         for (int k = 1; k < options.numberOfFrets; k++)
         {
-            XFret* fret = frets[k];
+            const XFret::Ptr& fret = frets[k];
             fret->setRect(positions[k] + originx, boundingRect().top(), options.fretThickness, boundingRect().height());
         }
     }
 
     void XFretboard::createStrings()
     {
-        const QString notes = "EADGBeadgbEADGBeadgb";
+        const QString noteNames = "EADGBeadgbEADGBeadgb";
         float thickestString = options.thickestString;
 
         float usableHeight = boundingRect().height() - options.stringAreaMargin * 2;
@@ -158,11 +165,12 @@ namespace vg
 
         for (int k = 0; k < options.numberOfStrings; k++)
         {
-            XString* string = new XString(this);
+            XString::Ptr string = XString::Ptr(new XString(this));
             string->setRect(x, y, boundingRect().width(), stringAreaHeight);
             float ratio = (float)(k + 1) / (float)options.numberOfStrings;
             string->thickness = ratio * thickestString;
-            string->setNoteText(notes[options.numberOfStrings - k - 1]);
+            string->setNoteText(noteNames[options.numberOfStrings - k - 1]);
+            string->noteNameOffset = (options.nutOffset + nut->rect().width()) / 2;
             y+=stringAreaHeight;
             strings.push_back(string);
         }
@@ -175,28 +183,28 @@ namespace vg
 
     QPointF XFretboard::intersectionPoint(int fretNumber, int stringNumber)
     {
-        XFret* fret = frets[fretNumber];
-        XString* string = strings[stringNumber];
+        const XFret::Ptr& fret = frets[fretNumber];
+        const XString::Ptr& string = strings[stringNumber];
 
         QPoint fretOffs(fret->rect().width() / 2, string->rect().height() / 2);
 
-        QPointF fretTopLeft = mapFromItem(fret, fret->rect().topLeft()) + fretOffs;
-        QPointF stringTopLeft = mapFromItem(string, string->rect().topLeft()) + fretOffs;
+        QPointF fretTopLeft = mapFromItem(fret.data(), fret->rect().topLeft()) + fretOffs;
+        QPointF stringTopLeft = mapFromItem(string.data(), string->rect().topLeft()) + fretOffs;
 
         return QPointF(fretTopLeft.x(), stringTopLeft.y());
     }
 
-    void XFretboard::positionDot(XDot *dot, int fretNumber, int stringNumber)
+    QPointF XFretboard::positionForDot(int fretNumber, int stringNumber)
     {
         if (fretNumber <= 0 || stringNumber <= 0 || stringNumber >= options.numberOfStrings)
         {
             qDebug() << "positionDot: invalid parameters: fret = " << fretNumber << "; string=" << stringNumber;
-            return;
+            return QPointF(0, 0);
         }
         QPointF p1 = intersectionPoint(fretNumber - 1, stringNumber - 1);
         QPointF p2 = intersectionPoint(fretNumber, stringNumber);
         QRectF r(p1, p2);
-        dot->setPos(r.center());
+        return r.center();
     }
 
     void XFretboard::positionDots()
@@ -212,12 +220,13 @@ namespace vg
                 {
                     int firstDot = options.numberOfStrings / 3;
                     int secondDot = options.numberOfStrings - firstDot;
-                    positionDot(dots[dotIndex++], fretNumber, firstDot);
-                    positionDot(dots[dotIndex++], fretNumber, secondDot);
+
+                    dots[dotIndex++]->setPos(positionForDot(fretNumber, firstDot));
+                    dots[dotIndex++]->setPos(positionForDot(fretNumber, secondDot));
                 }
                 else
                 {
-                    positionDot(dots[dotIndex++], fretNumber, options.numberOfStrings / 2);
+                    dots[dotIndex++]->setPos(positionForDot(fretNumber, options.numberOfStrings / 2));
                 }
             } else
                 break;

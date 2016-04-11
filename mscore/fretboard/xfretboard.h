@@ -29,23 +29,8 @@ namespace vg
             int octaveFret = 12;
         };
         Options options;
-        QVector<XString*> strings;
-        QVector<XFret*> frets;
-        QVector<XDot*> dots;
-        XNut* nut;
 
         XFretboard(QGraphicsItem* parentItem, const Options& options);
- 
-        void createFretboardComponents();
-
-        FretHighlights emptyHighlights()
-        {
-            FretHighlights v(options.numberOfStrings);
-            v.fill(-1);
-            return v;
-        }
-
-
         //nFret == 0 -> open string
         //nFret == -1 -> highlight is hidden
         void addHighlight(int nString, int nFret);
@@ -56,35 +41,25 @@ namespace vg
 
         void hideHighlights();
 
-        //debug
-        int selectedString = 1;
-        void highlightSelectedAtFret(int nFret)
-        {
-            addHighlight(selectedString, nFret);
-        }
-
-        void pluckSelected(){
-            XString* theString = strings[selectedString];
-            theString->pluck(0, false);
-        }
-
-        QRectF boundingRect() const
-        {
-            return QRectF(-320, -100, 640, 200);
-        }
-
+        QRectF boundingRect() const;
 
     private:
+        void createFretboardComponents();
         void addDot(int dotn);
         void createDots();
         void createFrets();
         void createStrings();
         void positionFrets();
-        void positionDot(XDot* dot, int fretNumber, int stringNumber);
         void positionDots();
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
         QPointF intersectionPoint(int fretNumber, int stringNumber);
+        QPointF positionForDot(int fretNumber, int stringNumber);
         QImage backgroundImage;
+    private:
+        QVector<XString::Ptr> strings;
+        QVector<XFret::Ptr> frets;
+        QVector<XDot::Ptr> dots;
+        QSharedPointer<QGraphicsRectItem> nut;
     };
 }
 

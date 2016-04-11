@@ -135,33 +135,10 @@ namespace vg
         update();
     }
 
-    //-------------------
-
-    QPointF XString::ptForHighlight(float x)
-    {
-        QPointF center = boundingRect().center();
-        QPointF pt(x, center.y());
-        return pt;
-    }
-
-    void XString::showHighlight(XHighlight* h, float x, bool animated)
-    {
-        QPointF pt = ptForHighlight(x);
-
-        if (animated)
-        {
-            h->setPosAnimated(pt);
-        }
-        else
-        {
-            h->setPos(pt);
-            h->show();
-        }
-    }
-
     void XString::showHighlight(float x)
     {
-        showHighlight(highlight(), x, true);
+        QPointF pt (x, rect().center().y());
+        highlight()->setPosAnimated(pt, true);
     }
 
     XHighlight* XString::highlight()
@@ -169,12 +146,10 @@ namespace vg
         if (!_highlight)
         {
             _highlight = new XHighlight(this);
-            _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
             _highlight->setRect(_highlight->boundingRect());
             _highlight->setRadialColors("#226FFC", "#8DB5FF");
             _highlight->setBorderColor("#eee");
-
-            QPointF pt = ptForHighlight(0);
+            QPointF pt = QPointF(0, rect().center().y());
             _highlight->setPos(pt);
         }
         return _highlight;
@@ -196,10 +171,10 @@ namespace vg
         {
             _noteName = new XHighlight(this, 25);
             _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
-            _noteName->setRect(_noteName->boundingRect());
 
             QPointF pt = boundingRect().center();
-            pt.setX(boundingRect().left() + _noteName->boundingRect().width() / 2);
+            pt.setX(boundingRect().left() + noteNameOffset);
+
             _noteName->setPos(pt);
             _noteName->setRadialColors("#5A5A85", "#03035C");
             _noteName->setBorderColor("#eee");

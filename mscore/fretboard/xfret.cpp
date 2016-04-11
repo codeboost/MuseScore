@@ -7,7 +7,6 @@
 
 namespace vg
 {
-
     XFret::XFret(QGraphicsItem *parent): QGraphicsRectItem(parent) {}
 
     void XFret::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -27,31 +26,11 @@ namespace vg
         painter->fillRect(rect(), gradient);
     }
 
-    ///
-
-    XNut::XNut(QGraphicsItem *parent): QGraphicsRectItem(parent) {
-
-        setBrush(QColor("#eee"));
-    }
-
-
-    void XNut::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-    {
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
-        painter->fillRect(rect(), QColor("#eee"));
-    }
-
-
-    ///
-
     XDot::XDot(QGraphicsItem *parent, int n): XHighlight(parent, 15), dotNumber(n)
     {
         setRadialColors("#999", "#eee");
         setBorderColor("#eee");
     }
-
-    ///
 
 
 }

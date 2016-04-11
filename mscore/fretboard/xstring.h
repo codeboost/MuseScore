@@ -12,6 +12,7 @@ namespace vg
     {
         Q_OBJECT
     public:
+        typedef QSharedPointer<XString> Ptr;
         enum StringType
         {
             Golden = 0, // ?
@@ -27,6 +28,9 @@ namespace vg
         bool _fastPaint = false;
         bool _vibrate = true;
         const int noteNameSize = 30;
+
+        //The horizontal (x) position where to place the noteName item
+        float noteNameOffset = 9.0f;
 
 
         XString(QGraphicsItem* parent);
@@ -54,8 +58,6 @@ namespace vg
         void addBlurEffect();
         void fastPaint(QPainter *painter);
         void gradientPaint(QPainter *painter);
-        void showHighlight(XHighlight *h, float x, bool animated);
-        QPointF ptForHighlight(float x);
     private slots:
         void vibrationCallback();
     };
