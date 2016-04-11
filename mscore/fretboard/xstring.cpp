@@ -22,6 +22,7 @@ namespace vg
         connect(&vibrator.timer, SIGNAL(timeout()), this, SLOT(vibrationCallback()));
     }
 
+
     void XString::paintLineString(QPainter *painter)
     {
         QPen pen = QColor("#aaa");
@@ -170,6 +171,9 @@ namespace vg
             _highlight = new XHighlight(this);
             _noteName->setFlag(QGraphicsItem::ItemIgnoresTransformations, false);
             _highlight->setRect(_highlight->boundingRect());
+            _highlight->setRadialColors("#226FFC", "#8DB5FF");
+            _highlight->setBorderColor("#eee");
+
             QPointF pt = ptForHighlight(0);
             _highlight->setPos(pt);
         }
@@ -197,11 +201,8 @@ namespace vg
             QPointF pt = boundingRect().center();
             pt.setX(boundingRect().left() + _noteName->boundingRect().width() / 2);
             _noteName->setPos(pt);
-
-            InnerDot::Options opts;
-            opts.gradient0 = "#5A5A85";
-            opts.gradient1 = "#03035C";
-            _noteName->innerDot.setOptions(opts);
+            _noteName->setRadialColors("#5A5A85", "#03035C");
+            _noteName->setBorderColor("#eee");
         }
         _noteName->setText(noteText);
     }

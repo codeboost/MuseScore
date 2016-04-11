@@ -23,15 +23,6 @@ namespace vg
         TextItem textItem;
         InnerDot(QGraphicsItem* parent, const float radius = 30.0f);
         QRectF boundingRect() const;
-
-        struct Options
-        {
-            QColor gradient0 = QColor("#226FFC");
-            QColor gradient1 = QColor("#8DB5FF");
-            QColor borderColor = QColor("#eee");
-        };
-        Options options;
-        void setOptions(const Options& opts);
         float _radius = 30.0f;
     };
 
@@ -48,6 +39,9 @@ namespace vg
         void hideAfter(int msecs);
         QRectF boundingRect() const;
         void setText(const QString& text);
+
+        void setRadialColors(const QColor& color1, const QColor& color2);
+        void setBorderColor(const QColor& color);
 
     protected slots:
         void positionFinished();

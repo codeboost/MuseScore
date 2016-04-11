@@ -31,6 +31,7 @@ namespace vg
 
     XNut::XNut(QGraphicsItem *parent): QGraphicsRectItem(parent) {
 
+        setBrush(QColor("#eee"));
     }
 
 
@@ -46,13 +47,8 @@ namespace vg
 
     XDot::XDot(QGraphicsItem *parent, int n): XHighlight(parent, 15), dotNumber(n)
     {
-        InnerDot::Options options;
-
-        options.gradient0 = QColor("#999");
-        options.gradient1 = QColor("#eee");
-
-        innerDot.setOptions(options);
-
+        setRadialColors("#999", "#eee");
+        setBorderColor("#eee");
     }
 
     ///

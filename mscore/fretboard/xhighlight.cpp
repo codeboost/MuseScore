@@ -9,6 +9,17 @@ static QPointF lightOffset = QPoint(1, 1);
 
 namespace vg
 {
+
+
+    QRadialGradient radialGradientFromColors(QRectF r, const QColor& gradient0, const QColor& gradient1)
+    {
+        QPointF gradientCenter = r.center() - lightOffset;
+        QRadialGradient gradient(gradientCenter, r.width());
+        gradient.setColorAt(0, gradient0);
+        gradient.setColorAt(1, gradient1);
+        return gradient;
+    }
+
     class XHighlight::Impl : public QObject
     {
     public:
@@ -92,6 +103,19 @@ namespace vg
         update();
     }
 
+    void XHighlight::setRadialColors(const QColor &color1, const QColor &color2)
+    {
+        QRadialGradient gradient = radialGradientFromColors(boundingRect(), color1, color2);
+        innerDot.setBrush(gradient);
+    }
+
+    void XHighlight::setBorderColor(const QColor &color)
+    {
+        QPen pen (color);
+        pen.setWidth(2);
+        innerDot.setPen(pen);
+    }
+
     void XHighlight::positionFinished()
     {
         impl->runScaleAnimation();
@@ -104,7 +128,7 @@ namespace vg
 
     InnerDot::InnerDot(QGraphicsItem *parent, const float radius): QGraphicsEllipseItem(parent), textItem(this), _radius(radius)
     {
-        setOptions(options);
+        textItem.setRect(boundingRect());
     }
 
     QRectF InnerDot::boundingRect() const
@@ -112,23 +136,9 @@ namespace vg
         return QRectF(-_radius/2, -_radius/2, _radius, _radius);
     }
 
-    void InnerDot::setOptions(const InnerDot::Options &opts)
-    {
-        options = opts;
-        textItem.setRect(boundingRect());
-        QPointF gradientCenter = boundingRect().center() - lightOffset;
-        QRadialGradient gradient(gradientCenter, boundingRect().width());
-        gradient.setColorAt(0, options.gradient0);
-        gradient.setColorAt(1, options.gradient1);
-        setBrush(gradient);
-        QPen pen = options.borderColor;
-        pen.setWidth(2);
-        setPen(pen);
-    }
-
     TextItem::TextItem(QGraphicsItem *parent): QGraphicsRectItem(parent){}
 
-    void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
         QTextOption textOption = QTextOption(Qt::AlignHCenter | Qt::AlignVCenter);
         painter->setPen(Qt::white);

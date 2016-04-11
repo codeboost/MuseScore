@@ -25,7 +25,6 @@ namespace vg
 
     void XFretboardView::setFretboardOptions(const XFretboard::Options &options)
     {
-        bool first = fretboard == nullptr;
         if (fretboard)
         {
             scene()->removeItem(fretboard);
