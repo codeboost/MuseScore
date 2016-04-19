@@ -26,7 +26,7 @@ ifeq ($(CPUS), 0)
 endif
 
 PREFIX    = "/usr/local"
-VERSION   = "2.1b-${REVISION}"
+VERSION   = "1.0b-${REVISION}"
 #VERSION = 2.1.0
 
 # Override SUFFIX and LABEL when multiple versions are installed to avoid conflicts.
@@ -133,7 +133,7 @@ install: release
 #   $  make portable
 # PREFIX sets install location *and* the name of the resulting AppDir.
 # Version is appended to PREFIX in CMakeLists.txt if MSCORE_UNSTABLE=FALSE.
-portable: PREFIX=MuseScore
+portable: PREFIX=VirtualGuitar
 portable: SUFFIX=-portable
 portable: LABEL=Portable AppImage
 portable: NO_RPATH=TRUE

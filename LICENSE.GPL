@@ -1,12 +1,14 @@
-MuseScore, free and open source music notation software
-Copyright (C) 2002-2015 Werner Schweer and others
+Virtual Guitar (powered by MuseScore), free and open source music notation software and guitar tutor.
+
+MuseScore Copyright (C) 2002-2016 Werner Schweer and others.
+Virtual Guitar Copyright (C) 2016 Florin Braghis
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as published 
 by the Free Software Foundation and reproduce below with 
 the following exception:
 
-- If you create a document which uses fonts included in MuseScore, and
+- If you create a document which uses fonts included in Virtual Guitar, and
 embed this font or unaltered portions of this font into the document,
 then this font does not by itself cause the resulting document to be
 covered by the GNU General Public License. This exception does not
