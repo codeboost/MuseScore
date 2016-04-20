@@ -35,7 +35,7 @@ SET(CPACK_NSIS_COMPRESSOR "/FINAL /SOLID lzma")
 IF(MINGW)
 
     SET(CPACK_PACKAGE_INSTALL_DIRECTORY ${MUSESCORE_NAME_VERSION})
-    SET(CPACK_PACKAGE_NAME    ${MUSESCORE_NAME})
+    SET(CPACK_PACKAGE_NAME ${MUSESCORE_NAME})
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
     SET(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}/build/packaging\\\\installer_head_nsis.bmp")

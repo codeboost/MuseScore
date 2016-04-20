@@ -4,7 +4,7 @@
 
 <?define ShortVersion="$(var.CPACK_PACKAGE_VERSION)" ?>
 <?define VShortVersion="2" ?>
-<?define ProdName="$(var.CPACK_PACKAGE_NAME) $(var.VShortVersion)" ?>
+<?define ProdName="$(var.CPACK_PACKAGE_NAME)" ?>
 <?define ShortProdName="$(var.CPACK_PACKAGE_NAME)$(var.VShortVersion)" ?>
 <?define ExeName="$(var.CPACK_PACKAGE_NAME).exe" ?>
 <?define ExeKey="$(var.ShortProdName).exe" ?>
@@ -45,9 +45,9 @@
         <WixVariable Id="WixUIDialogBmp" Value="$(var.CPACK_WIX_UI_DIALOG)"/>
         <?endif?>
         
-        <Property Id='ARPCONTACT'>http://musescore.org</Property>
-        <Property Id='ARPHELPLINK'>http://musescore.org</Property>
-        <Property Id='ARPURLINFOABOUT'>http://musescore.org</Property>
+        <Property Id='ARPCONTACT'>https://github.com/vguitar/vguitar</Property>
+        <Property Id='ARPHELPLINK'>https://github.com/vguitar/vguitar</Property>
+        <Property Id='ARPURLINFOABOUT'>https://github.com/vguitar/vguitar</Property>
 
         <!-- Add to checkbox to launch program after install ²-->
         <UI>
