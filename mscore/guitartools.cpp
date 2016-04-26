@@ -47,6 +47,8 @@ namespace Ms
             toolbar = new QToolBar(this);
             toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-flip")));
             toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-mirror")));
+            toolbar->addWidget(new AccessibleToolButton(toolbar, getAction("fretboard-toggle-fret-numbers")));
+            
             toolbar->setMaximumHeight(32);
             
             
@@ -252,7 +254,11 @@ namespace Ms
     void GuitarFretboard::flip()
     {
         fretboard->flipStrings();
-
+    }
+    
+    void GuitarFretboard::toggleFretNumbers()
+    {
+        fretboard->toggleFretNumbers();
     }
 
     void GuitarFretboard::heartBeat(QList<const Ms::Note *> notes)

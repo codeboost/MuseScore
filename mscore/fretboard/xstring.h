@@ -4,7 +4,6 @@
 
 #include <QGraphicsEffect>
 #include "xhighlight.h"
-#include "xvibrator.h"
 #include "xstringitem.h"
 
 namespace vg

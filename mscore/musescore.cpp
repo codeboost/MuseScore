@@ -4483,6 +4483,10 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
       {
             _guitarFretboard->flip();
       }
+      else if (cmd == "fretboard-toggle-fret-numbers")
+      {
+          _guitarFretboard->toggleFretNumbers(); 
+      }
 
           
     

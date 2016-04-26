@@ -3339,7 +3339,17 @@ Shortcut Shortcut::_sc[] = {
             0,
             Icons::vframe_ICON,
             Qt::ApplicationShortcut
-      }
+      },
+    {
+        MsWidget::MAIN_WINDOW,
+        STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
+        "fretboard-toggle-fret-numbers",
+        QT_TRANSLATE_NOOP("action","Toggle fret numbers"),
+        QT_TRANSLATE_NOOP("action","Toggle fret numbers"),
+        0,
+        Icons::sharp_ICON,
+        Qt::ApplicationShortcut
+    }
 
 
       };

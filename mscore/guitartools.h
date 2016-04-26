@@ -32,7 +32,7 @@ namespace Ms
         void mirror();
         void rotate();
         void flip(); 
-        
+        void toggleFretNumbers();
         void changeSelection(SelState state);
         
         void setDisplayedPart(const Ms::Part* part);
