@@ -13,9 +13,27 @@
 
 namespace vg
 {
+    static bool texturedBackground = false;
+
+    static bool isOctaveFret(int fretNumber)
+    {
+        return ((fretNumber % 7) == 0) || ((fretNumber % 12) == 0);
+    }
+
     XFretboard::XFretboard(QGraphicsItem *parentItem, const Options& opt): QGraphicsRectItem(parentItem), options(opt)
     {
-        backgroundImage.load(":/data/wood-texture.jpg");
+        if (texturedBackground)
+        {
+            backgroundImage.load(":/data/wood-texture.jpg");
+            QBrush brush(backgroundImage);
+            setBrush(brush);
+        }
+        else
+        {
+            QBrush brush(QColor("#222"));
+            setBrush(brush);
+        }
+
         setFlag(ItemSendsGeometryChanges, false);
         createFretboardComponents();
     }
@@ -110,7 +128,7 @@ namespace vg
 
             addDot(dotn);
 
-            if ((dotn % options.octaveFret) == 0)
+            if (isOctaveFret(dotn))
                 addDot(dotn);
         }
         positionDots();
@@ -150,11 +168,14 @@ namespace vg
             return (x / last) * length;
         });
 
-        for (int k = 1; k < options.numberOfFrets; k++)
+        for (int k = 0; k < options.numberOfFrets; k++)
         {
             const XFret::Ptr& fret = frets[k];
             fret->setRect(positions[k] + originx, boundingRect().top(), options.fretThickness, boundingRect().height());
         }
+
+        //Hide the first fret (next to the nut)
+        frets[0]->hide();
     }
 
     void XFretboard::createStrings()
@@ -170,20 +191,17 @@ namespace vg
 
         for (int k = 0; k < options.numberOfStrings; k++)
         {
-            XString::Ptr string = XString::Ptr(new XString(this));
-            string->setRect(x, y, boundingRect().width(), stringAreaHeight);
+            QRectF stringRect(x, y, boundingRect().width(), stringAreaHeight);
             float ratio = (float)(k + 1) / (float)options.numberOfStrings;
-            string->thickness = ratio * thickestString;
+            qreal thickness = ratio * thickestString;
+
+            auto stringType = k >= 3 ? Golden : Steel;
+            XString::Ptr string = XString::Ptr(new XString(stringRect, this, thickness, stringType));
             string->setNoteText(noteNames[options.numberOfStrings - k - 1]);
             string->noteNameOffset = (options.nutOffset + nut->rect().width()) / 2;
             y+=stringAreaHeight;
             strings.push_back(string);
         }
-    }
-
-    void XFretboard::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
-    {
-        painter->drawImage(boundingRect(), backgroundImage);
     }
 
     QPointF XFretboard::intersectionPoint(int fretNumber, int stringNumber)
@@ -212,6 +230,8 @@ namespace vg
         return r.center();
     }
 
+
+
     void XFretboard::positionDots()
     {
         int dotIndex = 0;
@@ -221,7 +241,7 @@ namespace vg
             int fretNumber = options.dotPositions[k];
             if (fretNumber < options.numberOfFrets)
             {
-                if ((fretNumber % options.octaveFret) == 0)
+                if (isOctaveFret(fretNumber))
                 {
                     int firstDot = options.numberOfStrings / 3;
                     int secondDot = options.numberOfStrings - firstDot;
@@ -237,5 +257,41 @@ namespace vg
                 break;
         }
     }
+
+    void XFretboard::createFretNumbers()
+    {
+        if (fretNumbers.size() == 0)
+        {
+            for (int k = 1; k < options.numberOfFrets; k++)
+            {
+                auto h = XHighlight::Ptr(new XHighlight(this, 20));
+
+                auto t = QString::number(k, 10);
+                h->setText(t);
+                h->setRadialColors("#333", "#888");
+                fretNumbers.push_back(h);
+                QPointF pos = positionForDot(k, options.numberOfStrings / 2);
+                h->setPos(pos);
+            }
+        }
+    }
+
+    void XFretboard::setFretNumbersVisible(bool visible)
+    {
+
+        createFretNumbers();
+
+        for (auto& h:fretNumbers)
+        {
+            if (visible)
+                h->show();
+            else
+                h->hide();
+        }
+
+        _fretNumbersVisible = visible;
+    }
+
+
 
 }

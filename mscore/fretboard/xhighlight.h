@@ -21,9 +21,9 @@ namespace vg
         Q_PROPERTY(qreal scale READ scale WRITE setScale)
     public:
         TextItem textItem;
-        InnerDot(QGraphicsItem* parent, const float radius = 30.0f);
+        InnerDot(QGraphicsItem* parent, const float radius = 25.0f);
         QRectF boundingRect() const;
-        float _radius = 30.0f;
+        float _radius = 25.0f;
     };
 
     class XHighlight : public QObject, public QGraphicsEllipseItem
@@ -35,7 +35,7 @@ namespace vg
     public:
         typedef QSharedPointer<XHighlight> Ptr;
         InnerDot innerDot;
-        XHighlight(QGraphicsItem* parent, const float radius = 30.0f);
+        XHighlight(QGraphicsItem* parent, const float radius = 25.0f);
         void setPosAnimated(const QPointF &pos, bool bAnimated = true);
         void hideAfter(int msecs);
         QRectF boundingRect() const;
@@ -51,7 +51,7 @@ namespace vg
     private:
         class Impl;
         QSharedPointer<Impl> impl;
-        float _radius = 30.0f;
+        float _radius = 25.0f;
     };
 }
 

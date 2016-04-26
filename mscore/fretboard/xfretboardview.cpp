@@ -63,6 +63,11 @@ namespace vg
             setOrientation(Qt::Vertical);
     }
 
+    void XFretboardView::toggleFretNumbers()
+    {
+        fretboard->setFretNumbersVisible(!fretboard->_fretNumbersVisible);
+    }
+
     void XFretboardView::setOrientation(Qt::Orientation o)
     {
         if (o == orientation)

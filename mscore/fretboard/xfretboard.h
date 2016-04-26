@@ -27,7 +27,6 @@ namespace vg
             int stringAreaMargin = 5; //Top and bottom spacing before the strings
 
             QVector<int> dotPositions = {3, 5, 7, 9, 12, 15, 17, 19, 21, 24, 27, 30}; //--> model
-            int octaveFret = 12;
         };
         Options options;
 
@@ -46,6 +45,10 @@ namespace vg
 
         QRectF boundingRect() const;
 
+        bool _fretNumbersVisible = false;
+        void createFretNumbers();
+        void setFretNumbersVisible(bool visible);
+
     private:
         void createFretboardComponents();
         void addDot(int dotn);
@@ -54,7 +57,6 @@ namespace vg
         void createStrings();
         void positionFrets();
         void positionDots();
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
         QPointF intersectionPoint(int fretNumber, int stringNumber);
         QPointF positionForDot(int fretNumber, int stringNumber);
         QImage backgroundImage;
@@ -62,6 +64,7 @@ namespace vg
         QVector<XString::Ptr> strings;
         QVector<XFret::Ptr> frets;
         QVector<XDot::Ptr> dots;
+        QVector<XHighlight::Ptr> fretNumbers;
         QSharedPointer<QGraphicsRectItem> nut;
     };
 }

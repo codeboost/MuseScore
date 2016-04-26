@@ -19,6 +19,8 @@ namespace vg
         void flipStrings();
         void mirrorSides();
         void toggleOrientation();
+        void toggleFretNumbers();
+
         void setOrientation(Qt::Orientation orientation);
     protected:
         QTransform mirrorAndFlip;
