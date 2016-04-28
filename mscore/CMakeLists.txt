@@ -127,6 +127,10 @@ QT5_WRAP_UI (ui_headers
       inspector/inspector_bend.ui
       inspector/inspector_arpeggio.ui
       inspector/inspector_tremolo.ui
+
+      registration/enterregistrationcode.ui
+      registration/trialdialog.ui
+
       ${SCRIPT_UI}
       )
 
@@ -288,6 +292,12 @@ add_executable ( ${ExecutableName}
       fretboard/xfret.cpp
       fretboard/xfretboardview.cpp
       fretboard/xstringitem.cpp
+
+      registration/registrationmodel.cpp
+      registration/enterregistrationcode.cpp
+      registration/trialdialog.cpp
+      registration/registrationchecker.cpp
+
       ${OMR_FILES}
       ${AUDIO}
       ${SCRIPT_FILES}

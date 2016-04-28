@@ -107,6 +107,7 @@
 #include "startcenter.h"
 #include "help.h"
 #include "awl/aslider.h"
+#include "registration/registrationchecker.h"
 
 
 
@@ -121,6 +122,8 @@ namespace Ms {
 
 MuseScore* mscore;
 MasterSynthesizer* synti;
+vg::RegistrationChecker registrationChecker;
+
 
 bool enableExperimental = false;
 bool enableTestMode = false;
@@ -5316,7 +5319,8 @@ int main(int argc, char* av[])
             mscore->showSynthControl(true);
       if (settings.value("mixerVisible", false).toBool())
             mscore->showMixer(true);
-
+          
+      registrationChecker.checkRegistration(mscore);
       return qApp->exec();
       }
 

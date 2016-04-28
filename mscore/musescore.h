@@ -221,7 +221,6 @@ class MuseScoreApplication : public QtSingleApplication {
 
 class MuseScore : public QMainWindow, public MuseScoreCore {
       Q_OBJECT
-
       QSettings settings;
       ScoreView* cv                        { 0 };
       ScoreState _sstate;
@@ -500,6 +499,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
    public:
       MuseScore();
       ~MuseScore();
+      void checkRegistration();
       bool checkDirty(Score*);
       PlayPanel* getPlayPanel() const;
       Mixer* getMixer() const { return mixer; }
