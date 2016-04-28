@@ -70,12 +70,9 @@ namespace Ms
         instrument = nullptr;
         part = nullptr;
         setObjectName("fretboard");
-        //setWindowTitle(tr("Guitar Fretboard"));
-        //setAllowedAreas(Qt::DockWidgetAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea));
-        //fretboard = new vg::Fretboard(this);
         fretboard = new vg::XFretboardView(this);
-        //fretContainer = new FretContainer(this, fretboard);
         fretContainer = new FretContainer(this, fretboard);
+        setStyleSheet("::title { text-align: center;}");
     }
     
     void GuitarFretboard::resizeEvent(QResizeEvent *event)
@@ -116,9 +113,6 @@ namespace Ms
     
     void GuitarFretboard::addHighlight(int nString, int nFret)
     {
-     // static int counter = 0;
-     //   qDebug() << counter++ << ". addHighlight: [" << nString << " : " << nFret << "]";
-        
         highlights[nString] = nFret;
     }
     
