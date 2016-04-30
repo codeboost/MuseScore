@@ -22,9 +22,6 @@ namespace vg
 
         void load();
         int getNumberTrialDaysLeft();
-
-
-
     private:
         class Impl;
         friend class Impl;

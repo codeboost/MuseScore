@@ -9,13 +9,13 @@
 
 namespace vg
 {
-    static const char* RegistrationServerURL = "http://www.boomhub.org:9000/verify";
+    static const char* RegistrationServerURL = "http://localhost:3000/api/v1/verifyLicense";
 
     static const char* vgTrialStartKey = "vgTrialStart";
     static const char* vgRegNumberKey = "vgRegNumber";
     static const char* vgRegNameKey = "vgRegName";
     static const char* vgRegEmailKey = "vgRegEmail";
-    static const char* vgRegTokenKey = "vgRegToken";
+    //static const char* vgRegTokenKey = "vgRegToken";
     static const char* vgRegDateKey = "vgRegDate";
 
     struct RegInfo
@@ -24,7 +24,6 @@ namespace vg
         QString registrationNumberHash;
         QString registrationName;
         QString registrationEmail;
-        QString registrationToken;
         QDate   registrationDate;
 
         void load()
@@ -52,7 +51,6 @@ namespace vg
                 registrationNumberHash = settings.value(vgRegNumberKey).toString();
                 registrationName = settings.value(vgRegNameKey).toString();
                 registrationEmail = settings.value(vgRegEmailKey).toString();
-                registrationToken = settings.value(vgRegTokenKey).toString();
                 registrationDate = settings.value(vgRegDateKey).toDate();
             }
 
@@ -69,9 +67,7 @@ namespace vg
                 settings.setValue(vgRegNumberKey, registrationNumberHash);
                 settings.setValue(vgRegNameKey, registrationName);
                 settings.setValue(vgRegEmailKey, registrationEmail);
-                settings.setValue(vgRegTokenKey, registrationToken);
                 settings.setValue(vgRegDateKey, registrationDate);
-
             }
             settings.sync();
         }
@@ -82,7 +78,6 @@ namespace vg
             qDebug() << "registrationNumber: " << registrationNumberHash;
             qDebug() << "registrationName: " << registrationName;
             qDebug() << "registrationEmail: " << registrationEmail;
-            qDebug() << "registrationToken: " << registrationToken;
             qDebug() << "registrationDate: " << registrationDate;
         }
 
@@ -91,7 +86,6 @@ namespace vg
             registrationNumberHash = "";
             registrationName = "";
             registrationEmail = "";
-            registrationToken = "";
         }
     };
 
@@ -129,7 +123,7 @@ namespace vg
             }
 
             QUrl url(RegistrationServerURL);
-            url.setQuery("registrationHash=" + pendingRegNumberHash);
+            url.setQuery("registrationKeyHash=" + pendingRegNumberHash);
 
             QNetworkRequest request;
             request.setUrl(url);
@@ -192,16 +186,12 @@ namespace vg
 
             auto json = doc.object();
 
-            QString token = json["token"].toString();
-            if (token.length() > 0)
+            QString status = json["status"].toString();
+            if (status == "success")
             {
-                qDebug() << "token: " << token;
-
                 regInfo.registrationNumberHash = pendingRegNumberHash;
-                regInfo.registrationToken = token;
                 regInfo.registrationName = json["name"].toString();
                 regInfo.registrationEmail = json["email"].toString();
-                //regInfo.registrationDate = json["date"].toVariant().toDate();
                 regInfo.save();
                 regInfo.load();
                 return true;
@@ -230,7 +220,7 @@ namespace vg
 
     bool RegistrationModel::isApplicationRegistered()
     {
-        return impl->regInfo.registrationNumberHash.length() > 0 && impl->regInfo.registrationToken.length() > 0;
+        return impl->regInfo.registrationNumberHash.length() > 0;
     }
 
     QString RegistrationModel::getRegistrationName() const
