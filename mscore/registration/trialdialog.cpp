@@ -58,7 +58,7 @@ namespace vg
 
     void TrialDialog::on_purchaseLicenseButton_clicked()
     {
-        QDesktopServices::openUrl(QUrl("http://boomhub.org:9000/", QUrl::TolerantMode));
+        QDesktopServices::openUrl(QUrl("http://boomhub.org:3000/purchase", QUrl::TolerantMode));
     }
 }
 
