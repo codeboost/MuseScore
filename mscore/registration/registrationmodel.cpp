@@ -9,7 +9,7 @@
 
 namespace vg
 {
-    static const char* RegistrationServerURL = "http://localhost:3000/api/v1/verifyLicense";
+    static const char* RegistrationServerURL = "http://boomhub.org:3000/api/v1/verifyLicense";
 
     static const char* vgTrialStartKey = "vgTrialStart";
     static const char* vgRegNumberKey = "vgRegNumber";
