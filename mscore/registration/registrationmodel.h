@@ -3,8 +3,13 @@
 
 #include <QObject>
 
+//Define is sometimes really useful, btw :)
+
+#define VGServerURL "http://virtualguitarp.website"
+
 namespace vg
 {
+
     class RegistrationModel : public QObject
     {
         Q_OBJECT
