@@ -13,9 +13,12 @@ set PATH=%PATH%;F:\Qt\Tools\QtCreator\bin
 echo -- Adding %SystemRoot%\System32 to PATH
 set PATH=%PATH%;%SystemRoot%\System32
 
+
 echo -- Adding Wix to path
 set PATH=%PATH%;C:\Program Files\WiX Toolset v3.10\bin
 
+echo -- Adding git to path
+set PATH=%PATH%;C:\Users\florin\AppData\Local\Programs\Git\cmd
 
 echo -- QMAKESPEC set to win32-g++
 set QMAKESPEC=win32-g++
