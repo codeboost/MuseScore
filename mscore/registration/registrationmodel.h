@@ -5,7 +5,11 @@
 
 //Define is sometimes really useful, btw :)
 
-#define VGServerURL "http://virtualguitarp.website"
+#ifdef TESTING_IT
+    #define VGServerURL "http://localhost:3000"
+#else
+    #define VGServerURL "http://virtualguitarp.website"
+#endif
 
 namespace vg
 {

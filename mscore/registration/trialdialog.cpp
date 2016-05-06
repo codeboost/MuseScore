@@ -58,7 +58,16 @@ namespace vg
 
     void TrialDialog::on_purchaseLicenseButton_clicked()
     {
-        QDesktopServices::openUrl(QUrl(VGServerURL"/purchase", QUrl::TolerantMode));
+        QString platform = "";
+#ifdef Q_OS_WIN
+        platform = "win";
+#elif defined(Q_OS_DARWIN)
+        platform = "osx";
+#endif
+
+        QUrl url = QUrl(VGServerURL"/purchase", QUrl::TolerantMode);
+        url.setQuery("platform="+platform);
+        QDesktopServices::openUrl(url);
     }
 }
 
