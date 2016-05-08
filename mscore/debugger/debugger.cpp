@@ -176,6 +176,8 @@ Debugger::Debugger(QWidget* parent)
 
 void Debugger::selectElement()
       {
+      if (!curElement)
+            return;
       curElement->score()->select(curElement);
       }
 
@@ -185,6 +187,8 @@ void Debugger::selectElement()
 
 void Debugger::resetElement()
       {
+      if (!curElement)
+            return;
       curElement->reset();
       layout();
       }
@@ -195,6 +199,8 @@ void Debugger::resetElement()
 
 void Debugger::layout()
       {
+      if (!curElement)
+            return;
       curElement->score()->doLayout();
       curElement->score()->end();
       mscore->endCmd();
@@ -581,7 +587,7 @@ void Debugger::updateElement(Element* el)
       if (!found)
             qDebug("Debugger: element not found %s\n", el->name());
 
-      setWindowTitle(QString("MuseScore: Debugger: ") + el->name());
+      setWindowTitle(QString("Virtual Guitar: Debugger: ") + el->name());
 
       ShowElementBase* ew = elementViews[int(el->type())];
       if (ew == 0) {

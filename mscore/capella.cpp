@@ -1877,7 +1877,7 @@ void ChordObj::read()
             char c           = cap->readChar();
             bool bit7        = c & 0x80;
             bool bit6        = c & 0x40;
-            n.pitch          = c;
+            n.pitch          = (signed char) c;
             if (bit7 != bit6) {
                   n.explAlteration = 2;
                   n.pitch ^= 0x80;
@@ -1992,7 +1992,7 @@ unsigned Capella::readUnsigned()
 
 int Capella::readInt()
       {
-      char c;
+      signed char c;
       read(&c, 1);
       if (c == -128) {
             short s;
@@ -2657,7 +2657,7 @@ Score::FileError importCapella(Score* score, const QString& name)
       catch (Capella::Error errNo) {
             if (!MScore::noGui) {
                   QMessageBox::warning(0,
-                     QWidget::tr("MuseScore: Import Capella"),
+                     QWidget::tr("Virtual Guitar: Import Capella"),
                      QWidget::tr("Load failed: ") + cf.error(errNo),
                      QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
                   }

@@ -19,20 +19,20 @@
 namespace Ms {
 
 //---------------------------------------------------------
-//   showStartcenter
+//   showStartcenter -- Disabled for Virtual Guitar
 //---------------------------------------------------------
 
 void MuseScore::showStartcenter(bool val)
       {
-      QAction* a = getAction("startcenter");
-      if (val && startcenter == nullptr) {
-            startcenter = new Startcenter;
-            startcenter->addAction(a);
-            startcenter->readSettings(settings);
-            connect(startcenter, SIGNAL(closed(bool)), a, SLOT(setChecked(bool)));
-            connect(startcenter, SIGNAL(rejected()), a, SLOT(toggle()));
-            }
-      startcenter->setVisible(val);
+//      QAction* a = getAction("startcenter");
+//      if (val && startcenter == nullptr) {
+//            startcenter = new Startcenter;
+//            startcenter->addAction(a);
+//            startcenter->readSettings(settings);
+//            connect(startcenter, SIGNAL(closed(bool)), a, SLOT(setChecked(bool)));
+//            connect(startcenter, SIGNAL(rejected()), a, SLOT(toggle()));
+//            }
+//      startcenter->setVisible(val);
       }
 
 //---------------------------------------------------------
@@ -115,10 +115,6 @@ void Startcenter::closeEvent(QCloseEvent*)
 void Startcenter::updateRecentScores()
       {
       QFileInfoList fil = mscore->recentScores();
-      if (fil.size() == 0) {
-            QFileInfo gettingStartedScore(":/data/Getting_Started.mscz");
-            fil.prepend(gettingStartedScore);
-            }
       QFileInfo newScore(":/data/Create_New_Score.mscz");
       fil.prepend(newScore);
       recentPage->setScores(fil);
@@ -259,6 +255,8 @@ void MyWebView::link(const QUrl& url)
       QFileInfo fi(path);
       if (fi.suffix() == "mscz" || fi.suffix() == "xml" || fi.suffix() == "mxl") {
             mscore->loadFile(url);
+            QAction* a = getAction("startcenter");
+            a->setChecked(false);
             mscore->showStartcenter(false);
             }
       else

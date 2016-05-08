@@ -574,7 +574,7 @@ void TextBlock::remove(int column)
             for (const QChar& c : i->text) {
                   if (col == column) {
                         if (c.isSurrogate())
-                              i->text.remove(rcol, 1);
+                              i->text.remove(rcol, 2);
                         if (i->format.type() == CharFormatType::SYMBOL) {
                               i->ids.removeAt(idx);
                               if (i->ids.isEmpty())
@@ -2708,6 +2708,8 @@ Element* Text::drop(const DropData& data)
                         if (code & 0xffff0000) {
                               insert(_cursor, QChar::highSurrogate(code));
                               insert(_cursor, QChar::lowSurrogate(code));
+                              _cursor->setColumn(_cursor->column() - 1);
+                              _cursor->setSelectColumn(_cursor->column());
                               }
                         else
                               insert(_cursor, QChar(code));
@@ -2890,6 +2892,46 @@ QString Text::convertToHtml(const QString& s, const TextStyle& st)
       qreal size     = st.size();
       QString family = st.family();
       return QString("<html><body style=\"font-family:'%1'; font-size:%2pt;\">%3</body></html>").arg(family).arg(size).arg(s);
+      }
+
+//---------------------------------------------------------
+//   tagEscape
+//---------------------------------------------------------
+
+QString Text::tagEscape(QString s)
+      {
+      QStringList tags = { "sym", "b", "i", "u", "sub", "sup" };
+      for (QString tag : tags) {
+            QString openTag = "<" + tag + ">";
+            QString openProxy = "!!" + tag + "!!";
+            QString closeTag = "</" + tag + ">";
+            QString closeProxy = "!!/" + tag + "!!";
+            s.replace(openTag, openProxy);
+            s.replace(closeTag, closeProxy);
+            }
+      s = Xml::xmlString(s);
+      for (QString tag : tags) {
+            QString openTag = "<" + tag + ">";
+            QString openProxy = "!!" + tag + "!!";
+            QString closeTag = "</" + tag + ">";
+            QString closeProxy = "!!/" + tag + "!!";
+            s.replace(openProxy, openTag);
+            s.replace(closeProxy, closeTag);
+            }
+      return s;
+      }
+
+//---------------------------------------------------------
+//   unEscape
+//---------------------------------------------------------
+
+QString Text::unEscape(QString s)
+      {
+      s.replace("&lt;", "<");
+      s.replace("&gt;", ">");
+      s.replace("&amp;", "&");
+      s.replace("&quot;", "\"");
+      return s;
       }
 
 //---------------------------------------------------------

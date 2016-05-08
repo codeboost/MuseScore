@@ -2608,8 +2608,8 @@ bool Measure::createEndBarLines()
       int span    = 0;        // span counter
       int aspan   = 0;        // actual span
       bool mensur = false;    // keep note of Mensurstrich case
-      int spanTot;            // to keep track of the target span as we count down
-      int lastIdx;
+      int spanTot = 0;        // to keep track of the target span as we count down
+      int lastIdx = 0;
       int spanFrom = 0;
       int spanTo = 0;
       static const int unknownSpanFrom = 9999;
@@ -2905,6 +2905,13 @@ bool Measure::isMeasureRest(int staffIdx) const
             for (int track = strack; track < etrack; ++track) {
                   Element* e = s->element(track);
                   if (e && e->type() != Element::Type::REST)
+                        return false;
+                  }
+            for (Element* a : s->annotations()) {
+                  if (!a || a->systemFlag())
+                        continue;
+                  int atrack = a->track();
+                  if (atrack >= strack && atrack < etrack)
                         return false;
                   }
             }

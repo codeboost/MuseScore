@@ -63,7 +63,7 @@ void Album::print()
       loadScores();
       QPrinter printer(QPrinter::HighResolution);
 
-      printer.setCreator("MuseScore Version: " MSC_VERSION);
+      printer.setCreator("Virtual Guitar Version: " MSC_VERSION);
       printer.setFullPage(true);
       printer.setColorMode(QPrinter::Color);
       printer.setOutputFormat(QPrinter::NativeFormat);
@@ -240,7 +240,7 @@ bool Album::read(const QString& p)
       QFile f(_path);
       if (!f.open(QIODevice::ReadOnly)) {
             QMessageBox::warning(0,
-               QWidget::tr("MuseScore: Open Album failed"),
+               QWidget::tr("Virtual Guitar: Open Album failed"),
                QString(strerror(errno)),
                QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
             return false;

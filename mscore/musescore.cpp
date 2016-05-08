@@ -61,6 +61,7 @@
 #include "libmscore/segment.h"
 #include "editraster.h"
 #include "pianotools.h"
+#include "guitartools.h"
 #include "mediadialog.h"
 #include "workspace.h"
 #include "selectdialog.h"
@@ -106,6 +107,9 @@
 #include "startcenter.h"
 #include "help.h"
 #include "awl/aslider.h"
+#include "registration/registrationchecker.h"
+
+
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -118,6 +122,8 @@ namespace Ms {
 
 MuseScore* mscore;
 MasterSynthesizer* synti;
+vg::RegistrationChecker registrationChecker;
+
 
 bool enableExperimental = false;
 bool enableTestMode = false;
@@ -166,7 +172,7 @@ void MuseScore::cmdInsertMeasures()
       {
       if (cs) {
             if (cs->selection().isNone() && !cs->selection().findMeasure()) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "VirtualGuitar",
                         tr("No measure selected:\n" "Please select a measure and try again"));
                   }
             else {
@@ -214,6 +220,11 @@ QString getSharePath()
       QDir dir(QCoreApplication::applicationDirPath() + QString("/../Resources"));
       return dir.absolutePath() + "/";
 #else
+      // Try relative path (needed for portable AppImage and non-standard installations)
+      QDir dir(QCoreApplication::applicationDirPath() + QString("/../share/" INSTALL_NAME));
+      if (dir.exists())
+            return dir.absolutePath() + "/";
+      // Otherwise fall back to default location (e.g. if binary has moved relative to share)
       return QString( INSTPREFIX "/share/" INSTALL_NAME);
 #endif
 #endif
@@ -383,7 +394,7 @@ MuseScore::MuseScore()
 
       if (!converterMode && !pluginMode) {
             _loginManager = new LoginManager(this);
-
+#if 0
             // initialize help engine
             QString lang = mscore->getLocaleISOCode();
             if (lang == "en_US")    // HACK
@@ -397,6 +408,7 @@ MuseScore::MuseScore()
                   delete _helpEngine;
                   _helpEngine = 0;
                   }
+#endif
             }
 
       _positionLabel = new QLabel;
@@ -570,6 +582,11 @@ MuseScore::MuseScore()
 
       transportTools = addToolBar(tr("Transport Tools"));
       transportTools->setObjectName("transport-tools");
+
+      transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("zoomin")));
+      transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("zoomout")));
+
+
 #ifdef HAS_MIDI
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("midi-on")));
       transportTools->addSeparator();
@@ -577,7 +594,11 @@ MuseScore::MuseScore()
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("rewind")));
       _playButton = new AccessibleToolButton(transportTools, getAction("play"));
       transportTools->addWidget(_playButton);
+          
+          transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop-in")));
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop")));
+          transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("loop-out")));
+
       transportTools->addSeparator();
       QAction* repeatAction = getAction("repeat");
       repeatAction->setChecked(MScore::playRepeats);
@@ -585,13 +606,34 @@ MuseScore::MuseScore()
       transportTools->addWidget(new AccessibleToolButton(transportTools, getAction("pan")));
       transportTools->addWidget(new AccessibleToolButton(transportTools, metronomeAction));
 
-      cpitchTools = addToolBar(tr("Concert Pitch"));
-      cpitchTools->setObjectName("pitch-tools");
-      cpitchTools->addWidget(new AccessibleToolButton( cpitchTools, getAction("concert-pitch")));
+        
+      addToolBarBreak();
 
-      QToolBar* foto = addToolBar(tr("Image Capture"));
-      foto->setObjectName("foto-tools");
-      foto->addWidget(new AccessibleToolButton(foto, getAction("fotomode")));
+      QComboBox* playbackSpeedCombo = new QComboBox(this);
+#if defined(Q_OS_MAC)
+      playbackSpeedCombo->setFocusPolicy(Qt::StrongFocus);
+#else
+      playbackSpeedCombo->setFocusPolicy(Qt::TabFocus);
+#endif
+      playbackSpeedCombo->setAccessibleName(tr("Playback speed"));
+      playbackSpeedCombo->setFixedHeight(preferences.iconHeight + 8);  // hack
+
+      for (int k = 1; k < 15; k++){
+          playbackSpeedCombo->addItem(QString("%1%").arg(k * 10), (float)k/100);
+      }
+          playbackSpeedCombo->setCurrentIndex(9);
+      connect(playbackSpeedCombo, SIGNAL(activated(int)), SLOT(switchPlaybackSpeed(int)));
+      transportTools->addWidget(playbackSpeedCombo);
+
+
+
+//      cpitchTools = addToolBar(tr("Concert Pitch"));
+//      cpitchTools->setObjectName("pitch-tools");
+//      cpitchTools->addWidget(new AccessibleToolButton( cpitchTools, getAction("concert-pitch")));
+
+//      QToolBar* foto = addToolBar(tr("Image Capture"));
+//      foto->setObjectName("foto-tools");
+//      foto->addWidget(new AccessibleToolButton(foto, getAction("fotomode")));
 
       addToolBarBreak();
 
@@ -636,6 +678,8 @@ MuseScore::MuseScore()
             entryTools->addWidget(tb);
             }
 
+          
+      //showGuitarFretboard(true);
 
       //---------------------
       //    Menus
@@ -786,6 +830,11 @@ MuseScore::MuseScore()
       menuView->addAction(a);
 
       a = getAction("toggle-piano");
+      a->setCheckable(true);
+      menuView->addAction(a);
+      
+            
+      a = getAction("toggle-fretboard");
       a->setCheckable(true);
       menuView->addAction(a);
 
@@ -1180,19 +1229,28 @@ void MuseScore::selectScore(QAction* action)
 //   selectionChanged
 //---------------------------------------------------------
 
-void MuseScore::selectionChanged(SelState selectionState)
-      {
-      bool enable = selectionState != SelState::NONE;
-      getAction("cut")->setEnabled(enable);
-      getAction("copy")->setEnabled(enable);
-      getAction("select-similar-range")->setEnabled(selectionState == SelState::RANGE);
-      if (pianorollEditor)
+    void MuseScore::selectionChanged(SelState selectionState)
+    {
+        bool enable = selectionState != SelState::NONE;
+        getAction("cut")->setEnabled(enable);
+        getAction("copy")->setEnabled(enable);
+        getAction("select-similar-range")->setEnabled(selectionState == SelState::RANGE);
+        if (pianorollEditor)
             pianorollEditor->changeSelection(selectionState);
-      if (drumrollEditor)
+        if (drumrollEditor)
             drumrollEditor->changeSelection(selectionState);
-      if (_inspector && _inspector->isVisible())
+
+        if (_inspector && _inspector->isVisible())
             updateInspector();
-      }
+        
+        if (_guitarFretboard)
+        {
+            _guitarFretboard->changeSelection(selectionState);
+        }
+        
+    }
+    
+    
 
 //---------------------------------------------------------
 //   updateInspector
@@ -1202,7 +1260,7 @@ void MuseScore::updateInspector()
       {
       if (!_inspector)
             return;
-      if (cs) {
+      if (_inspector->isVisible() && cs) {
             if (state() == STATE_EDIT)
                   _inspector->setElement(cv->getEditObject());
             else if (state() == STATE_FOTO)
@@ -1662,7 +1720,17 @@ void MuseScore::showPlayPanel(bool visible)
       if (playPanel == 0) {
             if (!visible)
                   return;
-            playPanel = new PlayPanel(this);
+
+            playPanelDock = new PlayPanelDockWidget(this);
+            addDockWidget(Qt::TopDockWidgetArea, playPanelDock);
+
+//            QAction* a = getAction("toggle-fretboard");
+//            _guitarFretboard = new GuitarFretboard(this);
+//            addDockWidget(Qt::BottomDockWidgetArea, _guitarFretboard);
+//            connect(_guitarFretboard, SIGNAL(visibilityChanged(bool)), a, SLOT(setChecked(bool)));
+
+            playPanel = playPanelDock->getPlayPanel();
+
             connect(playPanel, SIGNAL(gainChange(float)),     synti, SLOT(setGain(float)));
             connect(playPanel, SIGNAL(relTempoChanged(double)),seq, SLOT(setRelTempo(double)));
             connect(playPanel, SIGNAL(posChange(int)),         seq, SLOT(seek(int)));
@@ -1670,7 +1738,7 @@ void MuseScore::showPlayPanel(bool visible)
             connect(synti,     SIGNAL(gainChanged(float)), playPanel, SLOT(setGain(float)));
             playPanel->setGain(synti->gain());
             playPanel->setScore(cs);
-            mscore->stackUnder(playPanel);
+            //mscore->stackUnder(playPanel);
             }
       playPanel->setVisible(visible);
       playId->setChecked(visible);
@@ -2254,7 +2322,7 @@ StartDialog::StartDialog(QWidget* parent)
       {
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setWindowTitle(tr("MuseScore Startup Dialog"));
+      setWindowTitle(tr("VirtualGuitar Startup Dialog"));
       connect(createScore, SIGNAL(clicked()), SLOT(createScoreClicked()));
       connect(loadScore, SIGNAL(clicked()), SLOT(loadScoreClicked()));
       }
@@ -2463,7 +2531,7 @@ bool MuseScore::readLanguages(const QString& path)
                 error.sprintf(qPrintable(tr("Error reading language file %s at line %d column %d: %s\n")),
                    qPrintable(qf.fileName()), line, column, qPrintable(err));
                 QMessageBox::warning(0,
-                   QWidget::tr("MuseScore: Load Languages Failed:"),
+                   QWidget::tr("VirtualGuitar: Load Languages Failed:"),
                    error,
                    QString::null, QWidget::tr("Quit"), QString::null, 0, 1);
                 return false;
@@ -2523,9 +2591,9 @@ void MuseScore::showModeText(const QString& s)
 
 void MuseScore::changeState(ScoreState val)
       {
-// printf("MuseScore::changeState: %s\n", stateName(val));
+// printf("VirtualGuitar::changeState: %s\n", stateName(val));
       if (MScore::debugMode)
-            qDebug("MuseScore::changeState: %s", stateName(val));
+            qDebug("VirtualGuitar::changeState: %s", stateName(val));
 
 //      if (_sstate == val)
 //            return;
@@ -2615,7 +2683,7 @@ void MuseScore::changeState(ScoreState val)
       menuWorkspaces->setEnabled(enable);
 
       transportTools->setEnabled(enable && !noSeq && seq && seq->isRunning());
-      cpitchTools->setEnabled(enable);
+      //cpitchTools->setEnabled(enable);
       mag->setEnabled(enable);
       entryTools->setEnabled(enable);
 
@@ -2672,7 +2740,7 @@ void MuseScore::changeState(ScoreState val)
                   showModeText(tr("Score locked"));
                   break;
             default:
-                  qFatal("MuseScore::changeState: illegal state %d", val);
+                  qFatal("VirtualGuitar::changeState: illegal state %d", val);
                   break;
             }
       if (paletteBox)
@@ -2830,11 +2898,11 @@ void MuseScore::readSettings()
             QList<int> sizes;
             sizes << 500 << 100;
             mainWindow->setSizes(sizes);
-            mscore->showPalette(true);
-            mscore->showInspector(true);
+            mscore->showGuitarFretboard(true);
             return;
             }
 
+      qDebug() << "Settings at " << settings.fileName();
       settings.beginGroup("MainWindow");
       resize(settings.value("size", QSize(1024, 768)).toSize());
       mainWindow->restoreState(settings.value("debuggerSplitter").toByteArray());
@@ -2844,12 +2912,14 @@ void MuseScore::readSettings()
       move(settings.value("pos", QPoint(10, 10)).toPoint());
       //for some reason when MuseScore starts maximized the screen-reader
       //doesn't respond to QAccessibleEvents
-      if (settings.value("maximized", false).toBool() && !QAccessible::isActive())
+      if (settings.value("maximized", true).toBool() && !QAccessible::isActive())
             showMaximized();
-      mscore->showPalette(settings.value("showPanel", "1").toBool());
-      mscore->showInspector(settings.value("showInspector", "1").toBool());
+      mscore->showPalette(settings.value("showPanel", "0").toBool());
+      mscore->showInspector(settings.value("showInspector", "0").toBool());
       mscore->showPianoKeyboard(settings.value("showPianoKeyboard", "0").toBool());
       mscore->showSelectionWindow(settings.value("showSelectionWindow", "0").toBool());
+      mscore->showGuitarFretboard(settings.value("showGuitarFretboard", "1").toBool());
+
 
       restoreState(settings.value("state").toByteArray());
       _horizontalSplit = settings.value("split", true).toBool();
@@ -2861,11 +2931,6 @@ void MuseScore::readSettings()
             }
       splitter->restoreState(settings.value("splitter").toByteArray());
       settings.endGroup();
-
-//      QAction* a = getAction("toggle-transport");
-//      a->setChecked(!transportTools->isHidden());
-//      a = getAction("toggle-noteinput");
-//      a->setChecked(!entryTools->isHidden());
       }
 
 //---------------------------------------------------------
@@ -3210,7 +3275,7 @@ void MuseScore::writeSessionFile(bool cleanExit)
             }
       Xml xml(&f);
       xml.header();
-      xml.stag("museScore version=\"" MSC_VERSION "\"");
+      xml.stag("virtualGuitar version=\"" MSC_VERSION "\"");
       xml.tagE(cleanExit ? "clean" : "dirty");
       foreach(Score* score, scoreList) {
             xml.stag("Score");
@@ -3367,7 +3432,7 @@ bool MuseScore::restoreSession(bool always)
       int idx = -1;
       bool cleanExit = false;
       while (e.readNextStartElement()) {
-            if (e.name() == "museScore") {
+            if (e.name() == "virtualGuitar") {
                   /* QString version = e.attribute(QString("version"));
                   QStringList sl  = version.split('.');
                   int v           = sl[0].toInt() * 100 + sl[1].toInt();
@@ -3382,7 +3447,7 @@ bool MuseScore::restoreSession(bool always)
                               }
                         else if (tag == "dirty") {
                               QMessageBox::StandardButton b = QMessageBox::question(0,
-                                 tr("MuseScore"),
+                                 tr("VirtualGuitar"),
                                  tr("The previous session quit unexpectedly.\n\nRestore session?"),
                                  QMessageBox::Yes | QMessageBox::No,
                                  QMessageBox::Yes
@@ -3584,6 +3649,25 @@ void MuseScore::editRaster()
             }
       }
 
+void MuseScore::showGuitarFretboard(bool on)
+    {
+        if (_guitarFretboard == nullptr)
+        {
+              QAction* a = getAction("toggle-fretboard");
+              _guitarFretboard = new GuitarFretboard(this);
+              addDockWidget(Qt::BottomDockWidgetArea, _guitarFretboard);
+              connect(_guitarFretboard, SIGNAL(visibilityChanged(bool)), a, SLOT(setChecked(bool)));
+        }
+        if (on)
+        {
+              _guitarFretboard->show();
+        }
+        else if (_guitarFretboard != nullptr)
+        {
+              _guitarFretboard->hide();
+        }
+    }
+    
 //---------------------------------------------------------
 //   showPianoKeyboard
 //---------------------------------------------------------
@@ -3952,16 +4036,16 @@ void MuseScore::cmd(QAction* a)
       QString cmdn(a->data().toString());
 
       if (MScore::debugMode)
-            qDebug("MuseScore::cmd <%s>", cmdn.toLatin1().data());
+            qDebug("VirtualGuitar::cmd <%s>", cmdn.toLatin1().data());
 
       const Shortcut* sc = Shortcut::getShortcut(cmdn.toLatin1().data());
       if (sc == 0) {
-            qDebug("MuseScore::cmd(): unknown action <%s>", qPrintable(cmdn));
+            qDebug("VirtualGuitar::cmd(): unknown action <%s>", qPrintable(cmdn));
             return;
             }
       if (cs && (sc->state() & _sstate) == 0) {
             QMessageBox::warning(0,
-               QWidget::tr("MuseScore: Invalid Command"),
+               QWidget::tr("VirtualGuitar: Invalid Command"),
                QString("Command %1 not valid in current state").arg(cmdn));
             return;
             }
@@ -3998,52 +4082,103 @@ void MuseScore::cmd(QAction* a)
 //    Updates the UI after a possible score change.
 //---------------------------------------------------------
 
-void MuseScore::endCmd()
-      {
-      if (cs) {
+    void MuseScore::endCmd()
+    {
+        if (cs) {
             setPos(cs->inputState().tick());
             updateInputState(cs);
             updateUndoRedo();
             dirtyChanged(cs);
             Element* e = cs->selection().element();
-            if (e && (cs->playNote() || cs->playChord())) {
-                  if (cs->playChord() && preferences.playChordOnAddNote &&  e->type() == Element::Type::NOTE)
-                        play(static_cast<Note*>(e)->chord());
-                  else
-                        play(e);
-                  cs->setPlayNote(false);
-                  cs->setPlayChord(false);
-                  }
-            if (cs->rootScore()->excerptsChanged()) {
-                  //Q_ASSERT(cs == cs->rootScore());
-                  excerptsChanged(cs->rootScore());
-                  cs->rootScore()->setExcerptsChanged(false);
-                  }
-            if (cs->instrumentsChanged()) {
-                  if (!noSeq && (seq && seq->isRunning()))
-                        seq->initInstruments();
-                  instrumentChanged();                // update mixer
-                  cs->setInstrumentsChanged(false);
-                  }
-            if (cs->selectionChanged()) {
-                  cs->setSelectionChanged(false);
-                  SelState ss = cs->selection().state();
-                  selectionChanged(ss);
-                  }
-            getAction("concert-pitch")->setChecked(cs->styleB(StyleIdx::concertPitch));
 
+            // For multiple notes selected check if they all have same pitch and tuning
+            bool samePitch = true;
+            int pitch = 0;
+            float tuning = 0;
+            for (int i = 0; i < cs->selection().elements().size(); ++i) {
+                  const auto& element = cs->selection().elements()[i];
+                  if (element->type() != Element::Type::NOTE) {
+                        samePitch = false;
+                        break;
+                        }
+
+                  const auto& note = static_cast<Note*>(element);
+                  if (i == 0) {
+                        pitch = note->ppitch();
+                        tuning = note->tuning();
+                        }
+                  else if (note->ppitch() != pitch || fabs(tuning - note->tuning()) > 0.01) {
+                        samePitch = false;
+                        break;
+                        }
+                  }
+            if (samePitch && !cs->selection().elements().empty())
+                  e = cs->selection().elements()[0];
+
+            if (e && (cs->playNote() || cs->playChord())) {
+                if (cs->playChord() && preferences.playChordOnAddNote &&  e->type() == Element::Type::NOTE)
+                    play(static_cast<Note*>(e)->chord());
+                else
+                    play(e);
+                cs->setPlayNote(false);
+                cs->setPlayChord(false);
+            }
+            if (cs->rootScore()->excerptsChanged()) {
+                //Q_ASSERT(cs == cs->rootScore());
+                excerptsChanged(cs->rootScore());
+                cs->rootScore()->setExcerptsChanged(false);
+            }
+            if (cs->instrumentsChanged()) {
+                //TODO: Update guitar fretboard
+                qDebug() << "Instruments changed, update fretboard()!";
+                if (!noSeq && (seq && seq->isRunning()))
+                    seq->initInstruments();
+                instrumentChanged();                // update mixer
+                cs->setInstrumentsChanged(false);
+            }
+            if (cs->selectionChanged()) {
+                cs->setSelectionChanged(false);
+                SelState ss = cs->selection().state();
+                selectionChanged(ss);
+            }
+            getAction("concert-pitch")->setChecked(cs->styleB(StyleIdx::concertPitch));
+            
             if (e == 0 && cs->noteEntryMode())
-                  e = cs->inputState().cr();
+                e = cs->inputState().cr();
             updateViewModeCombo();
             cs->end();
             ScoreAccessibility::instance()->updateAccessibilityInfo();
+            
+            ScoreView* scoreView = currentScoreView();
+            
+            if (scoreView)
+            {
+                
+                const Score* score = scoreView->score();
+                
+                if (score->selection().isSingle()) {
+                    Element* e = score->selection().element();
+                    
+                    if (e->type() == Element::Type::NOTE)
+                    {
+                        Note* note = (Note*)e;
+                        _guitarFretboard->highlightNote(note);
+                    }
+                    else if (e->type() == Element::Type::CHORD)
+                    {
+                        Chord* chord = (Chord*)e;
+                        _guitarFretboard->highlightChord(chord);
+                    }
+                    
+                }
             }
-      else {
+        }
+        else {
             if (_inspector)
-                  _inspector->setElement(0);
+                _inspector->setElement(0);
             selectionChanged(SelState::NONE);
-            }
-      }
+        }
+    }
 
 //---------------------------------------------------------
 //   updateUndoRedo
@@ -4219,6 +4354,8 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             ;
       else if (cmd == "toggle-piano")
             showPianoKeyboard(a->isChecked());
+      else if (cmd == "toggle-fretboard")
+            showGuitarFretboard(a->isChecked());
       else if (cmd == "plugin-creator")
             showPluginCreator(a);
       else if (cmd == "plugin-manager")
@@ -4242,7 +4379,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             if (!name.isEmpty()) {
                   if (!cs->saveStyle(name)) {
                         QMessageBox::critical(this,
-                           tr("MuseScore: Save Style"), MScore::lastError);
+                           tr("VirtualGuitar: Save Style"), MScore::lastError);
                         }
                   }
             }
@@ -4252,7 +4389,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
                   cs->startCmd();
                   if (!cs->loadStyle(name)) {
                         QMessageBox::critical(this,
-                           tr("MuseScore: Load Style"), MScore::lastError);
+                           tr("VirtualGuitar: Load Style"), MScore::lastError);
                         }
                   cs->endCmd();
                   }
@@ -4338,6 +4475,21 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
                   switchLayoutMode(mode);
                   }
             }
+      else if (cmd == "fretboard-mirror")
+      {
+            _guitarFretboard->mirror();
+      }
+      else if (cmd == "fretboard-flip")
+      {
+            _guitarFretboard->flip();
+      }
+      else if (cmd == "fretboard-toggle-fret-numbers")
+      {
+          _guitarFretboard->toggleFretNumbers(); 
+      }
+
+          
+    
       else {
             if (cv) {
                   //isAncestorOf is called to see if a widget from inspector has focus
@@ -4434,7 +4586,7 @@ void MuseScore::closeScore(Score* score)
 
 void MuseScore::noteTooShortForTupletDialog()
       {
-      QMessageBox::warning(this, tr("MuseScore: Warning"),
+      QMessageBox::warning(this, tr("VirtualGuitar: Warning"),
         tr("Cannot create tuplet: Note value is too short")
         );
       }
@@ -4479,6 +4631,15 @@ void MuseScore::changeScore(int step)
             index = n - 1;
       setCurrentScoreView(index);
       }
+
+void MuseScore::switchPlaybackSpeed(int index)
+    {
+        double speed = (double)(index + 1) / 10;
+        qDebug() << "Setting tempo: " << speed;
+        seq->setRelTempo((double)speed);
+    }
+
+    
 
 //---------------------------------------------------------
 //   switchLayoutMode
@@ -4626,7 +4787,9 @@ QFileInfoList MuseScore::recentScores() const
                   fil.append(fi);
             }
       return fil;
-      }
+}
+
+PlayPanel *MuseScore::getPlayPanel() const { return playPanelDock ? playPanelDock->getPlayPanel() : nullptr; }
 
 }
 
@@ -4650,15 +4813,15 @@ int main(int argc, char* av[])
 
       MuseScoreApplication* app;
       if (MuseScore::unstable()) {
-            app = new MuseScoreApplication("mscore-dev", argc, av);
-            QCoreApplication::setApplicationName("MuseScoreDevelopment");
+            app = new MuseScoreApplication("virtualguitar-dev", argc, av);
+            QCoreApplication::setApplicationName("Virtual Guitar");
             }
       else {
-            app = new MuseScoreApplication("mscore2", argc, av);
-            QCoreApplication::setApplicationName("MuseScore2");
+            app = new MuseScoreApplication("virtualguitar", argc, av);
+            QCoreApplication::setApplicationName("Virtual Guitar");
             }
-      QCoreApplication::setOrganizationName("MuseScore");
-      QCoreApplication::setOrganizationDomain("musescore.org");
+      QCoreApplication::setOrganizationName("VirtualGuitar");
+      QCoreApplication::setOrganizationDomain("virtualguitar.org");
       QCoreApplication::setApplicationVersion(VERSION);
       QAccessible::installFactory(AccessibleScoreView::ScoreViewFactory);
       QAccessible::installFactory(AccessibleSearchBox::SearchBoxFactory);
@@ -4708,7 +4871,7 @@ int main(int argc, char* av[])
 
     //if (parser.isSet("v")) parser.showVersion(); // a) needs Qt >= 5.4 , b) instead we use addVersionOption()
       if (parser.isSet("long-version")) {
-            printVersion("MuseScore");
+            printVersion("Virtual Guitar");
             return EXIT_SUCCESS;
             }
       MScore::debugMode = parser.isSet("d");
@@ -4855,7 +5018,7 @@ int main(int argc, char* av[])
             }
 
 #ifdef SCRIPT_INTERFACE
-      qmlRegisterType<QmlPlugin>  ("MuseScore", 1, 0, "MuseScore");
+      qmlRegisterType<QmlPlugin>  ("VirtualGuitar", 1, 0, "VirtualGuitar");
 #endif
       if (MScore::debugMode) {
             qDebug("DPI %f", DPI);
@@ -4894,7 +5057,7 @@ int main(int argc, char* av[])
       if (!MScore::noGui && preferences.showSplashScreen) {
             QPixmap pm(":/data/splash.png");
             sc = new QSplashScreen(pm);
-            sc->setWindowTitle(QString("MuseScore Startup"));
+            sc->setWindowTitle(QString("VirtualGuitar Startup"));
 #ifdef Q_OS_MAC // to have session dialog on top of splashscreen on mac
             sc->setWindowFlags(Qt::FramelessWindowHint);
 #endif
@@ -5153,7 +5316,8 @@ int main(int argc, char* av[])
             mscore->showSynthControl(true);
       if (settings.value("mixerVisible", false).toBool())
             mscore->showMixer(true);
-
+          
+      registrationChecker.checkRegistration(mscore);
       return qApp->exec();
       }
 

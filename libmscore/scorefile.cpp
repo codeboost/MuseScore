@@ -378,7 +378,7 @@ bool Score::saveFile()
             return false;
             }
       if (temp.error() != QFile::NoError) {
-            MScore::lastError = tr("MuseScore: Save File failed: %1").arg(temp.errorString());
+            MScore::lastError = tr("Virtual Guitar: Save File failed: %1").arg(temp.errorString());
             temp.close();
             return false;
             }

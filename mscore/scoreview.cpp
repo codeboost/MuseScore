@@ -682,6 +682,7 @@ ScoreView::ScoreView(QWidget* parent)
 
       _cursor     = new PositionCursor(this);
       _cursor->setType(CursorType::POS);
+      _cursor->setVisible(true);
       _continuousPanel = new ContinuousPanel(this);
       _continuousPanel->setActive(true);
 
@@ -856,7 +857,8 @@ ScoreView::ScoreView(QWidget* parent)
       cl = new QEventTransition(this, QEvent::MouseButtonRelease);
       cl->setTargetState(states[NORMAL]);
       s->addTransition(cl);
-      connect(s, SIGNAL(entered()), SLOT(deselectAll()));
+      connect(s, SIGNAL(entered()), SLOT(startScoreViewDrag()));
+      connect(s, SIGNAL(exited()), SLOT(endScoreViewDrag()));
       s->addTransition(new DragTransition(this));
 
       //----------------------setup play state
@@ -1426,7 +1428,8 @@ void ScoreView::moveCursor()
             }
       double x        = segment->canvasPos().x();
       double y        = system->staffYpage(staffIdx) + system->page()->pos().y();
-      double _spatium = score()->spatium();
+      Staff* staff    = _score->staff(staffIdx);
+      double _spatium = staff->spatium();
       x              -= qMin(segment->pos().x() - score()->styleD(StyleIdx::barNoteDistance) * _spatium, 0.0);
 
       update(_matrix.mapRect(_cursor->rect()).toRect().adjusted(-1,-1,1,1));
@@ -1434,7 +1437,6 @@ void ScoreView::moveCursor()
       double h;
       qreal mag               = _spatium / SPATIUM20;
       double w                = _spatium * 2.0 + score()->scoreFont()->width(SymId::noteheadBlack, mag);
-      Staff* staff            = _score->staff(staffIdx);
       StaffType* staffType    = staff->staffType();
       double lineDist         = staffType->lineDistance().val() * _spatium;
       int lines               = staff->lines();
@@ -1517,6 +1519,7 @@ int ScoreView::cursorTick() const
 
 void ScoreView::setCursorOn(bool val)
       {
+          val = true; //HACK
       if (_cursor && (_cursor->visible() != val)) {
             _cursor->setVisible(val);
             update(_matrix.mapRect(_cursor->rect()).toRect().adjusted(-1,-1,1,1));
@@ -1970,8 +1973,8 @@ void ScoreView::paint(const QRect& r, QPainter& p)
                   }
             SysStaff* ss2 = system2->staff(lastStaff);
 
-            double y1 = ss1->y() - 2 * _spatium + y;
-            double y2 = ss2->y() + ss2->bbox().height() + 2 * _spatium + y;
+            double y1 = ss1->y() - 2 * score()->staff(staffStart)->spatium() + y;
+            double y2 = ss2->y() + ss2->bbox().height() + 2 * score()->staff(lastStaff)->spatium() + y;
 
             // drag vertical start line
             p.drawLine(QLineF(x2, y1, x2, y2).translated(system2->page()->pos()));
@@ -2018,8 +2021,8 @@ void ScoreView::paint(const QRect& r, QPainter& p)
                   y   = pt.y();
                   ss1 = system2->staff(staffStart);
                   ss2 = system2->staff(lastStaff);
-                  y1  = ss1->y() - 2 * _spatium + y;
-                  y2  = ss2->y() + ss2->bbox().height() + 2 * _spatium + y;
+                  y1  = ss1->y() - 2 * score()->staff(staffStart)->spatium() + y;
+                  y2  = ss2->y() + ss2->bbox().height() + 2 * score()->staff(lastStaff)->spatium() + y;
                   p.drawLine(QLineF(x1, y1, x2, y1).translated(system2->page()->pos()));
                   p.drawLine(QLineF(x1, y2, x2, y2).translated(system2->page()->pos()));
                   s = ns;
@@ -2486,7 +2489,7 @@ void ScoreView::editCut()
 bool ScoreView::checkCopyOrCut()
       {
       if (!_score->selection().canCopy()) {
-            QMessageBox::information(0, "MuseScore",
+            QMessageBox::information(0, "Virtual Guitar",
                tr("Please select the complete tuplet/tremolo and retry the command"),
                QMessageBox::Ok, QMessageBox::NoButton);
             return false;
@@ -2559,6 +2562,14 @@ void ScoreView::normalPaste()
                   break;
             case PasteStatus::TUPLET_CROSSES_BAR:
                   errorMessage->showMessage(tr("Tuplet cannot cross barlines"), "tupletCrossBar");
+                  _score->undo()->current()->unwind();
+                  break;
+            case PasteStatus::DEST_LOCAL_TIME_SIGNATURE:
+                  errorMessage->showMessage(tr("Cannot paste in local time signature"), "pasteLocalTimeSig");
+                  _score->undo()->current()->unwind();
+                  break;
+            case PasteStatus::DEST_TREMOLO:
+                  errorMessage->showMessage(tr("Cannot paste in tremolo"), "pasteTremolo");
                   _score->undo()->current()->unwind();
                   break;
             default:
@@ -2972,8 +2983,14 @@ void ScoreView::cmd(const QAction* a)
                   }
             else {
                   _score->startCmd();
-                  foreach(Element* e, _score->selection().elements())
+                  for (Element* e : _score->selection().elements()) {
                         e->reset();
+                        if (e->isSpanner()) {
+                              Spanner* sp = static_cast<Spanner*>(e);
+                              for (SpannerSegment* ss : sp->spannerSegments())
+                                    ss->reset();
+                              }
+                        }
                   _score->endCmd();
                   }
             _score->setLayoutAll(true);
@@ -2987,7 +3004,7 @@ void ScoreView::cmd(const QAction* a)
       else if (cmd == "split-measure") {
             Element* e = _score->selection().element();
             if (!(e && (e->type() == Element::Type::NOTE || e->type() == Element::Type::REST))) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "Virtual Guitar",
                      tr("No chord/rest selected:\n"
                      "Please select a chord/rest and try again"));
                   }
@@ -2996,12 +3013,12 @@ void ScoreView::cmd(const QAction* a)
                         e = static_cast<Note*>(e)->chord();
                   ChordRest* cr = static_cast<ChordRest*>(e);
                   if (cr->segment()->rtick() == 0) {
-                        QMessageBox::warning(0, "MuseScore",
+                        QMessageBox::warning(0, "Virtual Guitar",
                            tr("Cannot split measure here:\n"
                            "First beat of measure"));
                         }
                   else if (cr->segment()->splitsTuplet()) {
-                        QMessageBox::warning(0, "MuseScore",
+                        QMessageBox::warning(0, "Virtual Guitar",
                            tr("Cannot split measure here:\n"
                            "Cannot split tuplet"));
                         }
@@ -3013,7 +3030,7 @@ void ScoreView::cmd(const QAction* a)
             Measure* m1;
             Measure* m2;
             if (!_score->selection().measureRange(&m1, &m2) || m1 == m2) {
-                  QMessageBox::warning(0, "MuseScore",
+                  QMessageBox::warning(0, "Virtual Guitar",
                      tr("No measures selected:\n"
                      "Please select a range of measures to join and try again"));
                   }
@@ -3385,7 +3402,7 @@ void ScoreView::endNoteEntry()
             }
       setMouseTracking(false);
       shadowNote->setVisible(false);
-      setCursorOn(false);
+      //setCursorOn(false);
       _score->setUpdateAll();
       _score->end();
       }
@@ -3436,6 +3453,9 @@ void ScoreView::dragScoreView(QMouseEvent* ev)
 
       if (dx == 0 && dy == 0)
             return;
+
+      // mouse was moved, so don't clear the selection
+      scoreViewDragging = true;
 
       constraintCanvas(&dx, &dy);
 
@@ -3675,6 +3695,29 @@ void ScoreView::endLasso()
       _score->lassoSelectEnd();
       _score->end();
       mscore->endCmd();
+      }
+
+//---------------------------------------------------------
+//   startScoreViewDrag
+//
+//   reset flag
+//---------------------------------------------------------
+
+void ScoreView::startScoreViewDrag()
+      {
+      scoreViewDragging = false;
+      }
+
+//---------------------------------------------------------
+//   endScoreViewDrag
+//
+//   call deselectAll() if the mouse was not moved
+//---------------------------------------------------------
+
+void ScoreView::endScoreViewDrag()
+      {
+      if (!scoreViewDragging)
+            deselectAll();
       }
 
 //---------------------------------------------------------
@@ -4246,7 +4289,7 @@ void ScoreView::cmdAddSlur()
                   QList<Note*> nl = _score->selection().noteList(track);
                   Note* firstNote = 0;
                   Note* lastNote  = 0;
-                  foreach(Note* n, nl) {
+                  for (Note* n : nl) {
                         if (firstNote == 0 || firstNote->chord()->tick() > n->chord()->tick())
                               firstNote = n;
                         if (lastNote == 0 || lastNote->chord()->tick() < n->chord()->tick())
@@ -4276,10 +4319,10 @@ void ScoreView::cmdAddSlur()
             QList<Note*> nl = _score->selection().noteList();
             Note* firstNote = 0;
             Note* lastNote  = 0;
-            foreach(Note* n, nl) {
-                  if (firstNote == 0 || firstNote->chord()->tick() > n->chord()->tick())
+            for (Note* n : nl) {
+                  if (firstNote == 0 || firstNote->chord()->tick() > n->chord()->tick() || (lastNote && n->chord()->parent() == lastNote->chord()))
                         firstNote = n;
-                  if (lastNote == 0 || lastNote->chord()->tick() < n->chord()->tick())
+                  if (lastNote == 0 || lastNote->chord()->tick() < n->chord()->tick() || (firstNote && firstNote->chord()->parent() == n->chord()))
                         lastNote = n;
                   }
             if (!firstNote)
@@ -5327,7 +5370,7 @@ MeasureBase* ScoreView::appendMeasure(Element::Type type)
 void ScoreView::appendMeasures(int n, Element::Type type)
       {
       if (_score->noStaves()) {
-            QMessageBox::warning(0, "MuseScore",
+            QMessageBox::warning(0, "Virtual Guitar",
                tr("No staves found:\n"
                   "please use the instruments dialog to\n"
                   "first create some staves"));
@@ -5349,11 +5392,18 @@ void ScoreView::cmdInsertMeasures(int n, Element::Type type)
       _score->startCmd();
       for (int i = 0; i < n; ++i)
             _score->insertMeasure(type, mb);
-
-      // measure may be part of mm rest:
-      if (!_score->styleB(StyleIdx::createMultiMeasureRests) && type == Element::Type::MEASURE)
-            _score->select(mb, SelectType::SINGLE, 0);
       _score->endCmd();
+
+      if (mb->type() == Element::Type::MEASURE) {
+            // re-select the original measure (which may now be covered by an mmrest)
+            // do this after the layout so mmrests are updated
+            Measure* m = _score->tick2measureMM(mb->tick());
+            _score->select(m, SelectType::SINGLE, 0);
+            }
+      else {
+            // original selection was not a measure, just re-select it
+            _score->select(mb, SelectType::SINGLE, 0);
+            }
       }
 
 //---------------------------------------------------------
@@ -5398,10 +5448,10 @@ MeasureBase* ScoreView::checkSelectionStateForInsertMeasure()
 
       Element* e = _score->selection().element();
       if (e) {
-            if (e->type() == Element::Type::VBOX || e->type() == Element::Type::TBOX)
+            if (e->type() == Element::Type::VBOX || e->type() == Element::Type::TBOX || e->type() == Element::Type::HBOX)
                   return static_cast<MeasureBase*>(e);
             }
-      QMessageBox::warning(0, "MuseScore",
+      QMessageBox::warning(0, "Virtual Guitar",
             tr("No measure selected:\n" "Please select a measure and try again"));
       return 0;
       }
@@ -5461,7 +5511,7 @@ void ScoreView::cmdRepeatSelection()
             if (e) {
                   ChordRest* cr = static_cast<ChordRest*>(e);
                   _score->startCmd();
-                  if (!_score->pasteStaff(xml, cr->segment(), cr->staffIdx())) {
+                  if (_score->pasteStaff(xml, cr->segment(), cr->staffIdx()) != PasteStatus::PS_NO_ERROR) {
                         qDebug("cmdRepeatSelection: paste fails");
                         _score->endCmd(true);   // rollback
                         }

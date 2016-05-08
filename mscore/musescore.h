@@ -45,6 +45,7 @@ class Instrument;
 class MidiFile;
 class TextStyleDialog;
 class PlayPanel;
+    class PlayPanelDockWidget; 
 class Mixer;
 class Debugger;
 class MeasureListEditor;
@@ -72,6 +73,7 @@ class KeyEditor;
 class ChordStyleEditor;
 class Navigator;
 class PianoTools;
+    class GuitarFretboard;
 class MediaDialog;
 class Workspace;
 class AlbumManager;
@@ -219,7 +221,6 @@ class MuseScoreApplication : public QtSingleApplication {
 
 class MuseScore : public QMainWindow, public MuseScoreCore {
       Q_OBJECT
-
       QSettings settings;
       ScoreView* cv                        { 0 };
       ScoreState _sstate;
@@ -249,6 +250,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QToolBar* entryTools;
       TextTools* _textTools                { 0 };
       PianoTools* _pianoTools              { 0 };
+      GuitarFretboard* _guitarFretboard    { 0 };
       MediaDialog* _mediaDialog            { 0 };
       DrumTools* _drumTools                { 0 };
       QToolBar* voiceTools;
@@ -271,6 +273,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QComboBox* searchCombo;
 
       PlayPanel* playPanel                 { 0 };
+      PlayPanelDockWidget* playPanelDock     { 0 };
       Mixer* mixer                         { 0 };
       SynthControl* synthControl           { 0 };
       Debugger* debugger                   { 0 };
@@ -406,6 +409,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void startExcerptsDialog();
       void initOsc();
       void editRaster();
+      void showGuitarFretboard(bool);
       void showPianoKeyboard(bool);
       void showMediaDialog();
       void showAlbumManager();
@@ -466,6 +470,8 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void switchPlayMode(int);
       void networkFinished(QNetworkReply*);
       void switchLayoutMode(int);
+      void switchPlaybackSpeed(int);
+
       void showMidiImportPanel();
       void changeWorkspace(QAction*);
 
@@ -493,8 +499,9 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
    public:
       MuseScore();
       ~MuseScore();
+      void checkRegistration();
       bool checkDirty(Score*);
-      PlayPanel* getPlayPanel() const { return playPanel; }
+      PlayPanel* getPlayPanel() const;
       Mixer* getMixer() const { return mixer; }
       QMenu* genCreateMenu(QWidget* parent = 0);
       virtual int appendScore(Score*);
@@ -538,6 +545,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       PianorollEditor* getPianorollEditor() const { return pianorollEditor; }
       DrumrollEditor* getDrumrollEditor() const   { return drumrollEditor; }
       PianoTools* pianoTools() const              { return _pianoTools; }
+      GuitarFretboard* guitarFretboard() const { return _guitarFretboard; }
       void writeSessionFile(bool);
       bool restoreSession(bool);
       bool splitScreen() const { return _splitScreen; }

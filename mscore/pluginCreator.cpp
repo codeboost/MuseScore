@@ -183,7 +183,7 @@ void PluginCreator::setState(PCState newState)
 
 void PluginCreator::setTitle(const QString& s)
       {
-      QString t(tr("MuseScore Plugin Creator"));
+      QString t(tr("Virtual Guitar (MuseScore) Plugin Creator"));
       if (s.isEmpty())
             setWindowTitle(t);
       else
@@ -227,7 +227,7 @@ void PluginCreator::readSettings()
 void PluginCreator::closeEvent(QCloseEvent* ev)
       {
       if (state == PCState::DIRTY) {
-            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("MuseScore"),
+            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("Virtual Guitar"),
                tr("Plugin \"%1\" has changes.\n"
                "Save before closing?").arg(path),
                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
@@ -302,7 +302,7 @@ void PluginCreator::runClicked()
       item = qobject_cast<QmlPlugin*>(obj);
       if(MuseScoreCore::mscoreCore->currentScore() == nullptr && item->requiresScore() == true) {
             QMessageBox::information(0,
-                  QMessageBox::tr("MuseScore"),
+                  QMessageBox::tr("Virtual Guitar"),
                   QMessageBox::tr("No score open.\n"
                   "This plugin requires an open score to run.\n"),
                   QMessageBox::Ok, QMessageBox::NoButton);
@@ -385,7 +385,7 @@ void PluginCreator::stopClicked()
 void PluginCreator::loadPlugin()
       {
       if (state == PCState::DIRTY) {
-            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("MuseScore"),
+            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("Virtual Guitar"),
                tr("Plugin \"%1\" has changes.\n"
                "Save before closing?").arg(path),
                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
@@ -460,7 +460,7 @@ void PluginCreator::savePlugin()
 void PluginCreator::newPlugin()
       {
       if (state == PCState::DIRTY) {
-            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("MuseScore"),
+            QMessageBox::StandardButton n = QMessageBox::warning(this, tr("Virtual Guitar"),
                tr("Plugin \"%1\" has changes.\n"
                "Save before closing?").arg(path),
                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,

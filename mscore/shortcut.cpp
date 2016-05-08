@@ -1640,7 +1640,7 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
          "toggle-palette",
          QT_TRANSLATE_NOOP("action","Palettes"),
-         0,
+         QT_TRANSLATE_NOOP("action","Palettes"),
          0,
          Icons::Invalid_ICON,
          Qt::ApplicationShortcut
@@ -2088,8 +2088,8 @@ Shortcut Shortcut::_sc[] = {
          MsWidget::SCORE_TAB,
          STATE_NORMAL | STATE_NOTE_ENTRY,
          "edit-info",
-         QT_TRANSLATE_NOOP("action","Info..."),
-         QT_TRANSLATE_NOOP("action","Edit score info"),
+         QT_TRANSLATE_NOOP("action","Score Properties..."),
+         QT_TRANSLATE_NOOP("action","Edit score properties"),
          0,
          Icons::Invalid_ICON,
          Qt::WindowShortcut,
@@ -2262,7 +2262,9 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
          "zoomin",
          QT_TRANSLATE_NOOP("action","Zoom In"),
-         QT_TRANSLATE_NOOP("action","Zoom in")
+         QT_TRANSLATE_NOOP("action","Zoom in"),
+         0,
+         Icons::zoomIn_ICON
          },
       {
          MsWidget::MAIN_WINDOW,
@@ -2270,7 +2272,9 @@ Shortcut Shortcut::_sc[] = {
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_PLAY,
          "zoomout",
          QT_TRANSLATE_NOOP("action","Zoom Out"),
-         QT_TRANSLATE_NOOP("action","Zoom out")
+         QT_TRANSLATE_NOOP("action","Zoom out"),
+         0,
+         Icons::zoomOut_ICON
          },
       {
          MsWidget::MAIN_WINDOW,
@@ -2508,6 +2512,15 @@ Shortcut Shortcut::_sc[] = {
          QT_TRANSLATE_NOOP("action","Piano Keyboard"),
          QT_TRANSLATE_NOOP("action","Piano keyboard")
          },
+      {
+          MsWidget::MAIN_WINDOW,
+          STATE_NORMAL | STATE_NOTE_ENTRY,
+          "toggle-fretboard",
+          QT_TRANSLATE_NOOP("action","Guitar Fretboard"),
+          QT_TRANSLATE_NOOP("action","Guitar Fretboard")
+    
+      },
+    
       {
          MsWidget::MAIN_WINDOW,
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY | STATE_FOTO,
@@ -3306,7 +3319,38 @@ Shortcut Shortcut::_sc[] = {
          0,
          Icons::Invalid_ICON,
          Qt::ApplicationShortcut
-         }
+         },
+      {
+            MsWidget::MAIN_WINDOW,
+            STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
+            "fretboard-mirror",
+            QT_TRANSLATE_NOOP("action","Mirror"),
+            QT_TRANSLATE_NOOP("action","Mirror"),
+            0,
+            Icons::hframe_ICON,
+            Qt::ApplicationShortcut
+      },
+      {
+            MsWidget::MAIN_WINDOW,
+            STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
+            "fretboard-flip",
+            QT_TRANSLATE_NOOP("action","Flip"),
+            QT_TRANSLATE_NOOP("action","Flip"),
+            0,
+            Icons::vframe_ICON,
+            Qt::ApplicationShortcut
+      },
+    {
+        MsWidget::MAIN_WINDOW,
+        STATE_DISABLED | STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT  | STATE_PLAY,
+        "fretboard-toggle-fret-numbers",
+        QT_TRANSLATE_NOOP("action","Toggle fret numbers"),
+        QT_TRANSLATE_NOOP("action","Toggle fret numbers"),
+        0,
+        Icons::sharp_ICON,
+        Qt::ApplicationShortcut
+    }
+
 
       };
 

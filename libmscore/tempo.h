@@ -69,6 +69,10 @@ class TempoMap : public std::map<int, TEvent> {
       void setPause(int t, qreal);
       void delTempo(int tick);
 
+      void setRelTemp(int iVal)
+      {
+          setRelTempo(iVal / 100.0);
+      }
       void setRelTempo(qreal val);
       qreal relTempo() const { return _relTempo; }
       };

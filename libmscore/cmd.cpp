@@ -1228,8 +1228,11 @@ void Score::upDown(bool up, UpDownMode mode)
                   case StaffGroup::PERCUSSION:
                         {
                         const Drumset* ds = part->instrument()->drumset();
-                        if (ds)
+                        if (ds) {
                               newPitch = up ? ds->prevPitch(pitch) : ds->nextPitch(pitch);
+                              newTpc1 = pitch2tpc(newPitch, Key::C, Prefer::NEAREST);
+                              newTpc2 = newTpc1;
+                              }
                         }
                         break;
                   case StaffGroup::TAB:
@@ -1692,20 +1695,18 @@ void Score::cmdAddStretch(qreal val)
 
 void Score::cmdResetBeamMode()
       {
-      if (!selection().isRange()) {
+      bool noSelection = selection().isNone();
+      if (noSelection)
+            cmdSelectAll();
+      else if (!selection().isRange()) {
             qDebug("no system or staff selected");
             return;
             }
-      int startTick = selection().tickStart();
+
       int endTick   = selection().tickEnd();
 
-      Segment::Type st = Segment::Type::ChordRest;
-      for (Segment* seg = firstMeasure()->first(st); seg; seg = seg->next1(st)) {
-            if (seg->tick() < startTick)
-                  continue;
-            if (seg->tick() >= endTick)
-                  break;
-            for (int track = 0; track < nstaves() * VOICES; ++track) {
+      for (Segment* seg = selection().firstChordRestSegment(); seg && seg->tick() < endTick; seg = seg->next1(Segment::Type::ChordRest)) {
+            for (int track = selection().staffStart() * VOICES; track < selection().staffEnd() * VOICES; ++track) {
                   ChordRest* cr = static_cast<ChordRest*>(seg->element(track));
                   if (cr == 0)
                         continue;
@@ -1720,6 +1721,8 @@ void Score::cmdResetBeamMode()
                   }
             }
       _layoutAll = true;
+      if (noSelection)
+            deselectAll();
       }
 
 //---------------------------------------------------------
@@ -2655,7 +2658,7 @@ void Score::cmdExplode()
             if (cr) {
                   XmlReader e(srcSelection.mimeData());
                   e.setPasteMode(true);
-                  if (!pasteStaff(e, cr->segment(), cr->staffIdx()))
+                  if (pasteStaff(e, cr->segment(), cr->staffIdx()) != PasteStatus::PS_NO_ERROR)
                         qDebug("explode: paste failed");
                   }
             }

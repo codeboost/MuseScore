@@ -68,8 +68,8 @@ AlbumManager::AlbumManager(QWidget* parent)
 void AlbumManager::addClicked()
       {
       QStringList files = mscore->getOpenScoreNames(
-         tr("MuseScore Files (*.mscz *.mscx)"),
-         tr("MuseScore: Add Score")
+         tr("VG/MuseScore Files (*.mscz *.mscx)"),
+         tr("Virtual Guitar: Add Score")
          );
       if (files.isEmpty())
             return;
@@ -95,7 +95,7 @@ void AlbumManager::loadClicked()
       {
       QStringList files = mscore->getOpenScoreNames(
          tr("MuseScore Album Files (*.album)"),
-         tr("MuseScore: Load Album")
+         tr("Virtual Guitar: Load Album")
          );
       if (files.isEmpty())
             return;
@@ -125,7 +125,7 @@ void AlbumManager::createScoreClicked()
       if (album) {
             if (album->scores().isEmpty())
                    return;
-            QString filter = QWidget::tr("MuseScore File (*.mscz)");
+            QString filter = QWidget::tr("VG/MuseScore File (*.mscz)");
             QSettings settings;
             if (mscore->lastSaveDirectory.isEmpty())
                   mscore->lastSaveDirectory = settings.value("lastSaveDirectory", preferences.myScoresPath).toString();
@@ -135,14 +135,14 @@ void AlbumManager::createScoreClicked()
                   saveDirectory = preferences.myScoresPath;
             QString fname   = QString("%1/%2.mscz").arg(saveDirectory).arg(album->name());
             QString fn     = mscore->getSaveScoreName(
-            QWidget::tr("MuseScore: Save Album into Score"),
+            QWidget::tr("Virtual Guitar: Save Album into Score"),
                   fname,
                   filter
             );
             if (fn.isEmpty())
                   return;
             if (!album->createScore(fn))
-                  QMessageBox::critical(mscore, QWidget::tr("MuseScore: Save File"), tr("Error while creating score from album."));
+                  QMessageBox::critical(mscore, QWidget::tr("Virtual Guitar: Save File"), tr("Error while creating score from album."));
             }
       }
 
@@ -300,9 +300,9 @@ void AlbumManager::writeAlbum()
             QString home = preferences.myScoresPath;
             QString albumName = album->name();
             QString fn = mscore->getSaveScoreName(
-               QWidget::tr("MuseScore: Save Album"),
+               QWidget::tr("Virtual Guitar: Save Album"),
                albumName,
-               QWidget::tr("MuseScore Files (*.album)")
+               QWidget::tr("VG/MuseScore Files (*.album)")
                );
             if (fn.isEmpty()) {
                   album->setDirty(false);
@@ -316,14 +316,14 @@ void AlbumManager::writeAlbum()
       if (!f.open(QIODevice::WriteOnly)) {
             QString s = QWidget::tr("Open Album File\n%1\nfailed: ")
                + QString(strerror(errno));
-            QMessageBox::critical(mscore, QWidget::tr("MuseScore: Open Album File"), s.arg(album->path()));
+            QMessageBox::critical(mscore, QWidget::tr("Virtual Guitar: Open Album File"), s.arg(album->path()));
             return;
             }
       Xml xml(&f);
       album->write(xml);
       if (f.error() != QFile::NoError) {
             QString s = QWidget::tr("Write Album failed: ") + f.errorString();
-            QMessageBox::critical(0, QWidget::tr("MuseScore: Write Album"), s);
+            QMessageBox::critical(0, QWidget::tr("Virtual Guitar: Write Album"), s);
             }
       }
 
