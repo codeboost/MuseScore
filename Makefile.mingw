@@ -20,7 +20,7 @@
 
 
 REVISION  = $(shell type mscore\revision.h)
-VERSION   = 1.0b-${REVISION}
+VERSION   = 1.1b-${REVISION}
 #VERSION = 2.1.0
 CPUS = %NUMBER_OF_PROCESSORS%
 
