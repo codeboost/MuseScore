@@ -107,6 +107,10 @@ QString UpdateChecker::parseText(QXmlStreamReader& reader)
 
 void UpdateChecker::check(QString currentVersion, bool m)
       {
+          
+          //VG: Disabling automatic updates for now. Will enable when VG update server supports it.
+          return ;
+          
       manual = m;
 #if defined(Q_OS_WIN)
       os = "win";

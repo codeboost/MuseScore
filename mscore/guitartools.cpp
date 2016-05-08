@@ -160,7 +160,7 @@ namespace Ms
             highlights.clear();
             instrument = nullptr;
             fretboard->setEnabled(false);
-            setWindowTitle("Guitar Fretboard");
+            setWindowTitle("Guitar Fretboard - Inactive");
         }
     }
     
