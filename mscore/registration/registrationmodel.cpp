@@ -39,10 +39,11 @@ namespace vg
 
         void load()
         {
-            qDebug() << "Loading registration info";
-
-
             QSettings settings;
+
+            qDebug() << "Loading registration info from " << settings.fileName();
+
+
             if (settings.contains(vgTrialStartKey))
             {
                 trialStartDate = settings.value(vgTrialStartKey).toDate();

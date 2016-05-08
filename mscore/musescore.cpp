@@ -679,7 +679,7 @@ MuseScore::MuseScore()
             }
 
           
-          showGuitarFretboard(true);
+      //showGuitarFretboard(true);
 
       //---------------------
       //    Menus
@@ -2898,11 +2898,11 @@ void MuseScore::readSettings()
             QList<int> sizes;
             sizes << 500 << 100;
             mainWindow->setSizes(sizes);
-            mscore->showPalette(true);
-            mscore->showInspector(true);
+            mscore->showGuitarFretboard(true);
             return;
             }
 
+      qDebug() << "Settings at " << settings.fileName();
       settings.beginGroup("MainWindow");
       resize(settings.value("size", QSize(1024, 768)).toSize());
       mainWindow->restoreState(settings.value("debuggerSplitter").toByteArray());
@@ -2912,12 +2912,14 @@ void MuseScore::readSettings()
       move(settings.value("pos", QPoint(10, 10)).toPoint());
       //for some reason when MuseScore starts maximized the screen-reader
       //doesn't respond to QAccessibleEvents
-      if (settings.value("maximized", false).toBool() && !QAccessible::isActive())
+      if (settings.value("maximized", true).toBool() && !QAccessible::isActive())
             showMaximized();
-      mscore->showPalette(settings.value("showPanel", "1").toBool());
-      mscore->showInspector(settings.value("showInspector", "1").toBool());
+      mscore->showPalette(settings.value("showPanel", "0").toBool());
+      mscore->showInspector(settings.value("showInspector", "0").toBool());
       mscore->showPianoKeyboard(settings.value("showPianoKeyboard", "0").toBool());
       mscore->showSelectionWindow(settings.value("showSelectionWindow", "0").toBool());
+      mscore->showGuitarFretboard(settings.value("showGuitarFretboard", "1").toBool());
+
 
       restoreState(settings.value("state").toByteArray());
       _horizontalSplit = settings.value("split", true).toBool();
@@ -2929,11 +2931,6 @@ void MuseScore::readSettings()
             }
       splitter->restoreState(settings.value("splitter").toByteArray());
       settings.endGroup();
-
-//      QAction* a = getAction("toggle-transport");
-//      a->setChecked(!transportTools->isHidden());
-//      a = getAction("toggle-noteinput");
-//      a->setChecked(!entryTools->isHidden());
       }
 
 //---------------------------------------------------------

@@ -63,7 +63,6 @@ namespace Ms
             setLayout(layout);
 
         }
-        
     protected slots:
         
     };
@@ -78,6 +77,7 @@ namespace Ms
         fretboard = new vg::XFretboardView(this);
         fretContainer = new FretContainer(this, fretboard);
         setStyleSheet("::title { text-align: center;}");
+        setWindowTitle("Guitar Fretboard");
     }
     
     void GuitarFretboard::resizeEvent(QResizeEvent *event)
@@ -160,7 +160,7 @@ namespace Ms
             highlights.clear();
             instrument = nullptr;
             fretboard->setEnabled(false);
-            setWindowTitle("");
+            setWindowTitle("Guitar Fretboard");
         }
     }
     

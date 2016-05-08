@@ -44,8 +44,10 @@ namespace Ms
         
         FretContainer* fretContainer;
         const Part* part;
-        const Instrument* instrument; 
-        
+        const Instrument* instrument;
+        QSize sizeHint() const override {
+            return QSize(640, 240);
+        }
     protected:
         void resizeEvent(QResizeEvent* event) override;
         vg::FretHighlights highlights;
