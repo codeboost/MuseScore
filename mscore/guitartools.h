@@ -1,10 +1,14 @@
+//=============================================================================
+//  Virtual Guitar Player
+//  Copyright (C) 2016 Larry Jones
+//  Developed by Florin Braghis
 //
-//  guitartools.hpp
-//  mscore
-//
-//  Created by Florin Braghis on 2/8/16.
-//
-//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2
+//  as published by the Free Software Foundation and appearing in
+//  the file LICENCE.GPL
+//=============================================================================
+
 
 #ifndef guitartools_h
 #define guitartools_h
