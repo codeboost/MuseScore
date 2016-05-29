@@ -607,7 +607,7 @@ add_custom_target(lupdate
    )
 
 add_custom_target(lrelease
-   COMMAND Qt5::lrelease ${PROJECT_SOURCE_DIR}/share/locale/*.ts
+   COMMAND Qt5::lrelease ${PROJECT_SOURCE_DIR}/share/locale_vg/*.ts
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
