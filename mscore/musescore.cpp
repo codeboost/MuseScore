@@ -4926,7 +4926,8 @@ QFileInfoList MuseScore::recentScores() const
             }
       return fil;
       }
-
+    
+PlayPanel *MuseScore::getPlayPanel() const { return playPanelDock ? playPanelDock->getPlayPanel() : nullptr; }
 }
 
 using namespace Ms;
