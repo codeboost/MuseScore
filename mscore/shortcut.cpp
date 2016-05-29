@@ -214,6 +214,17 @@ Shortcut Shortcut::_sc[] = {
          Icons::paste_ICON,
          Qt::ApplicationShortcut
          },
+    {
+       MsWidget::SCORE_TAB,
+       STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT | STATE_TEXT_EDIT |STATE_LYRICS_EDIT
+          | STATE_HARMONY_FIGBASS_EDIT,
+       "swap",
+       QT_TRANSLATE_NOOP("action","Swap Clipboard and Selection"),
+       0,
+       0,
+       Icons::swap_ICON,
+       Qt::ApplicationShortcut
+       },
       {
          MsWidget::MAIN_WINDOW,
          STATE_NORMAL | STATE_NOTE_ENTRY,
@@ -1829,6 +1840,13 @@ Shortcut Shortcut::_sc[] = {
       {
          MsWidget::SCORE_TAB,
          STATE_NORMAL | STATE_NOTE_ENTRY,
+         "instrument-change-text",
+         QT_TRANSLATE_NOOP("action","Instrument Change"),
+         QT_TRANSLATE_NOOP("action","Add instrument change")
+         },
+      {
+         MsWidget::SCORE_TAB,
+         STATE_NORMAL | STATE_NOTE_ENTRY,
          "picture",
          QT_TRANSLATE_NOOP("action","Picture"),
          QT_TRANSLATE_NOOP("action","Add picture")
@@ -2287,8 +2305,8 @@ Shortcut Shortcut::_sc[] = {
          MsWidget::SCORE_TAB,
          STATE_NORMAL | STATE_NOTE_ENTRY,
          "mirror-note",
-         QT_TRANSLATE_NOOP("action","Mirror Note Head"),
-         QT_TRANSLATE_NOOP("action","Mirror note head"),
+         QT_TRANSLATE_NOOP("action","Mirror Notehead"),
+         QT_TRANSLATE_NOOP("action","Mirror notehead"),
          0,
          Icons::flip_ICON,
          Qt::WindowShortcut,
@@ -2302,8 +2320,7 @@ Shortcut Shortcut::_sc[] = {
          QT_TRANSLATE_NOOP("action","Edit general style"),
          0,
          Icons::Invalid_ICON,
-         Qt::WindowShortcut,
-         ShortcutFlags::A_CMD
+         Qt::WindowShortcut
          },
       {
          MsWidget::SCORE_TAB,
@@ -2532,7 +2549,7 @@ Shortcut Shortcut::_sc[] = {
          MsWidget::SCORE_TAB,
          STATE_NORMAL,
          "split-measure",
-         QT_TRANSLATE_NOOP("action","Split Measure before Selected Note"),
+         QT_TRANSLATE_NOOP("action","Split Measure Before Selected Note"),
          QT_TRANSLATE_NOOP("action","Split measure before selected note")
          },
       {

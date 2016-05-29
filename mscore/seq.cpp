@@ -207,7 +207,7 @@ void Seq::setScoreView(ScoreView* v)
       cv = v;
       if (cs)
             disconnect(cs, SIGNAL(playlistChanged()), this, SLOT(setPlaylistChanged()));
-      cs = cv ? cv->score() : 0;
+      cs = cv ? cv->score()->masterScore() : 0;
 
       if (!heartBeatTimer->isActive())
             heartBeatTimer->start(20);    // msec
@@ -344,9 +344,9 @@ void Seq::stop()
       if (cv)
             cv->setCursorOn(false);
       if (cs) {
-            cs->setLayoutAll(false);
+            cs->setLayoutAll();
             cs->setUpdateAll();
-            cs->end();
+            cs->update();
             }
       }
 
@@ -378,7 +378,7 @@ void MuseScore::seqStarted()
       if (cv)
             cv->setCursorOn(true);
       if (cs)
-            cs->end();
+            cs->update();
       }
 
 //---------------------------------------------------------
@@ -422,7 +422,7 @@ void Seq::guiStop()
             return;
 
       cs->setPlayPos(cs->repeatList()->utick2tick(cs->utime2utick(qreal(playTime) / qreal(MScore::sampleRate))));
-      cs->end();
+      cs->update();
       emit stopped();
       }
 
@@ -441,7 +441,7 @@ void Seq::seqMessage(int msg, int arg)
                   if (seg)
                         mscore->currentScoreView()->moveCursor(seg->tick());
                   cs->setPlayPos(arg);
-                  cs->end();
+                  cs->update();
                   break;
                   }
             case '4':   // Restart the playback at the end of the score
@@ -522,13 +522,14 @@ void Seq::playEvent(const NPlayEvent& event, unsigned framePos)
 //   in all opened scores
 //---------------------------------------------------------
 
-void Seq::recomputeMaxMidiOutPort() {
+void Seq::recomputeMaxMidiOutPort()
+      {
       if (!(preferences.useJackMidi || preferences.useAlsaAudio))
             return;
       int max = 0;
-      foreach(Score * s, MuseScoreCore::mscoreCore->scores()) {
-            if (s->midiPortCount() > max)
-                  max = s->midiPortCount();
+      for (Score * s : MuseScoreCore::mscoreCore->scores()) {
+            if (s->masterScore()->midiPortCount() > max)
+                  max = s->masterScore()->midiPortCount();
             }
       maxMidiOutPort = max;
       }
@@ -541,7 +542,7 @@ void Seq::recomputeMaxMidiOutPort() {
 void Seq::processMessages()
       {
       for (;;) {
-            if (toSeq.isEmpty())
+            if (toSeq.empty())
                   break;
             SeqMsg msg = toSeq.dequeue();
             switch(msg.id) {
@@ -901,7 +902,7 @@ void Seq::initInstruments(bool realTime)
       // Add midi out ports if necessary
       if (cs && (preferences.useJackMidi || preferences.useAlsaAudio)) {
             // Increase the maximum number of midi ports if user adds staves/instruments
-            int scoreMaxMidiPort = cs->midiPortCount();
+            int scoreMaxMidiPort = cs->masterScore()->midiPortCount();
             if (maxMidiOutPort < scoreMaxMidiPort)
                   maxMidiOutPort = scoreMaxMidiPort;
             // if maxMidiOutPort is equal to existing ports number, it will do nothing
@@ -1058,7 +1059,7 @@ void Seq::seek(int utick)
       if (seg)
             mscore->currentScoreView()->moveCursor(seg->tick());
       cs->setPlayPos(tick);
-      cs->end();
+      cs->update();
       guiToSeq(SeqMsg(SeqMsgId::SEEK, utick));
       }
 
@@ -1379,7 +1380,7 @@ void Seq::heartBeatTimeout()
             sc->setMeter(meterValue[0], meterValue[1], meterPeakValue[0], meterPeakValue[1]);
             }
 
-      while (!fromSeq.isEmpty()) {
+      while (!fromSeq.empty()) {
             SeqMsg msg = fromSeq.dequeue();
             if (msg.id == SeqMsgId::MIDI_INPUT_EVENT) {
                   int type = msg.event.type();

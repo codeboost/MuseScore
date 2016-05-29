@@ -10,26 +10,26 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-#include "config.h"
 #include "pianoroll.h"
+#include "config.h"
 #include "piano.h"
 #include "ruler.h"
 #include "pianoview.h"
+#include "musescore.h"
+#include "seq.h"
+#include "preferences.h"
+#include "waveview.h"
 #include "libmscore/staff.h"
 #include "libmscore/measure.h"
 #include "libmscore/note.h"
 #include "libmscore/repeatlist.h"
-#include "awl/pitchlabel.h"
-#include "awl/pitchedit.h"
-#include "awl/poslabel.h"
-#include "musescore.h"
 #include "libmscore/undo.h"
 #include "libmscore/part.h"
 #include "libmscore/instrument.h"
-#include "seq.h"
-#include "preferences.h"
-#include "seq.h"
-#include "waveview.h"
+#include "awl/pitchlabel.h"
+#include "awl/pitchedit.h"
+#include "awl/poslabel.h"
+
 
 namespace Ms {
 
@@ -42,7 +42,7 @@ extern bool useFactorySettings;
 PianorollEditor::PianorollEditor(QWidget* parent)
    : QMainWindow(parent)
       {
-      setWindowTitle(QString("Virtual Guitar"));
+      setWindowTitle(QString("MuseScore"));
 
       waveView = 0;
       _score   = 0;
@@ -205,15 +205,15 @@ PianorollEditor::PianorollEditor(QWidget* parent)
             settings.endGroup();
             }
 
-      QActionGroup* ag = new QActionGroup(this);
-      ag->addAction(getAction("delete"));
-      ag->addAction(getAction("pitch-up"));
-      ag->addAction(getAction("pitch-down"));
-      ag->addAction(getAction("pitch-up-octave"));
-      ag->addAction(getAction("pitch-down-octave"));
+      actions.append(getAction("delete"));
+      actions.append(getAction("pitch-up"));
+      actions.append(getAction("pitch-down"));
+      actions.append(getAction("pitch-up-octave"));
+      actions.append(getAction("pitch-down-octave"));
+      addActions(actions);
+      for (auto* action : actions)
+            connect(action, &QAction::triggered, this, [this, action](bool){ cmd(action); });
 
-      addActions(ag->actions());
-      connect(ag, SIGNAL(triggered(QAction*)), SLOT(cmd(QAction*)));
       setXpos(0);
       }
 
@@ -225,6 +225,8 @@ PianorollEditor::~PianorollEditor()
       {
       if (_score)
             _score->removeViewer(this);
+      for (auto* action : actions)
+            action->disconnect(this);
       }
 
 //---------------------------------------------------------
@@ -251,7 +253,7 @@ void PianorollEditor::setStaff(Staff* st)
             }
       staff = st;
       if (staff) {
-            setWindowTitle(tr("Virtual Guitar: <%1> Staff: %2").arg(_score->name()).arg(st->idx()));
+            setWindowTitle(tr("MuseScore: <%1> Staff: %2").arg(_score->fileInfo()->completeBaseName()).arg(st->idx()));
             TempoMap* tl = _score->tempomap();
             TimeSigMap*  sl = _score->sigmap();
             for (int i = 0; i < 3; ++i)
@@ -400,9 +402,9 @@ void PianorollEditor::veloTypeChanged(int val)
       if (Note::ValueType(val) == note->veloType())
             return;
 
-      _score->undo()->beginMacro();
+      _score->undoStack()->beginMacro();
       _score->undo(new ChangeVelocity(note, Note::ValueType(val), note->veloOffset()));
-      _score->undo()->endMacro(_score->undo()->current()->childCount() == 0);
+      _score->undoStack()->endMacro(_score->undoStack()->current()->childCount() == 0);
       updateVelocity(note);
       }
 
@@ -456,9 +458,9 @@ void PianorollEditor::velocityChanged(int val)
       if (vt == Note::ValueType::OFFSET_VAL)
             return;
 
-      _score->undo()->beginMacro();
+      _score->undoStack()->beginMacro();
       _score->undo(new ChangeVelocity(note, vt, val));
-      _score->undo()->endMacro(_score->undo()->current()->childCount() == 0);
+      _score->undoStack()->endMacro(_score->undoStack()->current()->childCount() == 0);
       }
 
 //---------------------------------------------------------
@@ -509,18 +511,11 @@ void PianorollEditor::moveLocator(int i, const Pos& pos)
 //   cmd
 //---------------------------------------------------------
 
-void PianorollEditor::cmd(QAction* a)
+void PianorollEditor::cmd(QAction* /*a*/)
       {
-      score()->startCmd();
-
-      if (a->data() == "delete") {
-            _score->cmdDeleteSelection();
-            }
-      else {
-            _score->cmd(a);
-            }
+      //score()->startCmd();
       gv->setStaff(staff, locator);
-      score()->endCmd();
+      //score()->endCmd();
       }
 
 //---------------------------------------------------------

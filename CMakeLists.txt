@@ -20,7 +20,7 @@
 project(mscore)
 
 #minimum tested, report if it works with older
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
 set (CI $ENV{CI})
 if (CI)
@@ -47,29 +47,21 @@ if(POLICY CMP0046)
       cmake_policy(SET CMP0046 OLD)
 endif(POLICY CMP0046)
 
-# ignore MACOSX_RPATH is not specified for awlplugin
-if(POLICY CMP0042)
-      cmake_policy(SET CMP0042 OLD)
-endif(POLICY CMP0042)
-
-include (${PROJECT_SOURCE_DIR}/build/ECMQt4To5Porting.cmake)
-include (${PROJECT_SOURCE_DIR}/build/FindQt5Transitional.cmake)
-
+##  look for Qt5
+SET(QT_MIN_VERSION    "5.6.0")
 #include modules
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build" ${CMAKE_MODULE_PATH})
+include (FindQt5)
 include (UsePkgConfig1) #defines MACRO(PKGCONFIG1 _package _minVersion _include_DIR _link_DIR _link_FLAGS _cflags)
-include (TargetDoc)
 include (FindPulseAudio)
 include (GetCompilerVersion)
 include (CreatePrecompiledHeader)
 
 # for debugging the make system uncomment next line:
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set (CMAKE_AUTOMOC TRUE)
-
-set(MSCORE_UNSTABLE  FALSE)          # mark as unstable
-
+set(CMAKE_AUTOMOC    TRUE)
+set(MSCORE_UNSTABLE   TRUE)          # mark as unstable
 set(USE_SSE           TRUE)
 set(SCRIPT_INTERFACE  TRUE)
 
@@ -95,7 +87,7 @@ endif (NOT APPLE AND NOT MINGW)
 option(AEOLUS        "enable pipe organ synthesizer"      OFF)
 option(ZERBERUS      "enable experimental sfz sampler"    ON)
 option(OSC           "enable OSC remote control protocol" ON)
-option(OMR           "enable PDF import"  OFF)                 # OMR - optical music recognition
+option(OMR           "enable PDF import"  ON)                 # OMR - optical music recognition
 # for installation see: http://ubuntuforums.org/showthread.php?t=1647350
 option(OCR           "enable OCR, requires OMR" OFF)           # requires tesseract 3.0, needs work on mac/win
 option(SOUNDFONT3    "ogg vorbis compressed fonts" ON)         # enable ogg vorbis compressed fonts, require ogg & vorbis
@@ -109,6 +101,7 @@ option(BUILD_JACK    "Build with support for ${JACK_LONGNAME} audio backend. jac
 option(BUILD_PULSEAUDIO "Build with support for Pulseaudio audio backend." ON)
 option(BUILD_ALSA "Build with support for ALSA audio backend." ON)
 option(BUILD_PORTAUDIO "Build with support for Portaudio audio backend." ON)
+option(BUILD_PCH "Build using precompiled headers." OFF)
 
 if (APPLE)
       set (CMAKE_CXX_COMPILER   clang++)
@@ -150,6 +143,10 @@ endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 if (APPLE)
    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -stdlib=libc++ -g -Wno-inconsistent-missing-override")
    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -stdlib=libc++ -O2 -DNDEBUG -DQT_NO_DEBUG -Wno-inconsistent-missing-override")
+   # this is necessary for genManual to be executed during the build phase
+   # it needs to be able to get the Qt libs.
+   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+   SET(CMAKE_INSTALL_RPATH "${QT_INSTALL_PREFIX}/lib")
 else (APPLE)
    if (MINGW)
       # -mno-ms-bitfields see #22048
@@ -157,8 +154,8 @@ else (APPLE)
       set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -mno-ms-bitfields -O2 -DNDEBUG -DQT_NO_DEBUG")
       set(CMAKE_EXE_LINKER_FLAGS "-Wl,--large-address-aware")
    else (MINGW)
-      set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -g")
-      set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -O2 -DNDEBUG -DQT_NO_DEBUG")
+      set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -g -Wall -Wextra")
+      set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -O2 -DNDEBUG -DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT")
    endif (MINGW)
 endif(APPLE)
 
@@ -198,38 +195,6 @@ else (MINGW OR APPLE)
       SET(Mscore_INSTALL_NAME  "mscore${MSCORE_INSTALL_SUFFIX}-${MUSESCORE_VERSION}/")
       SET(Mscore_SHARE_NAME    "share/")
 endif (MINGW OR APPLE)
-
-##
-##  look for Qt5
-##
-SET(QT_MIN_VERSION    "5.3.0")
-
-SET(QT_USE_QTXML         TRUE)
-SET(QT_USE_QTSVG         TRUE)
-SET(QT_USE_QTNETWORK     TRUE)
-SET(QT_USE_QTDESIGNER    TRUE)
-SET(QT_USE_QTWEBKIT      TRUE)
-SET(QT_USE_QTXMLPATTERNS TRUE)
-SET(QT_USE_QTHELP        TRUE)
-
-#find_package(Qt5 COMPONENTS Widgets Xml Svg Network Designer WebKit Declarative)
-
-##
-## freetype2 >= 2.5.2
-##
-
-##if (APPLE)
-##      PKGCONFIG1 (freetype2 2.5.2 FREETYPE_INCLUDE_DIRS FREETYPE_LIBDIR FREETYPE_LIBRARIES FREETYPE_CPP)
-##      if (FREETYPE_INCLUDE_DIRS)
-##          STRING(REGEX REPLACE  "\"" "" FREETYPE_INCLUDE_DIRS ${FREETYPE_INCLUDE_DIRS})
-##          STRING(REGEX REPLACE  "\"" "" FREETYPE_LIBDIR ${FREETYPE_LIBDIR})
-##          message("freetype2 detected ${FREETYPE_INCLUDE_DIRS} ${FREETYPE_LIBDIR} ${FREETYPE_LIBRARIES}")
-##      else (FREETYPE_INCLUDE_DIRS)
-##          message(FATAL_ERROR "freetype >= 2.5.2 is required\n")
-##      endif (FREETYPE_INCLUDE_DIRS)
-##else (APPLE)
-##    find_package(Freetype REQUIRED)
-##endif (APPLE)
 
 ##
 ## alsa >= 1.0.0
@@ -435,14 +400,6 @@ configure_file (
       ${PROJECT_SOURCE_DIR}/build/config.h.in
       ${PROJECT_BINARY_DIR}/config.h
       )
-configure_file (
-      ${PROJECT_SOURCE_DIR}/build/Doxyfile.in
-      ${PROJECT_BINARY_DIR}/Doxyfile
-      )
-configure_file (
-      ${PROJECT_SOURCE_DIR}/build/Doxyfile-LibMscore.in
-      ${PROJECT_BINARY_DIR}/Doxyfile-LibMscore
-      )
 
 if (NOT MINGW AND NOT APPLE)
     #### PACKAGING for Linux and BSD based systems (more in mscore/CMakeLists.txt) ####
@@ -554,11 +511,9 @@ add_custom_command(
     DEPENDS ${PROJECT_SOURCE_DIR}/all.h
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
-if (MINGW)
-  set(BUILD_PCH false)
-else (MINGW)
+if (NOT MINGW)
   set(BUILD_PCH true)
-endif(MINGW)
+endif(NOT MINGW)
 
 precompiled_header(QT_INCLUDES all ${BUILD_PCH})
 
@@ -571,8 +526,10 @@ ADD_CUSTOM_TARGET(mops2 DEPENDS ${PCH})
 subdirs(
       mscore  awl bww2mxml share midi audiofile fluid mstyle libmscore synthesizer
       effects thirdparty/rtf2html thirdparty/diff thirdparty/beatroot
-      thirdparty/xmlstream thirdparty/qzip thirdparty/kQOAuth
+      thirdparty/qzip thirdparty/kQOAuth
       )
+#      thirdparty/xmlstream
+
 if (APPLE AND CMAKE_BUILD_TYPE MATCHES "DEBUG")
 #with xcode, we need to have all the targets in the same project
 add_subdirectory(mtest)
@@ -599,7 +556,7 @@ if (ZERBERUS)
 endif (ZERBERUS)
 
 if (OMR)
-      subdirs (omr)
+      subdirs (omr thirdparty/poppler)
 endif (OMR)
 
 if (OSC)
@@ -626,6 +583,11 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/thirdparty/freetype/include
 )
 
+if (OMR)
+   include_directories(${PROJECT_SOURCE_DIR}/thirdparty/poppler)
+   include_directories(${PROJECT_SOURCE_DIR}/thirdparty/poppler/poppler)
+endif (OMR)
+
 ##
 ##  Include packaging
 ##
@@ -638,16 +600,14 @@ include(Packaging)
 
 add_custom_target(lupdate
    COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR} > mscore.pro
-   COMMAND ${QT_LUPDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/mscore.pro
+   COMMAND Qt5::lupdate ${PROJECT_BINARY_DIR}/mscore.pro
    COMMAND ${PROJECT_SOURCE_DIR}/build/gen-instruments-projectfile ${PROJECT_SOURCE_DIR}/share/instruments > instruments.pro
-   COMMAND ${QT_LUPDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/instruments.pro
+   COMMAND Qt5::lupdate ${PROJECT_BINARY_DIR}/instruments.pro
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
 add_custom_target(lrelease
-   COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR} > mscore.pro
-   COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR}/share/instruments > instruments.pro
-   COMMAND ${QT_LRELEASE_EXECUTABLE} ${PROJECT_SOURCE_DIR}/share/locale/*.ts
+   COMMAND Qt5::lrelease ${PROJECT_SOURCE_DIR}/share/locale/*.ts
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
@@ -660,4 +620,3 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/plugins
    COMMAND genManual ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}
    DEPENDS genManual
    )
-

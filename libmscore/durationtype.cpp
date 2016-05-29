@@ -467,9 +467,11 @@ TDuration& TDuration::operator+=(const TDuration& t)
 //   toDurationList
 //---------------------------------------------------------
 
-QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool printRestRemains)
+std::vector<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool printRestRemains)
       {
-      QList<TDuration> dList;
+      std::vector<TDuration> dList;
+      dList.reserve(8);
+
       if (useDots) {
             for (TDuration d = TDuration(TDuration::DurationType::V_LONG); d.isValid() && (l.numerator() != 0);) {
                   int dots = maxDots;
@@ -477,7 +479,7 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         d.setDots(dots);
                         Fraction ff = l - d.fraction();
                         if (ff.numerator() >= 0) {
-                              dList.append(d);
+                              dList.push_back(d);
                               l -= d.fraction();
                               break;
                               }
@@ -490,7 +492,7 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         d = d.shift(1);
                         }
                   else {
-                        dList.append(d);
+                        dList.push_back(d);
                         l -= d.fraction();
                         }
                   }
@@ -503,7 +505,7 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         continue;
                         }
                   l -= d.fraction();
-                  dList.append(d);
+                  dList.push_back(d);
                   }
             }
       if (printRestRemains && l != Fraction())
@@ -520,7 +522,7 @@ QString TDuration::durationTypeUserName() const
       {
       QString s = QObject::tr("Custom");
       switch(_val) {
-            case DurationType::V_LONG:      s = QObject::tr("Longa"   ); break;
+            case DurationType::V_LONG:      s = QObject::tr("Longa"  ); break;
             case DurationType::V_BREVE:     s = QObject::tr("Breve"  ); break;
             case DurationType::V_WHOLE:     s = QObject::tr("Whole"  ); break;
             case DurationType::V_HALF:      s = QObject::tr("Half"   ); break;

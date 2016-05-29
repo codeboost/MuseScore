@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="2.00">
+<museScore version="2.06">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -500,14 +500,14 @@
           <head>0</head>
           <line>3</line>
           <voice>0</voice>
-          <name>Short Guiro</name>
+          <name>Short Güiro</name>
           <stem>1</stem>
           </Drum>
         <Drum pitch="74">
           <head>0</head>
           <line>3</line>
           <voice>0</voice>
-          <name>Long Guiro</name>
+          <name>Long Güiro</name>
           <stem>1</stem>
           </Drum>
         <Drum pitch="75">
@@ -655,10 +655,6 @@
             <string>4</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Staff id="2">
@@ -685,10 +681,6 @@
             <string>3</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Staff id="3">
@@ -715,10 +707,6 @@
             <string>2</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Staff id="4">
@@ -745,10 +733,6 @@
             <string>1</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Staff id="5">
@@ -775,10 +759,6 @@
             <string>0</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Score>
@@ -908,10 +888,6 @@
               <string>4</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -927,10 +903,6 @@
               <string>4</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 1</name>
@@ -1057,10 +1029,6 @@
               <string>3</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -1076,10 +1044,6 @@
               <string>3</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 2</name>
@@ -1206,10 +1170,6 @@
               <string>2</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -1225,10 +1185,6 @@
               <string>2</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 3</name>
@@ -1355,10 +1311,6 @@
               <string>1</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -1374,10 +1326,6 @@
               <string>1</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 4</name>
@@ -1757,14 +1705,14 @@
             <head>0</head>
             <line>3</line>
             <voice>0</voice>
-            <name>Short Guiro</name>
+            <name>Short Güiro</name>
             <stem>1</stem>
             </Drum>
           <Drum pitch="74">
             <head>0</head>
             <line>3</line>
             <voice>0</voice>
-            <name>Long Guiro</name>
+            <name>Long Güiro</name>
             <stem>1</stem>
             </Drum>
           <Drum pitch="75">
@@ -1909,10 +1857,6 @@
               <string>0</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 5</name>

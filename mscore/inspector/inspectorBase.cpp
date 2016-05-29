@@ -83,6 +83,12 @@ QVariant InspectorBase::getValue(const InspectorItem& ii) const
             case P_TYPE::SIZE_MM:
                   v = v.toDouble() * DPMM;
                   break;
+            case P_TYPE::BARLINE_TYPE:
+                  v = QVariant::fromValue(BarLineType(v.toInt()));
+                  break;
+            case P_TYPE::DIRECTION:
+                  v = QVariant::fromValue(Direction(v.toInt()));
+                  break;
             default:
                   break;
             }
@@ -100,16 +106,25 @@ void InspectorBase::setValue(const InspectorItem& ii, QVariant val)
 
       P_ID id  = ii.t;
 
-      P_TYPE t = propertyType(id);
-      if (t == P_TYPE::POINT || t == P_TYPE::SP_REAL)
-            val = val.toDouble() / inspector->element()->score()->spatium();
-      else if (t == P_TYPE::TEMPO)
-            val = val.toDouble() * 60.0;
-      else if (t == P_TYPE::POINT_MM)
-            val = val.toDouble() / DPMM;
-      else if (t == P_TYPE::SIZE_MM)
-            val = val.toDouble() / DPMM;
-
+      switch (propertyType(id)) {
+            case P_TYPE::POINT:
+            case P_TYPE::SP_REAL:
+                  val = val.toDouble() / inspector->element()->score()->spatium();
+                  break;
+            case P_TYPE::TEMPO:
+                  val = val.toDouble() * 60.0;
+                  break;
+            case P_TYPE::POINT_MM:
+                  val = val.toDouble() / DPMM;
+            case P_TYPE::SIZE_MM:
+                  val = val.toDouble() / DPMM;
+                  break;
+            case P_TYPE::DIRECTION:
+                  val = int(val.value<Direction>());
+                  break;
+            default:
+                  break;
+            }
       if (qobject_cast<QDoubleSpinBox*>(w))
             static_cast<QDoubleSpinBox*>(w)->setValue(val.toDouble());
       else if (qobject_cast<QSpinBox*>(w))
@@ -422,7 +437,7 @@ void InspectorBase::resetClicked(int i)
 void InspectorBase::mapSignals()
       {
       int i = 0;
-      foreach (const InspectorItem& ii, iList) {
+      for (const InspectorItem& ii : iList) {
             QToolButton* resetButton = ii.r;
             if (resetButton) {
                   connect(resetButton, SIGNAL(clicked()), resetMapper, SLOT(map()));

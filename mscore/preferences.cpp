@@ -72,8 +72,8 @@ void Preferences::init()
 
       bgUseColor         = true;
       fgUseColor         = true;
-      bgWallpaper        = QString();
-      fgWallpaper        = ":/data/paper5.png";
+      bgWallpaper        = (QFileInfo(QString("%1%2").arg(mscoreGlobalShare).arg("wallpaper/background1.png")).absoluteFilePath());
+      fgWallpaper        = (QFileInfo(QString("%1%2").arg(mscoreGlobalShare).arg("wallpaper/paper5.png")).absoluteFilePath());
       fgColor.setNamedColor("#f9f9f9");
       pianoHlColor.setNamedColor("#1259d0");
       iconHeight         = 24;
@@ -171,7 +171,7 @@ void Preferences::init()
       animations              = true;
 #endif
 
-      QString wd      = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)).arg(QCoreApplication::applicationName());
+      QString wd      = QString("%1/%2").arg(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).arg(QCoreApplication::applicationName());
 
       myScoresPath    = QFileInfo(QString("%1/%2").arg(wd).arg(QCoreApplication::translate("scores_directory",     "Scores"))).absoluteFilePath();
       myStylesPath    = QFileInfo(QString("%1/%2").arg(wd).arg(QCoreApplication::translate("styles_directory",     "Styles"))).absoluteFilePath();
@@ -291,7 +291,7 @@ void Preferences::write()
       s.setValue("paperHeight", MScore::defaultStyle()->pageFormat()->height());
 
       s.setValue("twosided",    MScore::defaultStyle()->pageFormat()->twosided());
-      s.setValue("spatium",     MScore::defaultStyle()->spatium() / DPI);
+      s.setValue("spatium",     MScore::defaultStyle()->value(StyleIdx::spatium).toDouble() / DPI);
 
       s.setValue("mag", mag);
       s.setValue("showMidiControls", showMidiControls);
@@ -846,7 +846,7 @@ void PreferenceDialog::updateValues()
                   }
             }
       language->blockSignals(false);
-      
+
       //
       // initialize local shortcut table
       //    we need a deep copy to be able to rewind all
@@ -857,8 +857,8 @@ void PreferenceDialog::updateValues()
       foreach(const Shortcut* s, Shortcut::shortcuts())
             localShortcuts[s->key()] = new Shortcut(*s);
       updateSCListView();
-      
-      //Generate the filtered Shortcut List 
+
+      //Generate the filtered Shortcut List
       filterShortcutsTextChanged(filterShortcuts->text());
 
       //
@@ -1149,7 +1149,7 @@ void PreferenceDialog::selectInstrumentList1()
          this,
          tr("Choose Instrument List"),
          instrumentList1->text(),
-         tr("Instrument List (*.xml)"),
+         tr("Instrument List") + " (*.xml)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );
@@ -1167,7 +1167,7 @@ void PreferenceDialog::selectInstrumentList2()
          this,
          tr("Choose Instrument List"),
          instrumentList2->text(),
-         tr("Instrument List (*.xml)"),
+         tr("Instrument List") + " (*.xml)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );
@@ -1185,7 +1185,7 @@ void PreferenceDialog::selectStartWith()
          this,
          tr("Choose Starting Score"),
          sessionScore->text(),
-         tr("VG/MuseScore Files (*.mscz *.mscx);;All (*)"),
+         tr("MuseScore Files") + " (*.mscz *.mscx);;" + tr("All") + " (*)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );

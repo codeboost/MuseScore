@@ -17,6 +17,8 @@
 
 namespace Ms {
 
+class Text;
+
 //---------------------------------------------------------
 //   @@ TBox
 ///    Text frame.
@@ -28,6 +30,7 @@ class TBox : public VBox {
 
    public:
       TBox(Score* score);
+      TBox(const TBox&);
       ~TBox();
       virtual TBox* clone() const        { return new TBox(*this); }
       virtual Element::Type type() const { return Element::Type::TBOX;       }

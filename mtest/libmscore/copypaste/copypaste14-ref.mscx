@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="2.00">
+<museScore version="2.06">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -142,6 +142,10 @@
             <tpc>13</tpc>
             </Note>
           </Chord>
+        <BarLine>
+          <subtype>normal</subtype>
+          <span>1</span>
+          </BarLine>
         <tick>0</tick>
         <Chord>
           <track>1</track>
@@ -189,6 +193,10 @@
         <Rest>
           <durationType>half</durationType>
           </Rest>
+        <BarLine>
+          <subtype>normal</subtype>
+          <span>1</span>
+          </BarLine>
         <tick>2400</tick>
         <Chord>
           <track>1</track>
@@ -209,6 +217,10 @@
           <durationType>measure</durationType>
           <duration z="4" n="4"/>
           </Rest>
+        <BarLine>
+          <subtype>normal</subtype>
+          <span>1</span>
+          </BarLine>
         </Measure>
       <Measure number="4">
         <Rest>

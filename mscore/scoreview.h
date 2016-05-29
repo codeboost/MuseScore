@@ -66,7 +66,8 @@ enum class TEXT : char {
       PART,
       SYSTEM,
       STAFF,
-      REHEARSAL_MARK
+      REHEARSAL_MARK,
+      INSTRUMENT_CHANGE
       };
 
 //---------------------------------------------------------
@@ -301,11 +302,13 @@ class ScoreView : public QWidget, public MuseScoreView {
       void editCopy();
       void editCut();
       void editPaste();
+      void editSwap();
 
       void normalCut();
       void normalCopy();
       void fotoModeCopy();
-      void normalPaste();
+      bool normalPaste();
+      void normalSwap();
 
       void cloneElement(Element* e);
       void doFotoDragEdit(QMouseEvent* ev);

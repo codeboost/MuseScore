@@ -58,22 +58,20 @@ PartItem::PartItem(Part* p, QListWidget* parent)
 //   ExcerptsDialog
 //---------------------------------------------------------
 
-ExcerptsDialog::ExcerptsDialog(Score* s, QWidget* parent)
+ExcerptsDialog::ExcerptsDialog(MasterScore* s, QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
       setModal(true);
 
-      score = s;
-      if (score->parentScore())
-            score = score->parentScore();
+      score = s->masterScore();
 
-      foreach(Excerpt* e, score->excerpts()) {
+      for (Excerpt* e : score->excerpts()) {
             ExcerptItem* ei = new ExcerptItem(e);
             excerptList->addItem(ei);
             }
-      foreach(Part* p, score->parts()) {
+      for (Part* p : score->parts()) {
             PartItem* item = new PartItem(p);
             partList->addItem(item);
             }
@@ -111,7 +109,7 @@ void MuseScore::startExcerptsDialog()
       {
       if (cs == 0)
             return;
-      ExcerptsDialog ed(cs, 0);
+      ExcerptsDialog ed(cs->masterScore(), 0);
       if (!useFactorySettings) {
             QSettings settings;
             settings.beginGroup("PartEditor");
@@ -125,8 +123,8 @@ void MuseScore::startExcerptsDialog()
       settings.setValue("size", ed.size());
       settings.setValue("pos", ed.pos());
       settings.endGroup();
-      cs->setLayoutAll(true);
-      cs->end();
+      cs->setLayoutAll();
+      cs->update();
       }
 
 //---------------------------------------------------------
@@ -381,17 +379,13 @@ void ExcerptsDialog::accept()
       qDebug() << "\nFirst pass : delete unwanted parts";
 
       int pos = 0;
-      foreach(Excerpt* e, score->excerpts()) {
+      for (int i = score->excerpts().size() -1; i >= 0; i--) {
+            Excerpt* e = score->excerpts().at(i);
             if (!isInPartsList(e)) {
                   // Delete it because not in the list anymore
                   if (e->partScore()) {
                         Score* partScore = e->partScore();
                         qDebug() << " - Deleting parts : " << ExcerptItem(e).excerpt()->title();
-
-                        // Swap Excerpts to the end before deleting, so if undoing, the part will be reordered
-                        int lastPos = score->excerpts().size()-1;
-                        if ((lastPos > 0) && (pos != lastPos))
-                              score->undo(new SwapExcerpt(score, pos, lastPos));
 
                         deleteExcerpt(e);
                         // remove the excerpt
@@ -410,7 +404,6 @@ void ExcerptsDialog::accept()
             QListWidgetItem* cur = excerptList->currentItem();
             if (cur == 0)
                   continue;
-
             createExcerptClicked(cur);
             }
 
@@ -458,10 +451,7 @@ void ExcerptsDialog::accept()
                   score->undo(new SwapExcerpt(score, i, position));
                   }
             }
-
       score->endCmd();
-      score->setExcerptsChanged(true);
-
       QDialog::accept();
       }
 }

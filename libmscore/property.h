@@ -17,6 +17,7 @@ namespace Ms {
 
 class XmlReader;
 
+
 //---------------------------------------------------------
 //   PropertyStyle
 //---------------------------------------------------------
@@ -56,16 +57,17 @@ enum class P_ID : unsigned char {
       NO_STEM,
       SLUR_DIRECTION,
       LEADING_SPACE,
-      TRAILING_SPACE,
       DISTRIBUTE,
       MIRROR_HEAD,
       DOT_POSITION,
       TUNING,
       PAUSE,
-      BARLINE_SPAN,
 
+      BARLINE_TYPE,
+      BARLINE_SPAN,
       BARLINE_SPAN_FROM,
       BARLINE_SPAN_TO,
+
       USER_OFF,
       FRET,
       STRING,
@@ -114,7 +116,6 @@ enum class P_ID : unsigned char {
       ACCIDENTAL_BRACKET,
       NUMERATOR_STRING,
       DENOMINATOR_STRING,
-      BREAK_HINT,
       FBPREFIX,             // used for FiguredBassItem
       FBDIGIT,              //    "           "
       FBSUFFIX,             //    "           "
@@ -147,10 +148,12 @@ enum class P_ID : unsigned char {
       MARKER_TYPE,
       ARP_USER_LEN1,
       ARP_USER_LEN2,
-      REPEAT_FLAGS,
-      END_BARLINE_TYPE,
-      END_BARLINE_VISIBLE,
-      END_BARLINE_COLOR,
+
+      REPEAT_END,
+      REPEAT_START,
+      REPEAT_MEASURE,
+      REPEAT_JUMP,
+
       MEASURE_NUMBER_MODE,
 
       GLISS_TYPE,
@@ -207,7 +210,6 @@ enum class P_ID : unsigned char {
       LYRIC_TICKS,
       VOLTA_ENDING,
       LINE_VISIBLE,
-      SYSTEM_INITIAL_BARLINE_TYPE,
 
       MAG,
       USE_DRUMSET,
@@ -224,12 +226,12 @@ enum class P_ID : unsigned char {
 
       GLISSANDO_STYLE,
 
-      LAYOUT_MODE,
-
       FRET_STRINGS,
       FRET_FRETS,
       FRET_BARRE,
       FRET_OFFSET,
+
+      SYSTEM_BRACKET,
 
       END
       };
@@ -249,7 +251,7 @@ enum class P_TYPE : char {
       STRING,
       SCALE,
       COLOR,
-      DIRECTION,      // enum class MScore::Direction
+      DIRECTION,      // enum class Direction
       DIRECTION_H,    // enum class MScore::DirectionH
       ORNAMENT_STYLE, // enum class MScore::OrnamentStyle
       TDURATION,

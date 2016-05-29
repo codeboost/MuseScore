@@ -242,7 +242,7 @@ void Dynamic::read(XmlReader& e)
 void Dynamic::layout()
       {
       if (!readPos().isNull()) {
-            if (score()->mscVersion() < 118) {
+            if (score()->mscVersion() <= 114) {
                   setReadPos(QPointF());
                   // hack: 1.2 boundingBoxes are a bit wider which results
                   // in symbols moved right
@@ -265,7 +265,7 @@ void Dynamic::layout()
                   if (c->stem() && !c->up())  // stem down
                         rxpos() += noteHeadWidth * .25;  // center on stem + optical correction
                   else
-                        rxpos() += noteHeadWidth * .5;   // center on note head
+                        rxpos() += noteHeadWidth * .5;   // center on notehead
                   }
             else
                   rxpos() += c->width() * .5;
@@ -346,7 +346,7 @@ QRectF Dynamic::drag(EditData* ed)
       if (km != (Qt::ShiftModifier | Qt::ControlModifier)) {
             int si;
             Segment* seg = 0;
-            if (_score->pos2measure(ed->pos, &si, 0, &seg, 0) == nullptr)
+            if (score()->pos2measure(ed->pos, &si, 0, &seg, 0) == nullptr)
                   return f;
             if (seg && (seg != segment() || staffIdx() != si)) {
                   QPointF pos1(canvasPos());
@@ -406,7 +406,7 @@ bool Dynamic::setProperty(P_ID propertyId, const QVariant& v)
                         return false;
                   break;
             }
-      score()->setLayoutAll(true);
+      score()->setLayoutAll();
       return true;
       }
 
@@ -428,7 +428,7 @@ QVariant Dynamic::propertyDefault(P_ID id) const
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Dynamic::accessibleInfo()
+QString Dynamic::accessibleInfo() const
       {
       return QString("%1: %2").arg(Element::accessibleInfo()).arg(this->dynamicTypeName());
       }

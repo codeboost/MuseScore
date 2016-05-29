@@ -45,7 +45,7 @@ QT5_WRAP_UI (ui_headers
       glissandoprop.ui articulation.ui metaedit.ui palette.ui select.ui
       synthcontrol.ui splitstaff.ui cellproperties.ui keyedit.ui selectinstr.ui
       fretdprops.ui editstafftype.ui sectionbreak.ui  bend.ui tremolobar.ui textproperties.ui
-      editpitch.ui editstringdata.ui editraster.ui mediadialog.ui textstyle.ui albummanager.ui layer.ui
+      editpitch.ui editstringdata.ui editraster.ui mediadialog.ui textstyledialog.ui albummanager.ui layer.ui
       omrpanel.ui startdialog.ui masterpalette.ui harmonyedit.ui pathlistdialog.ui
       note_groups.ui resourceManager.ui stafftypetemplates.ui
       startcenter.ui scorePreview.ui scoreBrowser.ui
@@ -131,6 +131,7 @@ QT5_WRAP_UI (ui_headers
       registration/enterregistrationcode.ui
       registration/trialdialog.ui
 
+      inspector/inspector_caesura.ui
       ${SCRIPT_UI}
       )
 
@@ -244,7 +245,7 @@ add_executable ( ${ExecutableName}
       editpitch.cpp editstringdata.cpp editraster.cpp pianotools.cpp mediadialog.cpp guitartools.cpp
       workspace.cpp chordview.cpp
       album.cpp albummanager.cpp
-      textstyle.cpp
+      textstyledialog.cpp
       lineproperties.cpp stafftextproperties.cpp splitstaff.cpp
       tupletdialog.cpp glissandoproperties.cpp
       articulationprop.cpp textprop.cpp
@@ -318,7 +319,6 @@ target_link_libraries(mscore
       effects
       vorbisfile
       libmscore
-      xmlstream
       qzip
       beatroot
       kqoauth
@@ -405,7 +405,7 @@ if (MINGW)
       )
 
    if (OMR)
-      target_link_libraries(mscore omr fitz jbig2dec jpeg openjpeg)
+      target_link_libraries(mscore omr poppler)
       if (OCR)
             target_link_libraries(mscore tesseract_api)
       endif (OCR)
@@ -428,9 +428,6 @@ if (MINGW)
       ${CROSS}/lib/portaudio.dll
       ${CROSS}/opt/bin/libeay32.dll
       ${CROSS}/opt/bin/ssleay32.dll
-      ${CROSSQT}/bin/icudt53.dll
-      ${CROSSQT}/bin/icuin53.dll
-      ${CROSSQT}/bin/icuuc53.dll
       ${CROSSQT}/bin/Qt5CLucene.dll
       ${CROSSQT}/bin/Qt5Core.dll
       ${CROSSQT}/bin/Qt5Gui.dll
@@ -447,8 +444,6 @@ if (MINGW)
       ${CROSSQT}/bin/Qt5Sql.dll
       ${CROSSQT}/bin/Qt5Svg.dll
       ${CROSSQT}/bin/Qt5WebChannel.dll
-      ${CROSSQT}/bin/Qt5WebKit.dll
-      ${CROSSQT}/bin/Qt5WebKitWidgets.dll
       ${CROSSQT}/bin/Qt5Widgets.dll
       ${CROSSQT}/bin/Qt5Xml.dll
       ${CROSSQT}/bin/Qt5XmlPatterns.dll
@@ -461,7 +456,6 @@ if (MINGW)
 
     install(FILES
       ${CROSSQT}/plugins/imageformats/qjpeg.dll
-      ${CROSSQT}/plugins/imageformats/qmng.dll
       ${CROSSQT}/plugins/imageformats/qsvg.dll
       ${CROSSQT}/plugins/imageformats/qtiff.dll
       DESTINATION bin/imageformats)
@@ -512,7 +506,7 @@ else (MINGW)
       )
 
    if (OMR)
-      target_link_libraries(mscore omr fitz fontconfig jbig2dec jpeg openjpeg)
+      target_link_libraries(mscore omr poppler)
       if (OCR)
             target_link_libraries(mscore tesseract_api)
       endif (OCR)
