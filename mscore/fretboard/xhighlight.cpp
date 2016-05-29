@@ -66,7 +66,6 @@ namespace vg
 
         setBrush(Qt::NoBrush);
         setPen(Qt::NoPen);
-        setZValue(99);
 
         QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
         effect->setOffset(lightOffset);

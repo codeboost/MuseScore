@@ -208,7 +208,7 @@ namespace vg
 
             auto stringType = k >= 3 ? Golden : Steel;
             XString::Ptr string = XString::Ptr(new XString(stringRect, this, thickness, stringType));
-            string->setZValue(100);
+            string->setZValue(2);
             string->setNoteText(noteNames[options.numberOfStrings - k - 1]);
             string->noteNameOffset = (options.nutOffset + nut->rect().width()) / 2;
             y+=stringAreaHeight;

@@ -46,7 +46,7 @@ namespace vg
     void XString::showHighlight(float x)
     {
         QPointF pt (x, rect().center().y());
-        highlight()->setPosAnimated(pt, true);
+        highlight()->setPosAnimated(pt, false);
     }
 
     XHighlight::Ptr XString::highlight()
