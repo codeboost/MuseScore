@@ -2803,7 +2803,7 @@ void MuseScore::changeState(ScoreState val)
       menuWorkspaces->setEnabled(enable);
 
       transportTools->setEnabled(enable && !noSeq && seq && seq->isRunning());
-      cpitchTools->setEnabled(enable);
+      //cpitchTools->setEnabled(enable);
       mag->setEnabled(enable);
       entryTools->setEnabled(enable);
 
@@ -5156,6 +5156,8 @@ int main(int argc, char* av[])
             localeName = s.value("language", "system").toString();
             }
 
+       //Force en_US locale, since this is the only supported version
+      localeName = "en_US";
       setMscoreLocale(localeName);
 
       Shortcut::init();
