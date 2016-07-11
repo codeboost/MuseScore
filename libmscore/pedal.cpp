@@ -28,7 +28,7 @@ namespace Ms {
 
 void PedalSegment::layout()
       {
-      TextLineSegment::layout1();
+      TextLineSegment::layout();
       if (parent())     // for palette
             rypos() += score()->styleS(StyleIdx::pedalY).val() * spatium();
       adjustReadPos();
@@ -345,6 +345,23 @@ QPointF Pedal::linePos(Grip grip, System** sys) const
 
       *sys = s;
       return QPointF(x, 0);
+      }
+
+//---------------------------------------------------------
+//   getPropertyStyle
+//---------------------------------------------------------
+
+StyleIdx Pedal::getPropertyStyle(P_ID id) const
+      {
+      switch (id) {
+            case P_ID::LINE_WIDTH:
+                  return StyleIdx::pedalLineWidth;
+            case P_ID::LINE_STYLE:
+                  return StyleIdx::pedalLineStyle;
+            default:
+                  break;
+            }
+      return StyleIdx::NOSTYLE;
       }
 
 }

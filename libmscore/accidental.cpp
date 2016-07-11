@@ -394,7 +394,7 @@ void Accidental::draw(QPainter* painter) const
 bool Accidental::acceptDrop(const DropData& data) const
       {
       Element* e = data.element;
-      return e->type() == Element::Type::ICON && static_cast<Icon*>(e)->iconType() == IconType::BRACKETS;
+      return e->isIcon() && toIcon(e)->iconType() == IconType::BRACKETS;
       }
 
 //---------------------------------------------------------
@@ -406,7 +406,7 @@ Element* Accidental::drop(const DropData& data)
       Element* e = data.element;
       switch(e->type()) {
             case Element::Type::ICON :
-                  if (static_cast<Icon*>(e)->iconType() == IconType::BRACKETS && !_hasBracket)
+                  if (toIcon(e)->iconType() == IconType::BRACKETS && !_hasBracket)
                         undoSetHasBracket(true);
                   break;
 
@@ -423,7 +423,7 @@ Element* Accidental::drop(const DropData& data)
 
 void Accidental::undoSetHasBracket(bool val)
       {
-      score()->undoChangeProperty(this, P_ID::ACCIDENTAL_BRACKET, val);
+      undoChangeProperty(P_ID::ACCIDENTAL_BRACKET, val);
       }
 
 //---------------------------------------------------------
@@ -432,7 +432,7 @@ void Accidental::undoSetHasBracket(bool val)
 
 void Accidental::undoSetSmall(bool val)
       {
-      score()->undoChangeProperty(this, P_ID::SMALL, val);
+      undoChangeProperty(P_ID::SMALL, val);
       }
 
 //---------------------------------------------------------
@@ -484,8 +484,7 @@ bool Accidental::setProperty(P_ID propertyId, const QVariant& v)
             default:
                   return Element::setProperty(propertyId, v);
             }
-      layout();
-      score()->setLayoutAll();  // spacing changes
+      triggerLayout();
       return true;
       }
 

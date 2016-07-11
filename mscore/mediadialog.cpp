@@ -38,9 +38,7 @@ MediaDialog::MediaDialog(QWidget* /*parent*/)
       {
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-      setWindowTitle(tr("Virtual Guitar: Additional Media"));
-      scanFileButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      audioFileButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
+      setWindowTitle(tr("MuseScore: Additional Media"));
 
       connect(addScan,         SIGNAL(clicked()), SLOT(addScanPressed()));
       connect(removeScan,      SIGNAL(clicked()), SLOT(removeScanPressed()));

@@ -758,7 +758,7 @@ bool LyricsLine::setProperty(P_ID propertyId, const QVariant& v)
                   if (parent() && parent()->type() == Element::Type::LYRICS
                               && static_cast<Lyrics*>(parent())->ticks() > 0) {
                         int newTicks   = static_cast<Lyrics*>(parent())->ticks() + v.toInt() - ticks();
-                        score()->undoChangeProperty(parent(), P_ID::LYRIC_TICKS, newTicks);
+                        parent()->undoChangeProperty(P_ID::LYRIC_TICKS, newTicks);
                         }
                   setTicks(v.toInt());
                   }
@@ -825,7 +825,7 @@ void LyricsLineSegment::layout()
       // B) if line follows a syllable, advance line start to after the syllable text
       lyr   = lyricsLine()->lyrics();
       sys   = lyr->segment()->system();
-      if (spannerSegmentType() == SpannerSegmentType::BEGIN || spannerSegmentType() == SpannerSegmentType::SINGLE) {
+      if (sys && (spannerSegmentType() == SpannerSegmentType::BEGIN || spannerSegmentType() == SpannerSegmentType::SINGLE)) {
             qreal lyrX        = lyr->bbox().x();
             qreal lyrXp       = lyr->pagePos().x();
             qreal lyrW        = lyr->bbox().width();

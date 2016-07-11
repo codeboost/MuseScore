@@ -3,7 +3,7 @@
 set -e
 
 # do not build mac for PR
-if [ "${TRAVIS_PULL_REQUEST}" = "true" ]; then
+if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
   exit 0
 fi
 
@@ -32,5 +32,5 @@ DMGFILE=applebuild/$PACKAGE_NAME-$DATE-$BRANCH-$REVISION.dmg
 
 mv applebuild/$PACKAGE_NAME-$BRANCH-$REVISION.dmg $DMGFILE
 
-scp -C -i $HOME/.ssh/osuosl_nighlies_rsa $DMGFILE musescore-nightlies@ftp.osuosl.org:ftp/macosx
-ssh musescore-nightlies@ftp.osuosl.org "cd ~/ftp/macosx; ls MuseScoreNightly* -t | tail -n +41 | xargs rm; ~/trigger-musescore-nightlies"
+scp -C -i $HOME/.ssh/osuosl_nighlies_rsa $DMGFILE musescore-nightlies@ftp-osl.osuosl.org:ftp/macosx
+ssh musescore-nightlies@ftp-osl.osuosl.org "cd ~/ftp/macosx; ls MuseScoreNightly* -t | tail -n +41 | xargs rm; ~/trigger-musescore-nightlies"

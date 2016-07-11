@@ -3,7 +3,7 @@
 //  Linux Music Score Editor
 //  $Id: playpanel.cpp 4775 2011-09-12 14:25:31Z wschweer $
 //
-//  Copyright (C) 2002-2011 Werner Schweer and others
+//  Copyright (C) 2002-2016 Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -35,8 +35,8 @@ static const int DEFAULT_POS_Y  = 100;
 //   PlayPanel
 //---------------------------------------------------------
 
-PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
-   : QWidget(parent, windowType)
+PlayPanel::PlayPanel(QWidget* parent)
+   : QWidget(parent, Qt::Dialog)
       {
       cachedTickPosition = -1;
       cachedTimePosition = -1;
@@ -60,12 +60,9 @@ PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
       loopOutButton->setDefaultAction(getAction("loop-out"));
       //enablePlay = new EnablePlayForWidget(this);
 
-//      tempoSlider->setDclickValue1(100.0);
-//      tempoSlider->setDclickValue2(100.0);
-//      tempoSlider->setUseActualValue(true);
-          
-          tempoSlider->setOrientation(Qt::Horizontal);
-          volumeSlider->setOrientation(Qt::Horizontal);
+      tempoSlider->setDclickValue1(100.0);
+      tempoSlider->setDclickValue2(100.0);
+      tempoSlider->setUseActualValue(true);
 
       connect(volumeSlider, SIGNAL(valueChanged(int)),        SLOT(volumeChangedSlot(int)));
       connect(posSlider,    SIGNAL(sliderMoved(int)),         SLOT(setPos(int)));
@@ -350,10 +347,17 @@ void PlayPanel::tempoSliderReleased()
       tempoSliderIsPressed = false;
       }
 
+//---------------------------------------------------------
+//   changeEvent
+//---------------------------------------------------------
 
-    //---------------------------------------------------------
-    //   Dock widget version
-    //---------------------------------------------------------
+void PlayPanel::changeEvent(QEvent *event)
+      {
+      QWidget::changeEvent(event);
+      if (event->type() == QEvent::LanguageChange)
+            retranslate();
+      }
+
 }
 
 

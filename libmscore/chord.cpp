@@ -60,6 +60,8 @@ namespace Ms {
 
 Note* Chord::upNote() const
       {
+      Q_ASSERT(!_notes.empty());
+
       Note* result = _notes.back();
       if (!staff())
             return result;
@@ -89,6 +91,8 @@ Note* Chord::upNote() const
 
 Note* Chord::downNote() const
       {
+      Q_ASSERT(!_notes.empty());
+
       Note* result = _notes.front();
       if (!staff())
             return result;
@@ -188,7 +192,7 @@ Chord::Chord(Score* s)
       _ledgerLines      = 0;
       _stem             = 0;
       _hook             = 0;
-      _stemDirection    = Direction::AUTO;
+      _stemDirection    = Direction_AUTO;
       _arpeggio         = 0;
       _tremolo          = 0;
       _endsGlissando    = false;
@@ -789,6 +793,7 @@ void Chord::addLedgerLines()
 
 void Chord::computeUp()
       {
+      Q_ASSERT(!_notes.empty());
       StaffType* tab = 0;
       // TAB STAVES
       if (staff() && staff()->isTabStaff()) {
@@ -808,8 +813,8 @@ void Chord::computeUp()
             }
 
       // PITCHED STAVES (or TAB with stems through staves)
-      if (_stemDirection != Direction::AUTO) {
-            _up = _stemDirection == Direction::UP;
+      if (_stemDirection != Direction_AUTO) {
+            _up = _stemDirection == Direction_UP;
             }
       else if (!parent())
             // hack for palette and drumset editor
@@ -932,11 +937,7 @@ void Chord::write(Xml& xml) const
             _hook->write(xml);
       if (_stemSlash && _stemSlash->isUserModified())
             _stemSlash->write(xml);
-      switch(_stemDirection) {
-            case Direction::UP:   xml.tag("StemDirection", QVariant("up")); break;
-            case Direction::DOWN: xml.tag("StemDirection", QVariant("down")); break;
-            case Direction::AUTO: break;
-            }
+      writeProperty(xml, P_ID::STEM_DIRECTION);
       for (Note* n : _notes)
             n->write(xml);
       if (_arpeggio)
@@ -1014,15 +1015,8 @@ void Chord::read(XmlReader& e)
                   ss->read(e);
                   add(ss);
                   }
-            else if (tag == "StemDirection") {
-                  QString val(e.readElementText());
-                  if (val == "up")
-                        _stemDirection = Direction::UP;
-                  else if (val == "down")
-                        _stemDirection = Direction::DOWN;
-                  else
-                        _stemDirection = Direction(val.toInt());
-                  }
+            else if (tag == "StemDirection")
+                  readProperty(e, P_ID::STEM_DIRECTION);
             else if (tag == "noStem")
                   _noStem = e.readInt();
             else if (tag == "Arpeggio") {
@@ -1621,8 +1615,10 @@ void Chord::cmdUpdateNotes(AccidentalState* as)
 
       if (staffGroup == StaffGroup::STANDARD) {
             for (Note* note : lnotes) {
-                  if (note->tieBack()) {
-                        if (note->accidental() && note->tpc() == note->tieBack()->startNote()->tpc()) {
+                  if (note->tieBack() && note->tpc() == note->tieBack()->startNote()->tpc()) {
+                        // same pitch
+                        if (note->accidental() && note->accidental()->role() == AccidentalRole::AUTO) {
+                              // not courtesy
                               // TODO: remove accidental only if note is not
                               // on new system
                               score()->undoRemoveElement(note->accidental());
@@ -2612,7 +2608,7 @@ QVariant Chord::propertyDefault(P_ID propertyId) const
       switch (propertyId) {
             case P_ID::NO_STEM:        return false;
             case P_ID::SMALL:          return false;
-            case P_ID::STEM_DIRECTION: return Direction(Direction::AUTO);
+            case P_ID::STEM_DIRECTION: return Direction_AUTO;
             default:
                   return ChordRest::propertyDefault(propertyId);
             }
@@ -2627,19 +2623,17 @@ bool Chord::setProperty(P_ID propertyId, const QVariant& v)
       switch (propertyId) {
             case P_ID::NO_STEM:
                   setNoStem(v.toBool());
-                  score()->setLayoutAll();
                   break;
             case P_ID::SMALL:
                   setSmall(v.toBool());
-                  score()->setLayoutAll();
                   break;
             case P_ID::STEM_DIRECTION:
                   setStemDirection(v.value<Direction>());
-                  score()->setLayoutAll();
                   break;
             default:
                   return ChordRest::setProperty(propertyId, v);
             }
+      triggerLayout();
       return true;
       }
 
@@ -2846,8 +2840,8 @@ QPointF Chord::layoutArticulation(Articulation* a)
       //
       // determine Direction
       //
-      if (a->direction() != Direction::AUTO) {
-            a->setUp(a->direction() == Direction::UP);
+      if (a->direction() != Direction_AUTO) {
+            a->setUp(a->direction() == Direction_UP);
             }
       else {
             if (measure()->hasVoices(a->staffIdx())) {
@@ -2897,8 +2891,8 @@ QPointF Chord::layoutArticulation(Articulation* a)
 
 void Chord::reset()
       {
-      score()->undoChangeProperty(this, P_ID::STEM_DIRECTION, Direction(Direction::AUTO));
-      score()->undoChangeProperty(this, P_ID::BEAM_MODE, int(Beam::Mode::AUTO));
+      undoChangeProperty(P_ID::STEM_DIRECTION, Direction_AUTO);
+      undoChangeProperty(P_ID::BEAM_MODE, int(Beam::Mode::AUTO));
       score()->createPlayEvents(this);
       ChordRest::reset();
       }
@@ -2937,7 +2931,7 @@ void Chord::setSlash(bool flag, bool stemless)
                         const Drumset* ds = part()->instrument()->drumset();
                         int pitch = n->pitch();
                         if (ds && ds->isValid(pitch)) {
-                              undoChangeProperty(P_ID::STEM_DIRECTION, Direction(ds->stemDirection(pitch)));
+                              undoChangeProperty(P_ID::STEM_DIRECTION, ds->stemDirection(pitch));
                               n->undoChangeProperty(P_ID::HEAD_GROUP, int(ds->noteHead(pitch)));
                               }
                         }
@@ -2946,7 +2940,7 @@ void Chord::setSlash(bool flag, bool stemless)
             }
 
       // set stem to auto (mostly important for rhythmic notation on drum staves)
-      undoChangeProperty(P_ID::STEM_DIRECTION, Direction(Direction::AUTO));
+      undoChangeProperty(P_ID::STEM_DIRECTION, Direction_AUTO);
 
       // make stemless if asked
       if (stemless)
@@ -2964,7 +2958,7 @@ void Chord::setSlash(bool flag, bool stemless)
             qreal y = 0.0;
             if (track() % 2) {
                   line = staff()->bottomLine() + 1;
-                  y = 0.5 * spatium();
+                  y    = 0.5 * spatium();
                   }
             else {
                   line = -1;
@@ -3216,7 +3210,8 @@ QString Chord::accessibleExtraInfo() const
             rez = QString("%1 %2").arg(rez).arg(tremolo()->screenReaderInfo());
 
       foreach (Element* e, el()) {
-            if (!score()->selectionFilter().canSelect(e)) continue;
+            if (!score()->selectionFilter().canSelect(e))
+                  continue;
             rez = QString("%1 %2").arg(rez).arg(e->screenReaderInfo());
             }
 
@@ -3231,7 +3226,7 @@ Shape Chord::shape() const
       {
       Shape shape;
       processSiblings([&shape, this] (Element* e) {
-//            if (!(e->isStem() && beam()))
+            if (!e->isLedgerLine())             // dont add ledger lines to shape
                   shape.add(e->shape());
             });
       shape.add(ChordRest::shape());      // add articulation + lyrics

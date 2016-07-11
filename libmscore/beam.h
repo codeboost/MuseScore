@@ -150,9 +150,13 @@ class Beam : public Element {
       virtual QVariant propertyDefault(P_ID id) const override;
       virtual PropertyStyle propertyStyle(P_ID) const override;
       virtual void resetProperty(P_ID id) override;
+      virtual StyleIdx getPropertyStyle(P_ID) const override;
+
       virtual void styleChanged() override;
       bool isGrace() const { return _isGrace; }  // for debugger
       bool cross() const   { return _cross; }
+      virtual Shape shape() const override;
+      virtual void triggerLayout() const override;
       };
 
 

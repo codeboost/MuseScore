@@ -31,7 +31,8 @@ class Element;
 //   StyleIdx
 //---------------------------------------------------------
 
-enum class StyleIdx : unsigned char {
+enum class StyleIdx : int {
+      NOSTYLE = -1,
       staffUpperBorder,
       staffLowerBorder,
       staffDistance,
@@ -258,6 +259,9 @@ enum class StyleIdx : unsigned char {
       tupletNoteLeftDistance,
       tupletNoteRightDistance,
       tupletBracketWidth,
+      tupletDirection,
+      tupletNumberType,
+      tupletBracketType,
 
       barreLineWidth,
       fretMag,
@@ -368,7 +372,7 @@ class MStyle {
       void setPageFormat(const PageFormat& pf);
 
       ArticulationAnchor articulationAnchor(int id) const;
-//      void setArticulationAnchor(int id, ArticulationAnchor val);
+      static StyleIdx articulationAnchorIdx(int id);
 
       static const char* valueType(const StyleIdx);
       static const char* valueName(const StyleIdx);

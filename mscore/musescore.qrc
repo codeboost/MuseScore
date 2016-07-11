@@ -85,8 +85,11 @@
         <file>data/icons/media-playback-start.svg</file>
         <file>data/icons/media-skip-backward.svg</file>
         <file>data/icons/mode-notes.svg</file>
+        <file>data/icons/mode-notes-repitch.svg</file>
+        <file>data/icons/mode-notes-rhythm.svg</file>
+        <file>data/icons/mode-notes-realtime-manual.svg</file>
+        <file>data/icons/mode-notes-realtime-auto.svg</file>
         <file>data/icons/mode-photo.svg</file>
-        <file>data/icons/mode-repitch.svg</file>
         <file>data/icons/note-1.svg</file>
         <file>data/icons/note-2.svg</file>
         <file>data/icons/note-4.svg</file>
@@ -97,6 +100,8 @@
         <file>data/icons/note-128.svg</file>
         <file>data/icons/note-breve.svg</file>
         <file>data/icons/note-dot.svg</file>
+        <file>data/icons/note-dot3.svg</file>
+        <file>data/icons/note-dot4.svg</file>
         <file>data/icons/note-double-dot.svg</file>
         <file>data/icons/note-double-flat.svg</file>
         <file>data/icons/note-double-sharp.svg</file>
