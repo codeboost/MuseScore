@@ -1332,8 +1332,8 @@ void MuseScore::retranslate(bool firstStart)
 
       fileTools->setWindowTitle(tr("File Operations"));
       transportTools->setWindowTitle(tr("Transport Tools"));
-      cpitchTools->setWindowTitle(tr("Concert Pitch"));
-      fotoTools->setWindowTitle(tr("Image Capture"));
+      //cpitchTools->setWindowTitle(tr("Concert Pitch"));
+      //fotoTools->setWindowTitle(tr("Image Capture"));
       entryTools->setWindowTitle(tr("Note Input"));
 
       viewModeCombo->setAccessibleName(tr("View Mode"));
@@ -5248,7 +5248,7 @@ QFileInfoList MuseScore::recentScores() const
       return fil;
       }
     
-PlayPanel *MuseScore::getPlayPanel() const { return playPanelDock ? playPanelDock->getPlayPanel() : nullptr; }
+    PlayPanel *MuseScore::getPlayPanel() const { return playPanel; }
 }
 
 using namespace Ms;
