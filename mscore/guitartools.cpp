@@ -281,7 +281,6 @@ namespace Ms
             }
         }
         
-          qDebug() << "Highlights: " << highlights;
         fretboard->fretboard->setHighlights(highlights);
     }
 }

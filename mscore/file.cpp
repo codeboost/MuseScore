@@ -323,6 +323,7 @@ MasterScore* MuseScore::readScore(const QString& name)
       if (name.isEmpty())
             return 0;
 
+          qDebug() << name; 
       MasterScore* score = new MasterScore(MScore::baseStyle());  // start with built-in style
       setMidiReopenInProgress(name);
       Score::FileError rv = Ms::readScore(score, name, false);
