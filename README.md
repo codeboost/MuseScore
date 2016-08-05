@@ -48,7 +48,7 @@ To start Virtual Guitar Player, type:
 
 The Start Center window will appear on every invocation, until you disable that setting via the "Preferences" dialog.
 
-### Installing 
+### Installing
 To install to default prefix using root user, type:
 
     sudo make install
@@ -60,9 +60,5 @@ To run the debug version, type:
 
     ./build.debug/mscore/mscore
 
-### Program Documentation
-To generate program documentation using DoxyGen, first do `make debug`, then type:
-
-    make doxy
-
-Browse the documentation in subdirectory Doc/html/index.html using any html browser.
+### Testing
+See [mtest/README.md](/mtest/README.md) or https://musescore.org/en/developers-handbook/testing for instructions on how to run the test suite.

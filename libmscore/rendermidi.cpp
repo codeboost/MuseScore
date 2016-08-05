@@ -93,9 +93,9 @@ void Score::updateSwing()
 //   updateChannel
 //---------------------------------------------------------
 
-void Score::updateChannel()
+void MasterScore::updateChannel()
       {
-      foreach(Staff* s, _staves) {
+      for (Staff* s : staves()) {
             for (int i = 0; i < VOICES; ++i)
                   s->channelList(i)->clear();
             }
@@ -105,7 +105,7 @@ void Score::updateChannel()
       for (Segment* s = fm->first(Segment::Type::ChordRest); s; s = s->next1(Segment::Type::ChordRest)) {
             foreach(const Element* e, s->annotations()) {
                   if (e->type() == Element::Type::INSTRUMENT_CHANGE) {
-                        Staff* staff = _staves[e->staffIdx()];
+                        Staff* staff = Score::staff(e->staffIdx());
                         for (int voice = 0; voice < VOICES; ++voice)
                               staff->channelList(voice)->insert(s->tick(), 0);
                         continue;
@@ -117,7 +117,7 @@ void Score::updateChannel()
                         QString an(st->channelName(voice));
                         if (an.isEmpty())
                               continue;
-                        Staff* staff = _staves[st->staffIdx()];
+                        Staff* staff = Score::staff(st->staffIdx());
                         int a = staff->part()->instrument(s->tick())->channelIdx(an);
                         if (a != -1)
                               staff->channelList(voice)->insert(s->tick(), a);
@@ -126,7 +126,7 @@ void Score::updateChannel()
             }
 
       for (Segment* s = fm->first(Segment::Type::ChordRest); s; s = s->next1(Segment::Type::ChordRest)) {
-            foreach(Staff* st, _staves) {
+            for (Staff* st : staves()) {
                   int strack = st->idx() * VOICES;
                   int etrack = strack + VOICES;
                   for (int track = strack; track < etrack; ++track) {
@@ -1326,7 +1326,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
       Instrument* instr = chord->part()->instrument(seg->tick());
       int channel  = 0;  // note->subchannel();
 
-      for (int k = 0; k < chord->notes().size(); ++k) {
+      for (unsigned k = 0; k < chord->notes().size(); ++k) {
             NoteEventList* events = &ell[k];
             Note *note = chord->notes()[k];
             Trill *trill;
@@ -1355,7 +1355,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
 static QList<NoteEventList> renderChord(Chord* chord, int gateTime, int ontime)
       {
       QList<NoteEventList> ell;
-      if (chord->notes().isEmpty())
+      if (chord->notes().empty())
             return ell;
 
       int notes = chord->notes().size();
@@ -1385,7 +1385,7 @@ static QList<NoteEventList> renderChord(Chord* chord, int gateTime, int ontime)
       return ell;
       }
 
-void Score::createGraceNotesPlayEvents(QList<Chord*> gnb, int tick, Chord* chord, int &ontime)
+void Score::createGraceNotesPlayEvents(QVector<Chord*> gnb, int tick, Chord* chord, int &ontime)
       {
       int n = gnb.size();
       if (n) {
@@ -1466,7 +1466,7 @@ void Score::createPlayEvents(Chord* chord)
 
       int ontime = 0;
 
-      Score::createGraceNotesPlayEvents(chord->graceNotesBefore(), tick, chord, ontime);
+      createGraceNotesPlayEvents(chord->graceNotesBefore(), tick, chord, ontime);
 
       SwingParameters st = chord->staff()->swing(tick);
       int unit = st.swingUnit;
@@ -1517,7 +1517,9 @@ int Score::renderMetronome(EventMap* events, Measure* m, int playPos, int tickOf
       {
       int msrTick = m->tick();
       qreal tempo       = tempomap()->tempo(msrTick);
+      const SigEvent sig = sigmap()->timesig(msrTick);
       Fraction timeSig     = sigmap()->timesig(msrTick).nominal();
+      int msrTicks = sig.timesig().ticks();
       int numerator   = timeSig.numerator();
       int denominator = timeSig.denominator();
       int clickTicks  = MScore::division * 4 / denominator;
@@ -1540,25 +1542,32 @@ int Score::renderMetronome(EventMap* events, Measure* m, int playPos, int tickOf
       // NUMBER OF TICKS
       int numOfClicks = numerator;                          // default to a full measure of 'clicks'
       int lastPause   = clickTicks;                         // the number of ticks to wait after the last 'click'
-      // if not at the beginning of a measure, add clicks for the initial measure part
-      if (msrTick < playPos) {
-            int delta    = playPos - msrTick;
-            int addClick = (delta + clickTicks - 1) / clickTicks;     // round num. of clicks up
-            numOfClicks += addClick;
-            lastPause    = delta - (addClick - 1) * clickTicks;       // anything after last click time is final pause
+      int pickupClickOffset = 0;
+
+      if (countIn) {
+            // if not at the beginning of a measure, add clicks for the initial measure part
+            if (msrTick < playPos) {
+                  int delta    = playPos - msrTick;
+                  int addClick = (delta + clickTicks - 1) / clickTicks;     // round num. of clicks up
+                  numOfClicks += addClick;
+                  lastPause    = delta - (addClick - 1) * clickTicks;       // anything after last click time is final pause
+                  }
+            // or if measure not complete (anacrusis), add clicks for the missing measure part
+            else if (m->ticks() < clickTicks * numerator) {
+                  int delta    = clickTicks * numerator - m->ticks();
+                  int addClick = (delta + clickTicks - 1) / clickTicks;
+                  numOfClicks += addClick;
+                  lastPause    = delta - (addClick - 1) * clickTicks;
+                  }
             }
-      // or if measure not complete (anacrusis), add clicks for the missing measure part
-      else if (m->ticks() < clickTicks * numerator) {
-            int delta    = clickTicks * numerator - m->ticks();
-            int addClick = (delta + clickTicks - 1) / clickTicks;
-            numOfClicks += addClick;
-            lastPause    = delta - (addClick - 1) * clickTicks;
+      else {
+            // compute pickup offset to avoid wrong tick sound
+            if (sig.nominal() != sig.timesig()) {
+                  numOfClicks = msrTicks / clickTicks;
+                  pickupClickOffset = numerator - numOfClicks;
+                  }
             }
-/*
-      // MIN_CLICKS: be sure to have at least MIN_CLICKS clicks: if less, add full measures
-      while (numOfClicks < MIN_CLICKS)
-            numOfClicks += numerator;
-*/
+
       // click-clack-clack triplets
       if (triplets)
             numerator = 3;
@@ -1566,7 +1575,9 @@ int Score::renderMetronome(EventMap* events, Measure* m, int playPos, int tickOf
       NPlayEvent event;
       for (int i = 0; i < numOfClicks; i++) {
             tick = (countIn ? 0 : m->tick()) + i * clickTicks + tickOffset;
-            event.setType((i % numerator) == 0 ? ME_TICK1 : ME_TICK2);
+            // do not add a tick if the clickticks is greater than the measure duration
+            // except in countIn
+            event.setType(((i + pickupClickOffset) % numerator) == 0 ? ME_TICK1 : ME_TICK2);
             events->insert(std::pair<int,NPlayEvent>(tick, event));
             }
       return tick + lastPause;
@@ -1584,7 +1595,7 @@ void Score::renderMidi(EventMap* events)
 
       updateRepeatList(MScore::playRepeats);
       _foundPlayPosAfterRepeats = false;
-      updateChannel();
+      masterScore()->updateChannel();
       updateVelo();
 
       // create note & other events

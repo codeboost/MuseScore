@@ -348,7 +348,7 @@ void MusicXMLParserPass1::setDrumsetDefault(const QString& id,
                                             const QString& instrId,
                                             const NoteHead::Group hg,
                                             const int line,
-                                            const MScore::Direction sd)
+                                            const Direction sd)
       {
       if (_drumsets.contains(id)
           && _drumsets[id].contains(instrId)) {
@@ -723,7 +723,6 @@ static void doCredits(Score* score, const CreditWordsList& credits, const int pa
       VBox* vbox = new VBox(score);
       vbox->setBoxHeight(Spatium(vboxHeight));
 
-      QString remainingFooterText;
       QMap<int, CreditWords*> creditMap;  // store credit-words sorted on y pos
       bool creditWordsUsed = false;
 
@@ -755,8 +754,10 @@ static void doCredits(Score* score, const CreditWordsList& credits, const int pa
                   }
             // keep remaining footer text for possible use as copyright
             else if (useHeader && defy < ph2) {
+                  // found credit words in both header and footer
+                  // header was used to create a vbox at the top of the first page
+                  // footer is ignored as it conflicts with the default MuseScore footer style
                   //qDebug("add to copyright: '%s'", qPrintable(w->words));
-                  remainingFooterText += w->words;
                   }
             } // end for (ciCreditWords ...
 
@@ -836,16 +837,6 @@ static void doCredits(Score* score, const CreditWordsList& credits, const int pa
             vbox->setTick(0);
             score->measures()->add(vbox);
             }
-
-      // if no <rights> element was read and some text was found in the footer
-      // set the rights metadata to the value found
-      // TODO: remove formatting
-      // note that MusicXML files can contain at least two different copyright statements:
-      // - in the <rights> element (metadata)
-      // - in the <credit-words> (the printed version)
-      // while MuseScore supports only the first one
-      if (score->metaTag("copyright") == "" && remainingFooterText != "")
-            score->setMetaTag("copyright", remainingFooterText);
       }
 
 //---------------------------------------------------------
@@ -2774,8 +2765,11 @@ void MusicXMLParserPass1::note(const QString& partId,
                   dura = calcDura; // overrule dura
                   }
             }
-      else
-            errorStr = "calculated and specified duration invalid";
+      else {
+            errorStr = "calculated and specified duration invalid, using 4/4";
+            dura = Fraction(4, 4);
+      }
+
       if (errorStr != "")
             logError(errorStr);
 

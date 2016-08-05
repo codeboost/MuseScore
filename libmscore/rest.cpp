@@ -42,6 +42,7 @@ Rest::Rest(Score* s)
       {
       setFlags(ElementFlag::MOVABLE | ElementFlag::SELECTABLE | ElementFlag::ON_STAFF);
       _beamMode  = Beam::Mode::NONE;
+      _gap       = false;
       _sym       = SymId::restQuarter;
       }
 
@@ -51,6 +52,7 @@ Rest::Rest(Score* s, const TDuration& d)
       setFlags(ElementFlag::MOVABLE | ElementFlag::SELECTABLE | ElementFlag::ON_STAFF);
       _beamMode  = Beam::Mode::NONE;
       _sym       = SymId::restQuarter;
+      _gap       = false;
       setDurationType(d);
       if (d.fraction().isValid())
             setDuration(d.fraction());
@@ -61,6 +63,7 @@ Rest::Rest(const Rest& r, bool link)
       {
       if (link)
             score()->undo(new Link(const_cast<Rest*>(&r), this));
+      _gap     = r._gap;
       _sym     = r._sym;
       dotline  = r.dotline;
       _mmWidth = r._mmWidth;
@@ -89,13 +92,13 @@ void Rest::draw(QPainter* painter) const
 
       painter->setPen(curColor());
 
-      if (parent() && measure() && measure()->isMMRest()) {
+      if (measure() && measure()->isMMRest()) {
             //only on voice 1
-            if ((track() % VOICES) != 0)
+            if (track() % VOICES)
                   return;
             Measure* m = measure();
             int n      = m->mmRestCount();
-            qreal pw = _spatium * .7;
+            qreal pw   = _spatium * .7;
             QPen pen(painter->pen());
             pen.setWidthF(pw);
             painter->setPen(pen);
@@ -113,9 +116,7 @@ void Rest::draw(QPainter* painter) const
             painter->drawLine(QLineF(x1, y-_spatium, x1, y+_spatium));
             painter->drawLine(QLineF(x2, y-_spatium, x2, y+_spatium));
 
-//            painter->setFont(score()->scoreFont()->font());
-//            QFontMetricsF fm(score()->scoreFont()->font());
-            QList<SymId> s = toTimeSigString(QString("%1").arg(n));
+            std::vector<Ms::SymId> s = toTimeSigString(QString("%1").arg(n));
             y  = -_spatium * 1.5 - staff()->height() *.5;
             qreal x = center(x1, x2);
             x -= symBbox(s).width() * .5;
@@ -157,7 +158,6 @@ void Rest::setUserOff(const QPointF& o)
       else if (_sym == SymId::restHalfLegerLine && (line > -3 && line < 3))
             _sym = SymId::restHalf;
 
-//      Element::setUserOff(QPointF(o.x(), qreal(line) * _spatium));
       Element::setUserOff(o);
       }
 
@@ -245,7 +245,7 @@ Element* Rest::drop(const DropData& data)
                   {
                   Chord* c              = static_cast<Chord*>(e);
                   Note* n               = c->upNote();
-                  MScore::Direction dir = c->stemDirection();
+                  Direction dir = c->stemDirection();
                   // score()->select(0, SelectType::SINGLE, 0);
                   NoteVal nval;
                   nval.pitch = n->pitch();
@@ -332,13 +332,11 @@ SymId Rest::getSymbol(TDuration::DurationType type, int line, int lines, int* yo
 
 void Rest::layout()
       {
-      _space.setLw(0.0);
-
+      if (_gap)
+            return;
       for (Element* e : _el)
             e->layout();
       if (measure() && measure()->isMMRest()) {
-            _space.setRw(point(score()->styleS(StyleIdx::minMMRestWidth)));
-
             static const qreal verticalLineWidth = .2;
             qreal _spatium = spatium();
             qreal h        = _spatium * (2 + verticalLineWidth);
@@ -375,8 +373,8 @@ void Rest::layout()
                   _tabDur->layout();
                   setbbox(_tabDur->bbox());
                   setPos(0.0, 0.0);             // no rest is drawn: reset any position might be set for it
-                  _space.setLw(0.0);
-                  _space.setRw(width());
+//                  _space.setLw(0.0);
+//                  _space.setRw(width());
                   return;
                   }
             // if no rests or no duration symbols, delete any dur. symbol and chain into standard staff mngmt
@@ -388,21 +386,8 @@ void Rest::layout()
                   }
             }
 
-      switch(durationType().type()) {
-            case TDuration::DurationType::V_64TH:
-            case TDuration::DurationType::V_32ND:
-                  dotline = -3;
-                  break;
-            case TDuration::DurationType::V_1024TH:
-            case TDuration::DurationType::V_512TH:
-            case TDuration::DurationType::V_256TH:
-            case TDuration::DurationType::V_128TH:
-                  dotline = -5;
-                  break;
-            default:
-                  dotline = -1;
-                  break;
-            }
+      dotline = Rest::getDotline(durationType().type());
+
       // DEBUG: no longer needed now that computeLineOffset returns an appropriate value?
       //int stepOffset = 0;
       //if (staff())
@@ -431,10 +416,31 @@ void Rest::layout()
                + dots() * score()->styleS(StyleIdx::dotDotDistance));
             }
       setbbox(symBbox(_sym));
-      qreal symOffset = bbox().x();
-      if (symOffset < 0.0)
-            _space.setLw(-symOffset);
-      _space.setRw(width() + point(rs) + symOffset);
+      }
+
+//---------------------------------------------------------
+//   getDotline
+//---------------------------------------------------------
+
+int Rest::getDotline(TDuration::DurationType durationType)
+      {
+      int dl = -1;
+      switch(durationType) {
+            case TDuration::DurationType::V_64TH:
+            case TDuration::DurationType::V_32ND:
+                  dl = -3;
+                  break;
+            case TDuration::DurationType::V_1024TH:
+            case TDuration::DurationType::V_512TH:
+            case TDuration::DurationType::V_256TH:
+            case TDuration::DurationType::V_128TH:
+                  dl = -5;
+                  break;
+            default:
+                  dl = -1;
+                  break;
+            }
+      return dl;
       }
 
 //---------------------------------------------------------
@@ -448,7 +454,7 @@ int Rest::computeLineOffset()
       if (offsetVoices && voice() == 0) {
             // do not offset voice 1 rest if there exists a matching invisible rest in voice 2;
             Element* e = s->element(track() + 1);
-            if (e && e->type() == Element::Type::REST && !e->visible()) {
+            if (e && e->isRest() && (!e->visible() || toRest(e)->isGap())) {
                   Rest* r = static_cast<Rest*>(e);
                   if (r->globalDuration() == globalDuration()) {
                         offsetVoices = false;
@@ -628,10 +634,11 @@ qreal Rest::downPos() const
 
 void Rest::scanElements(void* data, void (*func)(void*, Element*), bool all)
       {
-      func(data, this);
       ChordRest::scanElements(data, func, all);
       for (Element* e : _el)
             e->scanElements(data, func, all);
+      if (!isGap())
+            func(data, this);
       }
 
 //---------------------------------------------------------
@@ -650,7 +657,7 @@ void Rest::setMMWidth(qreal val)
 
 void Rest::reset()
       {
-      score()->undoChangeProperty(this, P_ID::BEAM_MODE, int(Beam::Mode::NONE));
+      undoChangeProperty(P_ID::BEAM_MODE, int(Beam::Mode::NONE));
       ChordRest::reset();
       }
 
@@ -672,7 +679,8 @@ qreal Rest::mag() const
 
 int Rest::upLine() const
       {
-      return lrint((pos().y() + bbox().top() + spatium()) * 2 / spatium());
+      qreal _spatium = spatium();
+      return lrint((pos().y() + bbox().top() + _spatium) * 2 / _spatium);
       }
 
 //---------------------------------------------------------
@@ -681,7 +689,8 @@ int Rest::upLine() const
 
 int Rest::downLine() const
       {
-      return lrint((pos().y() + bbox().top() + spatium()) * 2 / spatium());
+      qreal _spatium = spatium();
+      return lrint((pos().y() + bbox().top() + _spatium) * 2 / _spatium);
       }
 
 //---------------------------------------------------------
@@ -755,7 +764,7 @@ void Rest::setAccent(bool flag)
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Rest::accessibleInfo()
+QString Rest::accessibleInfo() const
       {
       QString voice = tr("Voice: %1").arg(QString::number(track() % VOICES + 1));
       return tr("%1; Duration: %2; %3").arg(Element::accessibleInfo()).arg(durationUserName()).arg(voice);
@@ -765,7 +774,7 @@ QString Rest::accessibleInfo()
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Rest::screenReaderInfo()
+QString Rest::screenReaderInfo() const
       {
       QString voice = tr("Voice: %1").arg(QString::number(track() % VOICES + 1));
       return QString("%1 %2 %3").arg(Element::accessibleInfo()).arg(durationUserName()).arg(voice);
@@ -815,6 +824,8 @@ void Rest::remove(Element* e)
 
 void Rest::write(Xml& xml) const
       {
+      if (_gap)
+            return;
       xml.stag(name());
       ChordRest::writeProperties(xml);
       _el.write(xml);
@@ -853,19 +864,52 @@ void Rest::read(XmlReader& e)
       }
 
 //---------------------------------------------------------
+//   getProperty
+//---------------------------------------------------------
+
+QVariant Rest::getProperty(P_ID propertyId) const
+      {
+      switch (propertyId) {
+            case P_ID::GAP:
+                  return _gap;
+            default:
+                  return ChordRest::getProperty(propertyId);
+            }
+      }
+
+//---------------------------------------------------------
+//   propertyDefault
+//---------------------------------------------------------
+
+QVariant Rest::propertyDefault(P_ID propertyId) const
+      {
+      switch (propertyId) {
+            case P_ID::GAP:
+                  return false;
+            default:
+                  return ChordRest::propertyDefault(propertyId);
+            }
+      }
+
+//---------------------------------------------------------
 //   setProperty
 //---------------------------------------------------------
 
 bool Rest::setProperty(P_ID propertyId, const QVariant& v)
       {
       switch (propertyId) {
+            case P_ID::GAP:
+                  _gap = v.toBool();
+                  score()->setLayout(tick());
+                  break;
+
             case P_ID::USER_OFF:
                   score()->addRefresh(canvasBoundingRect());
                   setUserOff(v.toPointF());
                   layout();
                   score()->addRefresh(canvasBoundingRect());
                   if (beam())
-                        score()->setLayoutAll(true);
+                        score()->setLayout(tick());
                   break;
             default:
                   return ChordRest::setProperty(propertyId, v);
@@ -873,5 +917,21 @@ bool Rest::setProperty(P_ID propertyId, const QVariant& v)
       return true;
       }
 
-}
+//---------------------------------------------------------
+//   shape
+//---------------------------------------------------------
 
+Shape Rest::shape() const
+      {
+      Shape shape;
+      if (!_gap) {
+            shape.add(ChordRest::shape());
+            if (parent() && measure() && measure()->isMMRest())
+                  shape.add(QRectF(0.0, 0.0, score()->styleP(StyleIdx::minMMRestWidth), height()));
+            else
+                  shape.add(bbox().translated(pos()));
+            }
+      return shape;
+      }
+
+}

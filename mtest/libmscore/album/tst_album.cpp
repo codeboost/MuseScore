@@ -31,7 +31,9 @@ class TestAlbum : public QObject, public MTest
       void album01();
       void album_78521();
       void album_76101();
-
+      void album_105716();
+      void album_105621();
+      void album_105641();
       };
 
 //---------------------------------------------------------
@@ -92,6 +94,70 @@ void TestAlbum::album_76101()
       album.append(new AlbumItem(root + "/" + DIR + "album_76101-02.mscx"));
       album.createScore("album_76101.mscx");
       QVERIFY(compareFiles("album_76101.mscx", DIR + "album_76101-ref.mscx"));
+      }
+
+//---------------------------------------------------------
+//   album_105716
+//    tests functionality of options to add SectionBreak or add PageBreak between each score, for all combinations.
+//    input scores may end without any breaks, with only line break, with only page break, or line/page break and sectionbreak.
+//--------------------------------------------------------
+
+void TestAlbum::album_105716()
+      {
+      Album album;
+      album.setName("test");
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-nobreak.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-linebreak.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-pagebreak.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-linebreak-sectionbreak.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-pagebreak-sectionbreak.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105716-measure-nobreak.mscx"));
+
+      album.createScore("album_105716-joined-addSectionBreak-addPageBreak.mscx", true, true);
+      QVERIFY(compareFiles("album_105716-joined-addSectionBreak-addPageBreak.mscx", DIR + "album_105716-joined-addSectionBreak-addPageBreak-ref.mscx"));
+
+      album.createScore("album_105716-joined-addPageBreak.mscx", true, false);
+      QVERIFY(compareFiles("album_105716-joined-addPageBreak.mscx", DIR + "album_105716-joined-addPageBreak-ref.mscx"));
+
+      album.createScore("album_105716-joined-addSectionBreak.mscx", false, true);
+      QVERIFY(compareFiles("album_105716-joined-addSectionBreak.mscx", DIR + "album_105716-joined-addSectionBreak-ref.mscx"));
+
+      album.createScore("album_105716-joined-noaddBreak.mscx", false, false);
+      QVERIFY(compareFiles("album_105716-joined-noaddBreak.mscx", DIR + "album_105716-joined-noaddBreak-ref.mscx"));
+      }
+
+//---------------------------------------------------------
+//   album_105621
+//    crash when removing second score from AlbumManager after previously joining the album.
+//    crash occured because TBox::clone() would not allocate memory for a new Text* object.
+//--------------------------------------------------------
+
+void TestAlbum::album_105621()
+      {
+      Album album;
+      album.setName("test");
+      album.append(new AlbumItem(root + "/" + DIR + "album_105621-measure.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105621-textbox.mscx"));
+      album.createScore("album_105621.mscx");
+      album.remove(1); // crash would occur here in ~TBox
+      }
+
+//---------------------------------------------------------
+//   album_105641
+//    appends two scores of 3 staves: 1-staff piano & 2-staff piano.
+//    second score "album_105641-no-initial-clef-02.mscx" doesn't have initial clef on 2nd staff,
+//                  but instead has a clef before first chordrest of 1st measure.
+//    desired behavior is no crash.  Should not try to add initial clef if initial clef doesn't exist.
+//--------------------------------------------------------
+
+void TestAlbum::album_105641()
+      {
+      Album album;
+      album.setName("test");
+      album.append(new AlbumItem(root + "/" + DIR + "album_105641-no-initial-clef-01.mscx"));
+      album.append(new AlbumItem(root + "/" + DIR + "album_105641-no-initial-clef-02.mscx"));
+      album.createScore("album_105641-no-initial-clef.mscx");
+      QVERIFY(compareFiles("album_105641-no-initial-clef.mscx", DIR + "album_105641-no-initial-clef-ref.mscx"));
       }
 
 QTEST_MAIN(TestAlbum)

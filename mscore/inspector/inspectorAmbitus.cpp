@@ -23,7 +23,7 @@ enum AmbitusControl : char {
       HASLINE,
       LINEWIDTH,
       TOPTPC, BOTTOMTPC, TOPOCTAVE, BOTTOMOCTAVE,
-      LEADINGSPACE, TRAILINGSPACE               // Segment controls
+      LEADINGSPACE                              // Segment controls
       };
 
 //---------------------------------------------------------
@@ -65,7 +65,7 @@ InspectorAmbitus::InspectorAmbitus(QWidget* parent)
       };
 
       //
-      // fix order of note heads and tpc's
+      // fix order of noteheads and tpc's
       //
       for (int i = 0; i < int(NoteHead::Group::HEAD_GROUPS); ++i)
             r.noteHeadGroup->setItemData(i, int(heads[i]));
@@ -102,7 +102,6 @@ InspectorAmbitus::InspectorAmbitus(QWidget* parent)
             { P_ID::FBPARENTHESIS4, 0, 0, r.bottomOctave,  nullptr              },      // recycled property
 
             { P_ID::LEADING_SPACE,  0, 1, s.leadingSpace,  s.resetLeadingSpace  },
-            { P_ID::TRAILING_SPACE, 0, 1, s.trailingSpace, s.resetTrailingSpace }
             };
 
       mapSignals();
@@ -116,7 +115,7 @@ InspectorAmbitus::InspectorAmbitus(QWidget* parent)
 /*
 void InspectorAmbitus::setElement()
       {
-      Ambitus* range = static_cast<Range*>(inspector->element());
+      Ambitus* range = toRange(inspector->element());
 
 //      int octave = range->topPitch() / 12;
 //      static_cast<QSpinBox*>(iList[AmbitusControl::TOPOCTAVE].w)->setValue(octave);
@@ -147,7 +146,7 @@ void InspectorAmbitus::valueChanged(int idx)
 
 void Ms::InspectorAmbitus::updateRange()
 {
-      Ambitus* range = static_cast<Ambitus*>(inspector->element());
+      Ambitus* range = toAmbitus(inspector->element());
       range->updateRange();
       range->layout();              // redo layout
       setElement();                 // set Inspector values to range properties

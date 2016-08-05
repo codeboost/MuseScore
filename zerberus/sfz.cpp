@@ -25,14 +25,49 @@
 #include "zerberus.h"
 
 //---------------------------------------------------------
+//   SfzControl
+//---------------------------------------------------------
+
+struct SfzControl {
+      QString defaultPath;
+      int octave_offset;
+      int note_offset;
+      int set_cc[128];
+      std::map<QString, QString> defines;
+      void init();
+      };
+
+void SfzControl::init()
+      {
+      defaultPath.clear();
+      octave_offset = 0;
+      defines.clear();
+      }
+
+//---------------------------------------------------------
 //   SfzRegion
 //---------------------------------------------------------
 
 struct SfzRegion {
       QString path;
       double amp_veltrack;
+      // amp envelope all in seconds
+      // but the level ones
+      // they are in percent
+      double ampeg_delay;
+      double ampeg_start; // level
+      double ampeg_attack;
+      double ampeg_hold;
+      double ampeg_decay;
+      double ampeg_sustain; // level
       double ampeg_release;
       double rt_decay;
+      double ampeg_vel2delay;
+      double ampeg_vel2attack;
+      double ampeg_vel2hold;
+      double ampeg_vel2decay;
+      double ampeg_vel2sustain;
+      double ampeg_vel2release;
       QString sample;
       int lochan, hichan;
       int lokey, hikey, lovel, hivel, pitch_keycenter;
@@ -41,20 +76,23 @@ struct SfzRegion {
       int on_hicc[128];
       int locc[128];
       int hicc[128];
+      bool use_cc;
       int off_by;
       int group;
       int seq_length, seq_position;
       double volume;
       int octave_offset, note_offset;
       int tune, transpose;
+      double pitch_keytrack;
+      int loopStart, loopEnd;
       Trigger trigger;
       LoopMode loop_mode;
       OffMode off_mode;
 
       void init(const QString&);
       bool isEmpty() const { return sample.isEmpty(); }
-      int readKey(const QString&) const;
-      void readOp(const QString& token, const QString& data);
+      int readKey(const QString&, SfzControl c) const;
+      void readOp(const QString& token, const QString& data, SfzControl& c);
       void setZone(Zone*) const;
       };
 
@@ -68,7 +106,19 @@ void SfzRegion::init(const QString& _path)
       lochan          = 1;
       hichan          = 16;
       amp_veltrack    = 100;
-      ampeg_release   = 0.0;  // in sec
+      ampeg_delay     = 0.0;
+      ampeg_start     = 0.0; //percent
+      ampeg_attack    = 0.001;
+      ampeg_hold      = 0.0;
+      ampeg_decay     = 0.0;
+      ampeg_sustain   = 100.0; // percent
+      ampeg_release   = 0.200;  // in sec
+      ampeg_vel2delay    = 0.0;
+      ampeg_vel2attack   = 0.0;
+      ampeg_vel2hold     = 0.0;
+      ampeg_vel2decay    = 0.0;
+      ampeg_vel2sustain  = 0.0;
+      ampeg_vel2release  = 0.0;
       rt_decay        = 0.0;  // dB /sec
       lokey           = 0;
       hikey           = 127;
@@ -81,20 +131,22 @@ void SfzRegion::init(const QString& _path)
       group           = 0;
       off_by          = 0;
       volume          = 1.0;
-      note_offset     = 0;
-      octave_offset   = 0;
       seq_length      = 1;
       seq_position    = 1;
       trigger         = Trigger::ATTACK;
-      loop_mode       = LoopMode::NO_LOOP;
+      loop_mode       = LoopMode::CONTINUOUS;
       tune            = 0;
       transpose       = 0;
+      pitch_keytrack  = 100.0;
+      loopStart       = -1;
+      loopEnd         = -1;
       for (int i = 0; i < 128; ++i) {
             on_locc[i] = -1;
             on_hicc[i] = -1;
             locc[i]    = 0;
             hicc[i]    = 127;
             }
+      use_cc         = false;
       off_mode = OffMode::FAST;
       }
 
@@ -113,13 +165,27 @@ void SfzRegion::setZone(Zone* z) const
       z->offset       = 0;
       z->volume       = pow(10.0, volume / 20.0);
       z->ampVeltrack  = amp_veltrack;
+      z->ampegAttack  = ampeg_attack * 1000;
+      z->ampegDelay   = ampeg_delay * 1000;
+      z->ampegStart   = ampeg_start / 100.0;
+      z->ampegHold    = ampeg_hold * 1000;
+      z->ampegDecay   = ampeg_decay * 1000;
+      z->ampegSustain = ampeg_sustain / 100.0;
       z->ampegRelease = ampeg_release * 1000;
+      // all vel2* but vel2sustain are time values in seconds
+      z->ampegVel2Delay    = ampeg_vel2delay * 1000;
+      z->ampegVel2Attack   = ampeg_vel2attack * 1000;
+      z->ampegVel2Hold     = ampeg_vel2hold * 1000;
+      z->ampegVel2Decay    = ampeg_vel2decay * 1000;
+      z->ampegVel2Sustain  = ampeg_vel2sustain / 100; // level in percent
+      z->ampegVel2Release  = ampeg_vel2release * 1000;
       z->seqPos       = seq_position - 1;
       z->seqLen       = seq_length - 1;
       z->seq          = 0;
       z->trigger      = trigger;
       z->loopMode     = loop_mode;
       z->tune         = tune + transpose * 100;
+      z->pitchKeytrack = pitch_keytrack / (double) 100.0;
       z->rtDecay      = rt_decay;
       for (int i = 0; i < 128; ++i) {
             z->onLocc[i] = on_locc[i];
@@ -127,24 +193,29 @@ void SfzRegion::setZone(Zone* z) const
             z->locc[i]   = locc[i];
             z->hicc[i]   = hicc[i];
             }
+      z->useCC        = use_cc;
       z->offMode      = off_mode;
       z->offBy        = off_by;
+      z->loRand       = lorand;
+      z->hiRand       = hirand;
       z->group        = group;
-      if (note_offset || octave_offset) {
-            qDebug("=========================offsets %d %d", note_offset, octave_offset);
-            }
+      z->loopEnd      = loopEnd;
+      z->loopStart    = loopStart;
       }
 
 //---------------------------------------------------------
 //   readKey
 //---------------------------------------------------------
 
-int SfzRegion::readKey(const QString& s) const
+int SfzRegion::readKey(const QString& s, SfzControl c) const
       {
       bool ok;
       int i = s.toInt(&ok);
-      if (ok)
+      if (ok) {
+            i += c.octave_offset * 12;
+            i += c.note_offset;
             return i;
+            }
        switch (s[0].toLower().toLatin1()) {
             case 'c': i = 0; break;
             case 'd': i = 2; break;
@@ -172,6 +243,8 @@ int SfzRegion::readKey(const QString& s) const
             return 0;
             }
       i += (octave + 1) * 12;
+      i += c.octave_offset * 12;
+      i += c.note_offset;
       return i;
       }
 
@@ -188,8 +261,16 @@ void ZInstrument::addRegion(SfzRegion& r)
                   }
             }
       Zone* z = new Zone;
-      r.setZone(z);
       z->sample = readSample(r.sample, 0);
+      if (z->sample) {
+            qDebug("Sample Loop - start %d, end %d, mode %d", z->sample->loopStart(), z->sample->loopEnd(), z->sample->loopMode());
+            // if there is no opcode defining loop ranges, use sample definitions as fallback (according to spec)
+            if (r.loopStart == -1)
+                  r.loopStart = z->sample->loopStart();
+            if (r.loopEnd == -1)
+                  r.loopEnd = z->sample->loopEnd();
+            }
+      r.setZone(z);
       if (z->sample)
             addZone(z);
       }
@@ -207,118 +288,181 @@ static void readDouble(const QString& data, double* val)
       }
 
 //---------------------------------------------------------
+//   readInt
+//---------------------------------------------------------
+
+static void readInt(const QString& data, int* val)
+      {
+      bool ok;
+      int i = data.toInt(&ok);
+      if (ok)
+            *val = i;
+      }
+
+//---------------------------------------------------------
 //   readOp
 //---------------------------------------------------------
 
-void SfzRegion::readOp(const QString& b, const QString& data)
+void SfzRegion::readOp(const QString& b, const QString& data, SfzControl &c)
       {
-      int i = data.toInt();
+      QString opcode           = QString(b);
+      QString opcode_data_full = QString(data);
 
-      if (b == "amp_veltrack")
-            readDouble(data, &amp_veltrack);
-      else if (b == "ampeg_release")
-            readDouble(data, &ampeg_release);
-      else if (b == "sample") {
-            sample = path + "/" + data;
+      for(auto define : c.defines) {
+            opcode.replace(define.first, define.second);
+            opcode_data_full.replace(define.first, define.second);
+            }
+
+      QStringList splitData = opcode_data_full.split(" "); // no spaces in opcode values except for sample definition
+      QString opcode_data = splitData[0];
+
+      int i = opcode_data.toInt();
+
+      if (opcode == "amp_veltrack")
+            readDouble(opcode_data, &amp_veltrack);
+      else if (opcode == "ampeg_delay")
+            readDouble(opcode_data, &ampeg_delay);
+      else if (opcode == "ampeg_start")
+            readDouble(opcode_data, &ampeg_start);
+      else if (opcode == "ampeg_attack")
+            readDouble(opcode_data, &ampeg_attack);
+      else if (opcode == "ampeg_hold")
+            readDouble(opcode_data, &ampeg_hold);
+      else if (opcode == "ampeg_decay")
+            readDouble(opcode_data, &ampeg_decay);
+      else if (opcode == "ampeg_sustain")
+            readDouble(opcode_data, &ampeg_sustain);
+      else if (opcode == "ampeg_release")
+            readDouble(opcode_data, &ampeg_release);
+      else if (opcode == "ampeg_vel2delay")
+            readDouble(opcode_data, &ampeg_vel2delay);
+      else if (opcode == "ampeg_vel2attack")
+            readDouble(opcode_data, &ampeg_vel2attack);
+      else if (opcode == "ampeg_vel2hold")
+            readDouble(opcode_data, &ampeg_vel2hold);
+      else if (opcode == "ampeg_vel2decay")
+            readDouble(opcode_data, &ampeg_vel2decay);
+      else if (opcode == "ampeg_vel2sustain")
+            readDouble(opcode_data, &ampeg_vel2sustain);
+      else if (opcode == "ampeg_vel2release")
+            readDouble(opcode_data, &ampeg_vel2release);
+      else if (opcode == "sample") {
+            sample = path + "/" + c.defaultPath + "/" + opcode_data_full; // spaces are allowed
             sample.replace("\\", "/");
             }
-      else if (b == "key") {
-            lokey = readKey(data);
+      else if (opcode == "default_path") {
+            c.defaultPath = opcode_data;
+            }
+      else if (opcode == "key") {
+            lokey = readKey(opcode_data, c);
             hikey = lokey;
             pitch_keycenter = lokey;
             }
-      else if (b == "pitch_keytrack")
-            ;
-      else if (b == "trigger") {
-            if (data == "attack")
+      else if (opcode == "pitch_keytrack")
+            readDouble(opcode_data, &pitch_keytrack);
+      else if (opcode == "trigger") {
+            if (opcode_data == "attack")
                   trigger = Trigger::ATTACK;
-            else if (data == "release")
+            else if (opcode_data == "release")
                   trigger = Trigger::RELEASE;
-            else if (data == "first")
+            else if (opcode_data == "first")
                   trigger = Trigger::FIRST;
-            else if (data == "legato")
+            else if (opcode_data == "legato")
                   trigger = Trigger::LEGATO;
             else
-                  qDebug("SfzRegion: bad trigger value: %s", qPrintable(data));
+                  qDebug("SfzRegion: bad trigger value: %s", qPrintable(opcode_data));
             }
-      else if (b == "loop_mode") {
-            if (data == "no_loop")
+      else if (opcode == "loop_mode") {
+            if (opcode_data == "no_loop")
                   loop_mode = LoopMode::NO_LOOP;
-            else if (data == "one_shot")
+            else if (opcode_data == "one_shot")
                   loop_mode = LoopMode::ONE_SHOT;
-            else if (data == "loop_continuous")
+            else if (opcode_data == "loop_continuous")
                   loop_mode = LoopMode::CONTINUOUS;
-            else if (data == "loop_sustain")
+            else if (opcode_data == "loop_sustain")
                   loop_mode = LoopMode::SUSTAIN;
             if (loop_mode != LoopMode::ONE_SHOT)
-                  qDebug("SfzRegion: loop_mode <%s>", qPrintable(data));
+                  qDebug("SfzRegion: loop_mode <%s>", qPrintable(opcode_data));
             }
-      else if (b.startsWith("on_locc")) {
+      else if(opcode == "loop_start")
+            readInt(opcode_data, &loopStart);
+      else if(opcode == "loop_end")
+            readInt(opcode_data, &loopEnd);
+      else if (opcode.startsWith("on_locc")) {
             int idx = b.mid(7).toInt();
             if (idx >= 0 && idx < 128)
                   on_locc[idx] = i;
             }
-      else if (b.startsWith("on_hicc")) {
+      else if (opcode.startsWith("on_hicc")) {
             int idx = b.mid(7).toInt();
             if (idx >= 0 && idx < 128)
                   on_hicc[idx] = i;
             }
-      else if (b.startsWith("locc")) {
-            int idx = b.mid(7).toInt();
+      else if (opcode.startsWith("locc")) {
+            int idx = b.mid(4).toInt();
+            if (!use_cc)
+                  use_cc = i != 0;
             if (idx >= 0 && idx < 128)
                   locc[idx] = i;
             }
-      else if (b.startsWith("hicc")) {
-            int idx = b.mid(7).toInt();
+      else if (opcode.startsWith("hicc")) {
+            int idx = b.mid(4).toInt();
+            if (!use_cc)
+                  use_cc = i != 127;
             if (idx >= 0 && idx < 128)
                   hicc[idx] = i;
             }
-      else if (b == "off_mode") {
-            if (data == "fast")
+      else if (opcode.startsWith("set_cc")) {
+            int idx = b.mid(6).toInt();
+            if (idx >= 0 && idx < 128)
+                  c.set_cc[idx] = i;
+            }
+      else if (opcode == "off_mode") {
+            if (opcode_data == "fast")
                   off_mode = OffMode::FAST;
-            else if (data == "normal")
+            else if (opcode_data == "normal")
                   off_mode = OffMode::NORMAL;
             }
-      else if (b == "tune")
+      else if (opcode == "tune")
             tune = i;
-      else if (b == "rt_decay")
-            readDouble(data, &rt_decay);
-      else if (b == "hirand")
-            readDouble(data, &hirand);
-      else if (b == "lorand")
-            readDouble(data, &lorand);
-      else if (b == "volume")
-            readDouble(data, &volume);
-      else if (b == "pitch_keycenter")
-            pitch_keycenter = readKey(data);
-      else if (b == "lokey")
-            lokey = readKey(data);
-      else if (b == "hikey")
-            hikey = readKey(data);
-      else if (b == "lovel")
+      else if (opcode == "rt_decay")
+            readDouble(opcode_data, &rt_decay);
+      else if (opcode == "hirand")
+            readDouble(opcode_data, &hirand);
+      else if (opcode == "lorand")
+            readDouble(opcode_data, &lorand);
+      else if (opcode == "volume")
+            readDouble(opcode_data, &volume);
+      else if (opcode == "pitch_keycenter")
+            pitch_keycenter = readKey(opcode_data ,c);
+      else if (opcode == "lokey")
+            lokey = readKey(opcode_data, c);
+      else if (opcode == "hikey")
+            hikey = readKey(opcode_data, c);
+      else if (opcode == "lovel")
             lovel = i;
-      else if (b == "hivel")
+      else if (opcode == "hivel")
             hivel = i;
-      else if (b == "off_by")
+      else if (opcode == "off_by")
             off_by = i;
-      else if (b == "group")
+      else if (opcode == "group")
             group = i;
-      else if (b == "lochan")
+      else if (opcode == "lochan")
             lochan = i;
-      else if (b == "hichan")
+      else if (opcode == "hichan")
             hichan = i;
-      else if (b == "note_offset")
-            note_offset = i;
-      else if (b == "octave_offset")
-            octave_offset = i;
-      else if (b == "seq_length")
+      else if (opcode == "note_offset")
+            c.note_offset = i;
+      else if (opcode == "octave_offset")
+            c.octave_offset = i;
+      else if (opcode == "seq_length")
             seq_length = i;
-      else if (b == "seq_position")
+      else if (opcode == "seq_position")
             seq_position = i;
-      else if (b == "transpose")
+      else if (opcode == "transpose")
             transpose = i;
       else
-            qDebug("SfzRegion: unknown opcode <%s>", qPrintable(b));
+            qDebug("SfzRegion: unknown opcode <%s>", qPrintable(opcode));
       }
 
 //---------------------------------------------------------
@@ -343,6 +487,11 @@ bool ZInstrument::loadSfz(const QString& s)
       SfzRegion g;      // group
       r.init(path);
       g.init(path);
+
+      SfzControl c;
+      c.init();
+      for (int i = 0;i < 128; i++)
+            c.set_cc[i] = -1;
 
       bool groupMode = false;
       zerberus->setLoadProgress(0);
@@ -376,7 +525,15 @@ bool ZInstrument::loadSfz(const QString& s)
                         }
                   ba = ba.mid(8);
                   }
-            QRegularExpression re("\\s?(\\w+)=");
+            else if (ba.startsWith("<control>"))
+                  c.init();
+            else if (ba.startsWith("#define")) {
+                  QStringList define = QString(ba).split(" ");
+                  if (define.size() == 3)
+                        c.defines.insert(std::pair<QString, QString>(define[1], define[2]));
+                  }
+
+            QRegularExpression re("\\s?([\\w\\$]+)="); // defines often use the $-sign
             QRegularExpressionMatchIterator i = re.globalMatch(ba);
 
             while (i.hasNext()) {
@@ -390,9 +547,13 @@ bool ZInstrument::loadSfz(const QString& s)
                   else
                         ei = ba.size();
                   QString s = ba.mid(si, ei-si);
-                  r.readOp(match.captured(1), s);
+                  r.readOp(match.captured(1), s, c);
                   }
             }
+
+      for (int i = 0; i < 128; i++)
+            _setcc[i] = c.set_cc[i];
+
       zerberus->setLoadProgress(100);
       if (!groupMode && !r.isEmpty())
             addRegion(r);

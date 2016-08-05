@@ -1,9 +1,9 @@
 //=============================================================================
 //  MuseScore
 //  Music Composition & Notation
-//  $Id:$
+//  $Id: inspector.h
 //
-//  Copyright (C) 2011 Werner Schweer and others
+//  Copyright (C) 2011-2016 Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2
@@ -41,6 +41,7 @@
 #include "ui_inspector_text.h"
 #include "ui_inspector_fret.h"
 #include "ui_inspector_tremolo.h"
+#include "ui_inspector_caesura.h"
 
 namespace Ms {
 
@@ -49,9 +50,10 @@ class Note;
 class Inspector;
 class Segment;
 class Chord;
+class Clef;
 
 //---------------------------------------------------------
-//   InspectorElement
+//   UiInspectorElement
 //---------------------------------------------------------
 
 class UiInspectorElement: public Ui::InspectorElement {
@@ -59,9 +61,31 @@ class UiInspectorElement: public Ui::InspectorElement {
       void setupUi(QWidget *InspectorElement);
       };
 
-class InspectorElement : public InspectorBase {
+//---------------------------------------------------------
+//   InspectorElementBase
+//---------------------------------------------------------
+
+class InspectorElementBase : public InspectorBase {
       Q_OBJECT
-      UiInspectorElement b;
+
+   protected:
+      UiInspectorElement e;
+
+   private slots:
+      void resetAutoplace();
+      void autoplaceChanged(bool);
+
+   public:
+      InspectorElementBase(QWidget* parent);
+      virtual void setElement() override;
+      };
+
+//---------------------------------------------------------
+//   InspectorElement
+//---------------------------------------------------------
+
+class InspectorElement : public InspectorElementBase {
+      Q_OBJECT
 
    public:
       InspectorElement(QWidget* parent);
@@ -165,7 +189,6 @@ class InspectorRest : public InspectorBase {
 //   InspectorClef
 //---------------------------------------------------------
 
-class Clef;
 
 class InspectorClef : public InspectorBase {
       Q_OBJECT
@@ -298,7 +321,7 @@ class InspectorTempoText : public InspectorBase {
 //   InspectorDynamic
 //---------------------------------------------------------
 
-class InspectorDynamic : public InspectorBase {
+class InspectorDynamic : public InspectorElementBase {
       Q_OBJECT
 
       UiInspectorElement e;
@@ -314,22 +337,21 @@ class InspectorDynamic : public InspectorBase {
 //   InspectorBarLine
 //---------------------------------------------------------
 
-#define BARLINE_BUILTIN_SPANS 5
-
-class InspectorBarLine : public InspectorBase {
+class InspectorBarLine : public InspectorElementBase {
       Q_OBJECT
 
-      UiInspectorElement e;
+      Ui::InspectorSegment s;
       Ui::InspectorBarLine b;
-
-      static QString builtinSpanNames[BARLINE_BUILTIN_SPANS];
 
       void  blockSpanDataSignals(bool val);
 
    private slots:
-      void spanTypeChanged(int idx);
-      void resetSpanType();
       void manageSpanData();
+      void presetDefaultClicked();
+      void presetTick1Clicked();
+      void presetTick2Clicked();
+      void presetShort1Clicked();
+      void presetShort2Clicked();
 
    public:
       InspectorBarLine(QWidget* parent);
@@ -353,6 +375,10 @@ class Inspector : public QDockWidget {
    public slots:
       void reset();
 
+   protected:
+      virtual void changeEvent(QEvent *event);
+      void retranslate();
+
    public:
       Inspector(QWidget* parent = 0);
       void setElement(Element*);
@@ -366,14 +392,27 @@ class Inspector : public QDockWidget {
 //   InspectorSlur
 //---------------------------------------------------------
 
-class InspectorSlur : public InspectorBase {
+class InspectorSlur : public InspectorElementBase {
       Q_OBJECT
 
-      UiInspectorElement e;
       Ui::InspectorSlur s;
 
    public:
       InspectorSlur(QWidget* parent);
+      };
+
+//---------------------------------------------------------
+//   InspectorCaesura
+//---------------------------------------------------------
+
+class InspectorCaesura : public InspectorBase {
+      Q_OBJECT
+
+      UiInspectorElement e;
+      Ui::InspectorCaesura c;
+
+   public:
+      InspectorCaesura(QWidget* parent);
       };
 
 //---------------------------------------------------------

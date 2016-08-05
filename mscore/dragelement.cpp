@@ -57,7 +57,7 @@ void ScoreView::startDrag()
             foreach(Element* e, _score->selection().elements())
                   e->setStartDragPosition(e->userOff());
             }
-      _score->end();
+      _score->update();
       }
 
 //---------------------------------------------------------
@@ -92,7 +92,7 @@ void ScoreView::doDragElement(QMouseEvent* ev)
 
                   dragStaff->setUserDist(dist);
                   data.startMove += delta;
-                  _score->doLayoutSystems();
+//TODO-ws                  _score->doLayoutSystems();
                   _score->layoutSpanner();
                   update();
                   loopUpdate(getAction("loop")->isChecked());
@@ -106,35 +106,23 @@ void ScoreView::doDragElement(QMouseEvent* ev)
 
       bool dragNotes = false;
       for (Element* e : _score->selection().elements()) {
-            if (e->type() == Element::Type::NOTE) {
+            if (e->isNote()) {
                   dragNotes = true;
                   break;
                   }
             }
-
-      QList<Element*> el;
       for (Element* e : _score->selection().elements()) {
-            if (dragNotes) {
-                  if (e->type() == Element::Type::STEM || e->type() == Element::Type::HOOK)
-                        continue;
-                  }
-            el.append(e);
-            }
-
-      for (Element* e : el) {
-            QRectF r = e->drag(&data);
-            _score->addRefresh(r);
-            }
-
-      if (_score->playNote()) {
-            Element* e = _score->selection().element();
-            if (e)
-                  mscore->play(e);
-            _score->setPlayNote(false);
+            if (dragNotes && (e->isStem() || e->isHook()))
+                  continue;
+            _score->addRefresh(e->drag(&data));
             }
 
       Element* e = _score->getSelectedElement();
       if (e) {
+            if (_score->playNote()) {
+                  mscore->play(e);
+                  _score->setPlayNote(false);
+                  }
             QLineF anchor = e->dragAnchor();
 
             if (!anchor.isNull())
@@ -162,7 +150,7 @@ void ScoreView::endDrag()
                   e->score()->undoPropertyChanged(e, P_ID::USER_OFF, e->startDragPosition());
                   }
             }
-      _score->setLayoutAll(true);
+      _score->setLayoutAll();
       dragElement = 0;
       setDropTarget(0); // this also resets dropAnchor
       _score->endCmd();

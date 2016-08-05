@@ -132,11 +132,12 @@ class Hairpin : public TextLine {
       virtual QVariant propertyDefault(P_ID id) const override;
       virtual PropertyStyle propertyStyle(P_ID id) const override;
       virtual void resetProperty(P_ID id) override;
+      virtual StyleIdx getPropertyStyle(P_ID) const override;
 
       virtual void setYoff(qreal) override;
       virtual void styleChanged() override;
       virtual void reset() override;
-      virtual QString accessibleInfo() override;
+      virtual QString accessibleInfo() const override;
       };
 
 }     // namespace Ms

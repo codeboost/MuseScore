@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="2.00">
+<museScore version="2.06">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -333,11 +333,6 @@
             <string>0</string>
             </Note>
           </Chord>
-        <tick>1920</tick>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Score>
@@ -694,11 +689,6 @@
               <string>0</string>
               </Note>
             </Chord>
-          <tick>1920</tick>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -944,11 +934,6 @@
               <string>0</string>
               </Note>
             </Chord>
-          <tick>1920</tick>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Bass</name>

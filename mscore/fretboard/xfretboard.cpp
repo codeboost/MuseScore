@@ -88,11 +88,12 @@ namespace vg
             return;
         }
 
+        //qDebug() << "addHighlight: string: " << nString << ", fret: " << nFret;
         const XFret::Ptr& theFret = frets[nFret];
         float pos = 0;
         if (nFret == 0)
         {
-            pos = theFret->pos().x();
+            pos = theFret->rect().x() - theString->noteNameOffset;
         }
         else
         {

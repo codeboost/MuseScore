@@ -50,11 +50,6 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
             "sforzato", QT_TRANSLATE_NOOP("articulation", "Sforzato"),
             1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
             },
-// <> not available in smufl?
-//      { SymId::esprSym, SymId::esprSym             ,
-//            "espressivo", QT_TRANSLATE_NOOP("articulation", "Espressivo"),
-//            1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
-//            },
       { SymId::articStaccatoAbove, SymId::articStaccatoBelow,
             "staccato", QT_TRANSLATE_NOOP("articulation", "Staccato"),
             1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
@@ -184,21 +179,6 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
             1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
             },
 
-#if 0
-      { SymId::letterTSym, SymId::letterTSym,
-            "tapping", QT_TRANSLATE_NOOP("articulation", "Tapping"),
-            1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::TABLATURE
-            },
-      { SymId::letterSSym, SymId::letterSSym,
-            "slapping", QT_TRANSLATE_NOOP("articulation", "Slapping"),
-            1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::TABLATURE
-            },
-      { SymId::letterPSym, SymId::letterPSym,
-            "popping", QT_TRANSLATE_NOOP("articulation", "Popping"),
-            1.0, MScore::OrnamentStyle::DEFAULT, true, ArticulationShowIn::TABLATURE
-            },
-#endif
-
       // Fingerings
 
       { SymId::stringsThumbPosition, SymId::stringsThumbPosition,
@@ -230,7 +210,7 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
 Articulation::Articulation(Score* s)
    : Element(s)
       {
-      _direction = MScore::Direction::AUTO;
+      _direction = Direction_AUTO;
       _up = true;
       setFlags(ElementFlag::MOVABLE | ElementFlag::SELECTABLE);
       setArticulationType(ArticulationType::Fermata);
@@ -249,6 +229,10 @@ void Articulation::setArticulationType(ArticulationType idx)
       anchorStyle       = PropertyStyle::STYLED;
       _timeStretch      = articulationList[int(articulationType())].timeStretch;
 
+      // TODO: layout() can be empty?
+      SymId sym = _up ? articulationList[int(_articulationType)].upSym : articulationList[int(_articulationType)].downSym;
+      QRectF b(symBbox(sym));
+      setbbox(b.translated(-0.5 * b.width(), 0.0));
       }
 
 //---------------------------------------------------------
@@ -271,7 +255,7 @@ void Articulation::read(XmlReader& e)
                   anchorStyle = PropertyStyle::UNSTYLED;
                   }
             else if (tag == "direction")
-                  setProperty(P_ID::DIRECTION, Ms::getProperty(P_ID::DIRECTION, e));
+                  readProperty(e, P_ID::DIRECTION);
             else if ( tag == "ornamentStyle")
                   setProperty(P_ID::ORNAMENT_STYLE, Ms::getProperty(P_ID::ORNAMENT_STYLE, e));
             else if ( tag == "play")
@@ -302,8 +286,7 @@ void Articulation::write(Xml& xml) const
             xml.tagE(QString("channel name=\"%1\"").arg(_channelName));
       writeProperty(xml, P_ID::DIRECTION);
       xml.tag("subtype", subtypeName());
-      if (_timeStretch != 1.0)
-            xml.tag("timeStretch", _timeStretch);
+      writeProperty(xml, P_ID::TIME_STRETCH);
       writeProperty(xml, P_ID::PLAY);
       writeProperty(xml, P_ID::ORNAMENT_STYLE);
       Element::writeProperties(xml);
@@ -377,7 +360,7 @@ void Articulation::setSubtype(const QString& s)
             for (i = 0; i < n; ++i) {
                   if (s == al[i].name) {
                         _up = al[i].up;
-                        _direction = (_up ? MScore::Direction::UP : MScore::Direction::DOWN);
+                        _direction = (_up ? Direction_UP : Direction_DOWN);
                         st  = int(al[i].type);
                         break;
                         }
@@ -397,28 +380,6 @@ void Articulation::setSubtype(const QString& s)
 QString Articulation::idx2name(int idx)
       {
       return articulationList[idx].name;
-      }
-
-//---------------------------------------------------------
-//   pagePos
-//---------------------------------------------------------
-
-QPointF Articulation::pagePos() const
-      {
-      if (parent() == 0)
-            return pos();
-      return parent()->pagePos() + pos();
-      }
-
-//---------------------------------------------------------
-//   canvasPos
-//---------------------------------------------------------
-
-QPointF Articulation::canvasPos() const
-      {
-      if (parent() == 0)
-            return pos();
-      return parent()->canvasPos() + pos();
       }
 
 //---------------------------------------------------------
@@ -490,17 +451,6 @@ Page* Articulation::page() const
       }
 
 //---------------------------------------------------------
-//   canvasBoundingRectChanged
-//---------------------------------------------------------
-
-void Articulation::canvasBoundingRectChanged()
-      {
-      Page* p = page();
-      if (p)
-            p->rebuildBspTree();
-      }
-
-//---------------------------------------------------------
 //   subtypeUserName
 //---------------------------------------------------------
 
@@ -526,11 +476,11 @@ void Articulation::layout()
 //   setDirection
 //---------------------------------------------------------
 
-void Articulation::setDirection(MScore::Direction d)
+void Articulation::setDirection(Direction d)
       {
       _direction = d;
-      if (d != MScore::Direction::AUTO)
-            _up = (d == MScore::Direction::UP);
+      if (d != Direction_AUTO)
+            _up = (d == Direction_UP);
       }
 
 //---------------------------------------------------------
@@ -539,16 +489,15 @@ void Articulation::setDirection(MScore::Direction d)
 
 void Articulation::reset()
       {
-      if (_direction != MScore::Direction::AUTO)
-            score()->undoChangeProperty(this, P_ID::DIRECTION, int(MScore::Direction::AUTO));
+      if (_direction != Direction_AUTO)
+            undoChangeProperty(P_ID::DIRECTION, Direction_AUTO);
       ArticulationAnchor a = score()->style()->articulationAnchor(int(articulationType()));
       if (_anchor != a)
-            score()->undoChangeProperty(this, P_ID::ARTICULATION_ANCHOR, int(a));
+            undoChangeProperty(P_ID::ARTICULATION_ANCHOR, int(a));
       //MScore::OrnamentStyle o = score()->style()->ornamentStyle(int(ornamentStyle()));
       Element::reset();
-      if (chordRest())
-            chordRest()->layoutArticulations();
-      score()->addRefresh(canvasBoundingRect());
+//      if (chordRest())                              // done in setProperty()
+//            chordRest()->layoutArticulations();
       }
 
 //---------------------------------------------------------
@@ -566,12 +515,12 @@ QLineF Articulation::dragAnchor() const
 
 QVariant Articulation::getProperty(P_ID propertyId) const
       {
-      switch(propertyId) {
-            case P_ID::DIRECTION:           return int(direction());
+      switch (propertyId) {
+            case P_ID::DIRECTION:           return direction();
             case P_ID::ARTICULATION_ANCHOR: return int(anchor());
             case P_ID::TIME_STRETCH:        return timeStretch();
             case P_ID::ORNAMENT_STYLE:      return int(ornamentStyle());
-            case P_ID::PLAY:   return bool(playArticulation());
+            case P_ID::PLAY:                return bool(playArticulation());
             default:
                   return Element::getProperty(propertyId);
             }
@@ -583,10 +532,9 @@ QVariant Articulation::getProperty(P_ID propertyId) const
 
 bool Articulation::setProperty(P_ID propertyId, const QVariant& v)
       {
-      score()->addRefresh(canvasBoundingRect());
       switch (propertyId) {
             case P_ID::DIRECTION:
-                  setDirection(MScore::Direction(v.toInt()));
+                  setDirection(v.value<Direction>());
                   break;
             case P_ID::ARTICULATION_ANCHOR:
                   anchorStyle = PropertyStyle::UNSTYLED;
@@ -602,26 +550,10 @@ bool Articulation::setProperty(P_ID propertyId, const QVariant& v)
                   setTimeStretch(v.toDouble());
                   score()->fixTicks();
                   break;
-            case P_ID::USER_OFF:
-                  setUserOff(v.toPointF());
-                  if (_articulationType == ArticulationType::Tenuto) {
-                        // moving a tenuto may move slurs:
-                        score()->setLayoutAll(true);
-                        }
-                  return true;
             default:
                   return Element::setProperty(propertyId, v);
             }
-
-      // layout:
-      if (chordRest())
-            chordRest()->layoutArticulations();
-      else if (parent() && parent()->type() == Element::Type::BAR_LINE)
-            static_cast<BarLine*>(parent())->layout();
-
-      score()->addRefresh(canvasBoundingRect());
-      score()->setLayoutAll(false);       // DEBUG
-      canvasBoundingRectChanged();        // rebuild bsp tree
+      triggerLayout();
       return true;
       }
 
@@ -631,9 +563,9 @@ bool Articulation::setProperty(P_ID propertyId, const QVariant& v)
 
 QVariant Articulation::propertyDefault(P_ID propertyId) const
       {
-      switch(propertyId) {
+      switch (propertyId) {
             case P_ID::DIRECTION:
-                  return int(MScore::Direction::AUTO);
+                  return Direction_AUTO;
 
             case P_ID::ARTICULATION_ANCHOR:
                   return int(score()->style()->articulationAnchor(int(_articulationType)));
@@ -644,8 +576,10 @@ QVariant Articulation::propertyDefault(P_ID propertyId) const
             case P_ID::ORNAMENT_STYLE:
                   //return int(score()->style()->ornamentStyle(_ornamentStyle));
                   return int(MScore::OrnamentStyle::DEFAULT);
+
             case P_ID::PLAY:
                   return true;
+
             default:
                   break;
             }
@@ -670,6 +604,21 @@ PropertyStyle Articulation::propertyStyle(P_ID id) const
                   break;
             }
       return Element::propertyStyle(id);
+      }
+
+//---------------------------------------------------------
+//   getPropertyStyle
+//---------------------------------------------------------
+
+StyleIdx Articulation::getPropertyStyle(P_ID id) const
+      {
+      switch (id) {
+            case P_ID::ARTICULATION_ANCHOR:
+                  return MStyle::articulationAnchorIdx(int(_articulationType));
+            default:
+                  break;
+            }
+      return StyleIdx::NOSTYLE;
       }
 
 //---------------------------------------------------------
@@ -719,7 +668,7 @@ qreal Articulation::mag() const
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Articulation::accessibleInfo()
+QString Articulation::accessibleInfo() const
       {
       return QString("%1: %2").arg(Element::accessibleInfo()).arg(subtypeUserName());
       }

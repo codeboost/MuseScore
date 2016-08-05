@@ -45,6 +45,10 @@ Breath::Breath(Score* s)
 
 void Breath::layout()
       {
+      if (_breathType >= 2)
+            setPos(x(), spatium());
+      else
+            setPos(x(), -0.5 * spatium());
       setbbox(symBbox(symList[breathType()]));
       }
 
@@ -91,15 +95,6 @@ void Breath::draw(QPainter* p) const
       }
 
 //---------------------------------------------------------
-//   space
-//---------------------------------------------------------
-
-Space Breath::space() const
-      {
-      return Space(0.0, spatium() * 1.5);
-      }
-
-//---------------------------------------------------------
 //   pagePos
 //---------------------------------------------------------
 
@@ -137,14 +132,13 @@ bool Breath::setProperty(P_ID propertyId, const QVariant& v)
       switch(propertyId) {
             case P_ID::PAUSE:
                   setPause(v.toDouble());
-                  score()->addLayoutFlags(LayoutFlag::FIX_TICKS);
                   break;
             default:
                   if (!Element::setProperty(propertyId, v))
                         return false;
                   break;
             }
-      score()->setLayoutAll(true);
+      triggerLayout();
       setGenerated(false);
       return true;
       }
@@ -185,7 +179,7 @@ Element* Breath::prevElement()
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Breath::accessibleInfo()
+QString Breath::accessibleInfo() const
       {
       switch (breathType()) {
             case 2:

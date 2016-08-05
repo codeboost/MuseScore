@@ -113,7 +113,7 @@ bool SpannerSegment::setProperty(P_ID id, const QVariant& v)
                  return spanner()->setProperty(id, v);
             case P_ID::USER_OFF2:
                   _userOff2 = v.toPointF();
-                  score()->setLayoutAll(true);
+                  score()->setLayoutAll();
                   break;
             default:
                   return Element::setProperty(id, v);
@@ -144,7 +144,7 @@ QVariant SpannerSegment::propertyDefault(P_ID id) const
 
 void SpannerSegment::reset()
       {
-      score()->undoChangeProperty(this, P_ID::USER_OFF2, QPointF());
+      undoChangeProperty(P_ID::USER_OFF2, QPointF());
       Element::reset();
       spanner()->reset();
       }
@@ -212,7 +212,7 @@ Element* SpannerSegment::prevElement()
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString SpannerSegment::accessibleInfo()
+QString SpannerSegment::accessibleInfo() const
       {
       return spanner()->accessibleInfo();
       }
@@ -224,6 +224,15 @@ QString SpannerSegment::accessibleInfo()
 void SpannerSegment::styleChanged()
       {
       _spanner->styleChanged();
+      }
+
+//---------------------------------------------------------
+//   triggerLayout
+//---------------------------------------------------------
+
+void SpannerSegment::triggerLayout() const
+      {
+      _spanner->triggerLayout();
       }
 
 //---------------------------------------------------------
@@ -493,7 +502,7 @@ bool Spanner::setProperty(P_ID propertyId, const QVariant& v)
                         return false;
                   break;
             }
-      score()->setLayoutAll(true);
+      score()->setLayoutAll();
       return true;
       }
 
@@ -855,17 +864,18 @@ Element* Spanner::prevElement()
 
 //---------------------------------------------------------
 //   setTick
-//   @warning Alters spannerMap - Do not call from within a loop over spannerMap
+//   //no: @warning Alters spannerMap - Do not call from within a loop over spannerMap
 //---------------------------------------------------------
 
 void Spanner::setTick(int v)
       {
       _tick = v;
-      if (_score) {
-            //our starting tick changed, we'd need to occupy a different position in the spannerMap
-            if (_score->spannerMap().removeSpanner(this))
-                  _score->addSpanner(this);
-            }
+// WS: this is a low level function and should have no side effects
+//      if (score()) {
+//our starting tick changed, we'd need to occupy a different position in the spannerMap
+//            if (score()->spannerMap().removeSpanner(this))
+//                  score()->addSpanner(this);
+//            }
       }
 
 //---------------------------------------------------------
@@ -875,8 +885,8 @@ void Spanner::setTick(int v)
 void Spanner::setTick2(int v)
       {
       _ticks = v - _tick;
-      if (_score)
-            _score->spannerMap().setDirty();
+      if (score())
+            score()->spannerMap().setDirty();
       }
 
 //---------------------------------------------------------
@@ -886,8 +896,28 @@ void Spanner::setTick2(int v)
 void Spanner::setTicks(int v)
       {
       _ticks = v;
-      if (_score)
-            _score->spannerMap().setDirty();
+      if (score())
+            score()->spannerMap().setDirty();
+      }
+
+//---------------------------------------------------------
+//   triggerLayout
+//---------------------------------------------------------
+
+void Spanner::triggerLayout() const
+      {
+      score()->setLayout(_tick);
+      score()->setLayout(_tick + _ticks);
+      }
+
+//---------------------------------------------------------
+//   layoutSystem
+//---------------------------------------------------------
+
+SpannerSegment* Spanner::layoutSystem(System*)
+      {
+      qDebug(" %s", name());
+      return 0;
       }
 
 }

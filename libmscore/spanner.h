@@ -57,6 +57,12 @@ class SpannerSegment : public Element {
 
       void setSpannerSegmentType(SpannerSegmentType s) { _spannerSegmentType = s;               }
       SpannerSegmentType spannerSegmentType() const    { return _spannerSegmentType;            }
+      bool isSingleType() const                        { return spannerSegmentType() == SpannerSegmentType::SINGLE; }
+      bool isBeginType() const                         { return spannerSegmentType() == SpannerSegmentType::BEGIN;  }
+      bool isSingleBeginType() const                   { return isSingleType() || isBeginType(); }
+      bool isSingleEndType() const                     { return isSingleType() || isEndType(); }
+      bool isMiddleType() const                        { return spannerSegmentType() == SpannerSegmentType::MIDDLE; }
+      bool isEndType() const                           { return spannerSegmentType() == SpannerSegmentType::END;    }
 
       void setSystem(System* s);
       System* system() const                { return (System*)parent();   }
@@ -85,8 +91,9 @@ class SpannerSegment : public Element {
       virtual Element* nextElement() override;
       virtual Element* prevElement() override;
       virtual bool isSpannerSegment() const override { return true; }
-      virtual QString accessibleInfo() override;
+      virtual QString accessibleInfo() const override;
       virtual void styleChanged() override;
+      virtual void triggerLayout() const override;
       };
 
 //----------------------------------------------------------------------------------
@@ -141,9 +148,9 @@ class Spanner : public Element {
       virtual Element::Type type() const = 0;
       virtual void setScore(Score* s) override;
 
-      int tick() const         { return _tick;          }
-      int tick2() const        { return _tick + _ticks; }
-      int ticks() const        { return _ticks;         }
+      virtual int tick() const override { return _tick;          }
+      int tick2() const                 { return _tick + _ticks; }
+      int ticks() const                 { return _ticks;         }
 
       void setTick(int v);
       void setTick2(int v);
@@ -158,6 +165,9 @@ class Spanner : public Element {
       const QList<SpannerSegment*>& spannerSegments() const { return segments; }
       QList<SpannerSegment*>& spannerSegments()             { return segments; }
 
+      virtual SpannerSegment* layoutSystem(System*);
+
+      virtual void triggerLayout() const override;
       virtual void add(Element*) override;
       virtual void remove(Element*) override;
       virtual void scanElements(void* data, void (*func)(void*, Element*), bool all=true) override;

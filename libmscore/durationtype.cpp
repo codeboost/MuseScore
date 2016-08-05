@@ -22,6 +22,8 @@ namespace Ms {
 
 static int getDots(int base, int rest, char* dots)
       {
+      if (base < 16)
+           return rest;
       *dots = 0;
       if (rest >= base / 2) {
             *dots = *dots + 1;
@@ -30,6 +32,14 @@ static int getDots(int base, int rest, char* dots)
       if (rest >= base / 4) {
             *dots = *dots + 1;
             rest -= base / 4;
+            }
+      if (rest >= base / 8) {
+            *dots = *dots + 1;
+            rest -= base / 8;
+            }
+      if (rest >= base / 16) {
+            *dots = *dots + 1;
+            rest -= base / 16;
             }
       if (*dots > MAX_DOTS)
             *dots = MAX_DOTS;
@@ -281,7 +291,7 @@ TDuration TDuration::shift(int v) const
       if (_val == DurationType::V_MEASURE || _val == DurationType::V_INVALID || _val == DurationType::V_ZERO)
             return TDuration();
       int newValue = int(_val) + v;
-      if ((newValue < int(DurationType::V_LONG)) || (newValue > int(DurationType::V_256TH)))
+      if ((newValue < int(DurationType::V_LONG)) || (newValue > int(DurationType::V_128TH)))
             return TDuration();
       return TDuration(DurationType(newValue));
       }
@@ -387,7 +397,7 @@ TDuration::TDuration(const Fraction& _f)
       _dots = 0;
       if (f.numerator() == 0) {
             _val  = DurationType::V_ZERO;
-            _dots = 0;
+           //  _dots = 0;
             return;
             }
       switch(f.denominator()) {
@@ -418,7 +428,7 @@ TDuration::TDuration(const Fraction& _f)
             }
 
       if (f.numerator() != 1) {
-            switch(f.numerator()) {
+            switch (f.numerator()) {
                   case 3:
                         _val = DurationType(int(_val) - 1);
                         _dots = 1;
@@ -426,6 +436,14 @@ TDuration::TDuration(const Fraction& _f)
                   case 7:
                         _val = DurationType(int(_val) - 2);
                         _dots = 2;
+                        break;
+                  case 15:
+                        _val = DurationType(int(_val) - 3);
+                        _dots = 3;
+                        break;
+                  case 31:
+                        _val = DurationType(int(_val) - 4);
+                        _dots = 4;
                         break;
                   default:
                         qDebug("TDuration(%d/%d): not implemented", f.numerator(), f.denominator());
@@ -467,9 +485,11 @@ TDuration& TDuration::operator+=(const TDuration& t)
 //   toDurationList
 //---------------------------------------------------------
 
-QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool printRestRemains)
+std::vector<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool printRestRemains)
       {
-      QList<TDuration> dList;
+      std::vector<TDuration> dList;
+      dList.reserve(8);
+
       if (useDots) {
             for (TDuration d = TDuration(TDuration::DurationType::V_LONG); d.isValid() && (l.numerator() != 0);) {
                   int dots = maxDots;
@@ -477,7 +497,7 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         d.setDots(dots);
                         Fraction ff = l - d.fraction();
                         if (ff.numerator() >= 0) {
-                              dList.append(d);
+                              dList.push_back(d);
                               l -= d.fraction();
                               break;
                               }
@@ -486,11 +506,10 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         continue;
                   d.setDots(0);
                   Fraction ff = l - d.fraction();
-                  if (ff.numerator() < 0) {
+                  if (ff.numerator() < 0)
                         d = d.shift(1);
-                        }
                   else {
-                        dList.append(d);
+                        dList.push_back(d);
                         l -= d.fraction();
                         }
                   }
@@ -503,7 +522,7 @@ QList<TDuration> toDurationList(Fraction l, bool useDots, int maxDots, bool prin
                         continue;
                         }
                   l -= d.fraction();
-                  dList.append(d);
+                  dList.push_back(d);
                   }
             }
       if (printRestRemains && l != Fraction())
@@ -520,7 +539,7 @@ QString TDuration::durationTypeUserName() const
       {
       QString s = QObject::tr("Custom");
       switch(_val) {
-            case DurationType::V_LONG:      s = QObject::tr("Longa"   ); break;
+            case DurationType::V_LONG:      s = QObject::tr("Longa"  ); break;
             case DurationType::V_BREVE:     s = QObject::tr("Breve"  ); break;
             case DurationType::V_WHOLE:     s = QObject::tr("Whole"  ); break;
             case DurationType::V_HALF:      s = QObject::tr("Half"   ); break;

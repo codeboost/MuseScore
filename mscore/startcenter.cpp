@@ -2,7 +2,7 @@
 //  MuseScore
 //  Music Composition & Notation
 //
-//  Copyright (C) 2014 Werner Schweer
+//  Copyright (C) 2014-2016 Werner Schweer
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2
@@ -40,7 +40,7 @@ void MuseScore::showStartcenter(bool val)
 //---------------------------------------------------------
 
 Startcenter::Startcenter()
- : QDialog(0)
+ : AbstractDialog(0)
       {
       setupUi(this);
       setBackgroundRole(QPalette::Base);
@@ -51,8 +51,8 @@ Startcenter::Startcenter()
       connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
       setStyleSheet(QString("QPushButton { background-color: %1 }").arg(openScore->palette().color(QPalette::Base).name()));
 
-      //init webview
-      if (!noWebView) {
+      //TODO init webview
+      /*if (!noWebView) {
             _webView = new MyWebView(this);
             _webView->setUrl(QUrl(QString("https://connect2.musescore.com/?version=%1").arg(VERSION)));
             horizontalLayout->addWidget(_webView);
@@ -60,7 +60,7 @@ Startcenter::Startcenter()
 
       if (enableExperimental)
             QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-      QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);
+      QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);*/
       recentPage->setBoldTitle(false);
       updateRecentScores();
       }
@@ -70,8 +70,8 @@ Startcenter::Startcenter()
 //---------------------------------------------------------
 
 Startcenter::~Startcenter() {
-      if (_webView)
-            delete _webView;
+//TODO      if (_webView)
+//            delete _webView;
       }
 
 //---------------------------------------------------------
@@ -155,6 +155,7 @@ void Startcenter::readSettings(QSettings& settings)
       settings.endGroup();
       }
 
+#if 0
 //---------------------------------------------------------
 //   MyNetworkAccessManager
 //---------------------------------------------------------
@@ -164,7 +165,7 @@ QNetworkReply* MyNetworkAccessManager::createRequest(Operation op,
                                           QIODevice * outgoingData)
       {
       QNetworkRequest new_req(req);
-      new_req.setRawHeader("Accept-Language",  QString("%1;q=0.8,en-US;q=0.6,en;q=0.4").arg(mscore->getLocaleISOCode()).toAscii());
+      new_req.setRawHeader("Accept-Language",  QString("%1;q=0.8,en-US;q=0.6,en;q=0.4").arg(mscore->getLocaleISOCode()).toLatin1());
       return QNetworkAccessManager::createRequest(op, new_req, outgoingData);
       }
 
@@ -173,7 +174,7 @@ QNetworkReply* MyNetworkAccessManager::createRequest(Operation op,
 //---------------------------------------------------------
 
 MyWebView::MyWebView(QWidget *parent):
-   QWebView(parent)
+   QWebEngineView(parent)
       {
       page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
       QNetworkAccessManager* networkManager = new MyNetworkAccessManager(this);
@@ -362,6 +363,6 @@ void CookieJar::save()
             }
       file.close();
       }
-
+#endif
 }
 

@@ -321,8 +321,7 @@ void Accidental::layout()
 
       QRectF r;
       // don't show accidentals for tab or slash notation
-      if ((staff() && staff()->isTabStaff())
-          || (note() && note()->fixed())) {
+      if ((staff() && staff()->isTabStaff()) || (note() && note()->fixed())) {
             setbbox(r);
             return;
             }
@@ -395,7 +394,7 @@ void Accidental::draw(QPainter* painter) const
 bool Accidental::acceptDrop(const DropData& data) const
       {
       Element* e = data.element;
-      return e->type() == Element::Type::ICON && static_cast<Icon*>(e)->iconType() == IconType::BRACKETS;
+      return e->isIcon() && toIcon(e)->iconType() == IconType::BRACKETS;
       }
 
 //---------------------------------------------------------
@@ -407,7 +406,7 @@ Element* Accidental::drop(const DropData& data)
       Element* e = data.element;
       switch(e->type()) {
             case Element::Type::ICON :
-                  if (static_cast<Icon*>(e)->iconType() == IconType::BRACKETS && !_hasBracket)
+                  if (toIcon(e)->iconType() == IconType::BRACKETS && !_hasBracket)
                         undoSetHasBracket(true);
                   break;
 
@@ -424,7 +423,7 @@ Element* Accidental::drop(const DropData& data)
 
 void Accidental::undoSetHasBracket(bool val)
       {
-      score()->undoChangeProperty(this, P_ID::ACCIDENTAL_BRACKET, val);
+      undoChangeProperty(P_ID::ACCIDENTAL_BRACKET, val);
       }
 
 //---------------------------------------------------------
@@ -433,7 +432,7 @@ void Accidental::undoSetHasBracket(bool val)
 
 void Accidental::undoSetSmall(bool val)
       {
-      score()->undoChangeProperty(this, P_ID::SMALL, val);
+      undoChangeProperty(P_ID::SMALL, val);
       }
 
 //---------------------------------------------------------
@@ -485,8 +484,7 @@ bool Accidental::setProperty(P_ID propertyId, const QVariant& v)
             default:
                   return Element::setProperty(propertyId, v);
             }
-      layout();
-      score()->setLayoutAll(true);  // spacing changes
+      triggerLayout();
       return true;
       }
 
@@ -494,7 +492,7 @@ bool Accidental::setProperty(P_ID propertyId, const QVariant& v)
 //   accessibleInfo
 //---------------------------------------------------------
 
-QString Accidental::accessibleInfo()
+QString Accidental::accessibleInfo() const
       {
       return QString("%1: %2").arg(Element::accessibleInfo()).arg(qApp->translate("accidental", Accidental::subtypeUserName()));
       }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="2.00">
+<museScore version="2.06">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -456,10 +456,6 @@
         </Measure>
       <Measure number="7">
         <startRepeat/>
-        <BarLine>
-          <subtype>start-repeat</subtype>
-          <span>1</span>
-          </BarLine>
         <endSpanner id="5"/>
         <Volta id="6">
           <lid>117</lid>
@@ -796,10 +792,6 @@
             <string>1</string>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>end</subtype>
-          <span>1</span>
-          </BarLine>
         </Measure>
       </Staff>
     <Score>
@@ -1279,10 +1271,6 @@
           </Measure>
         <Measure number="7">
           <startRepeat/>
-          <BarLine>
-            <subtype>start-repeat</subtype>
-            <span>1</span>
-            </BarLine>
           <endSpanner id="12"/>
           <Volta id="13">
             <lid>117</lid>
@@ -1619,10 +1607,6 @@
               <string>1</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <Staff id="2">
@@ -1903,10 +1887,6 @@
             </Chord>
           </Measure>
         <Measure number="7">
-          <BarLine>
-            <subtype>start-repeat</subtype>
-            <span>1</span>
-            </BarLine>
           <Chord>
             <lid>59</lid>
             <durationType>quarter</durationType>
@@ -2181,10 +2161,6 @@
               <string>1</string>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>end</subtype>
-            <span>1</span>
-            </BarLine>
           </Measure>
         </Staff>
       <name>Track 1</name>

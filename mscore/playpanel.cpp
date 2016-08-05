@@ -3,7 +3,7 @@
 //  Linux Music Score Editor
 //  $Id: playpanel.cpp 4775 2011-09-12 14:25:31Z wschweer $
 //
-//  Copyright (C) 2002-2011 Werner Schweer and others
+//  Copyright (C) 2002-2016 Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -35,14 +35,15 @@ static const int DEFAULT_POS_Y  = 100;
 //   PlayPanel
 //---------------------------------------------------------
 
-PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
-   : QWidget(parent, windowType)
+PlayPanel::PlayPanel(QWidget* parent)
+   : QWidget(parent, Qt::Dialog)
       {
       cachedTickPosition = -1;
       cachedTimePosition = -1;
       cs                 = 0;
       tempoSliderIsPressed = false;
       setupUi(this);
+      setWindowFlags(Qt::Tool);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
       QSettings settings;
@@ -58,21 +59,18 @@ PlayPanel::PlayPanel(QWidget* parent, Qt::WindowType windowType)
       loopButton->setDefaultAction(getAction("loop"));
       loopInButton->setDefaultAction(getAction("loop-in"));
       loopOutButton->setDefaultAction(getAction("loop-out"));
-      //enablePlay = new EnablePlayForWidget(this);
+      enablePlay = new EnablePlayForWidget(this);
 
-//      tempoSlider->setDclickValue1(100.0);
-//      tempoSlider->setDclickValue2(100.0);
-//      tempoSlider->setUseActualValue(true);
-          
-          tempoSlider->setOrientation(Qt::Horizontal);
-          volumeSlider->setOrientation(Qt::Horizontal);
+      tempoSlider->setDclickValue1(100.0);
+      tempoSlider->setDclickValue2(100.0);
+      tempoSlider->setUseActualValue(true);
 
-      connect(volumeSlider, SIGNAL(valueChanged(int)),        SLOT(volumeChangedSlot(int)));
+      connect(volumeSlider, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double,int)));
       connect(posSlider,    SIGNAL(sliderMoved(int)),         SLOT(setPos(int)));
-      connect(tempoSlider,  SIGNAL(valueChanged(int)),        SLOT(relTempoChangedSlot(int)));
-      connect(tempoSlider,  SIGNAL(sliderPressed()),       SLOT(tempoSliderPressed()));
-      connect(tempoSlider,  SIGNAL(sliderReleased()),      SLOT(tempoSliderReleased()));
-      //connect(relTempoBox,  SIGNAL(editingFinished()),        SLOT(relTempoChanged()));
+      connect(tempoSlider,  SIGNAL(valueChanged(double,int)), SLOT(relTempoChanged(double,int)));
+      connect(tempoSlider,  SIGNAL(sliderPressed(int)),       SLOT(tempoSliderPressed(int)));
+      connect(tempoSlider,  SIGNAL(sliderReleased(int)),      SLOT(tempoSliderReleased(int)));
+      connect(relTempoBox,  SIGNAL(editingFinished()),        SLOT(relTempoChanged()));
       connect(seq,          SIGNAL(heartBeat(int,int,int)),   SLOT(heartBeat(int,int,int)));
       }
 
@@ -91,13 +89,7 @@ PlayPanel::~PlayPanel()
 //---------------------------------------------------------
 //   relTempoChanged
 //---------------------------------------------------------
-    
-    
-void PlayPanel::relTempoChangedSlot(int v)
-    {
-        relTempoChanged((double)v, 0);
-    }
-    
+
 void PlayPanel::relTempoChanged(double d, int)
       {
       double relTempo = d * .01;
@@ -116,9 +108,9 @@ void PlayPanel::relTempoChanged(double d, int)
 
 void PlayPanel::relTempoChanged()
       {
-//      double v = relTempoBox->value();
-//      tempoSlider->setValue(v);
-//      emit relTempoChanged(v * .01);
+      double v = relTempoBox->value();
+      tempoSlider->setValue(v);
+      emit relTempoChanged(v * .01);
       }
 
 //---------------------------------------------------------
@@ -157,7 +149,7 @@ void PlayPanel::hideEvent(QHideEvent* ev)
 
 void PlayPanel::showEvent(QShowEvent* e)
       {
-      //enablePlay->showEvent(e);
+      enablePlay->showEvent(e);
       QWidget::showEvent(e);
       activateWindow();
       setFocus();
@@ -237,7 +229,9 @@ void PlayPanel::setTempo(double val)
 
 void PlayPanel::setRelTempo(qreal val)
       {
-      tempoSlider->setValue(val * 100);
+      val *= 100;
+      relTempoBox->setValue(val);
+      tempoSlider->setValue(val);
       }
 
 //---------------------------------------------------------
@@ -246,19 +240,13 @@ void PlayPanel::setRelTempo(qreal val)
 
 void PlayPanel::setGain(float val)
       {
-        volumeSlider->setValue(val * 100.0);
+      volumeSlider->setValue(val);
       }
 
 //---------------------------------------------------------
 //   volumeChanged
 //---------------------------------------------------------
 
-void PlayPanel::volumeChangedSlot(int val)
-    {
-    emit gainChange((double)val / 100.0);
-    }
-
-    
 void PlayPanel::volumeChanged(double val, int)
       {
       emit gainChange(val);
@@ -336,7 +324,7 @@ void PlayPanel::updatePosLabel(int utick)
 //   tempoSliderPressed
 //---------------------------------------------------------
 
-void PlayPanel::tempoSliderPressed()
+void PlayPanel::tempoSliderPressed(int)
       {
       tempoSliderIsPressed = true;
       }
@@ -345,17 +333,21 @@ void PlayPanel::tempoSliderPressed()
 //   tempoSliderReleased
 //---------------------------------------------------------
 
-void PlayPanel::tempoSliderReleased()
+void PlayPanel::tempoSliderReleased(int)
       {
       tempoSliderIsPressed = false;
       }
 
+//---------------------------------------------------------
+//   changeEvent
+//---------------------------------------------------------
 
-    //---------------------------------------------------------
-    //   Dock widget version
-    //---------------------------------------------------------
+void PlayPanel::changeEvent(QEvent *event)
+      {
+      QWidget::changeEvent(event);
+      if (event->type() == QEvent::LanguageChange)
+            retranslate();
+      }
+
 }
-
-
-
 

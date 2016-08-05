@@ -115,8 +115,8 @@ static void localSetScore(void* score, Element* element)
 
 void createExcerpt(Excerpt* excerpt)
       {
-      Score* oscore = excerpt->oscore();
-      Score* score  = excerpt->partScore();
+      MasterScore* oscore = excerpt->oscore();
+      Score* score        = excerpt->partScore();
 
       QList<Part*>& parts = excerpt->parts();
       QList<int> srcStaves;
@@ -136,6 +136,7 @@ void createExcerpt(Excerpt* excerpt)
       foreach (Part* part, parts) {
             Part* p = new Part(score);
             p->setInstrument(*part->instrument());
+            p->setPartName(part->partName());
 
             foreach (Staff* staff, *part->staves()) {
                   Staff* s = new Staff(score);
@@ -180,7 +181,7 @@ void createExcerpt(Excerpt* excerpt)
       //
       // layout score
       //
-      score->addLayoutFlags(LayoutFlags(LayoutFlag::FIX_TICKS | LayoutFlag::FIX_PITCH_VELO));
+      score->addLayoutFlags(LayoutFlag::FIX_PITCH_VELO);
       score->doLayout();
       //
       // handle transposing instruments
@@ -231,17 +232,23 @@ void createExcerpt(Excerpt* excerpt)
       // layout score
       //
       score->setPlaylistDirty();
-      score->rebuildMidiMapping();
-      score->updateChannel();
+      oscore->rebuildMidiMapping();
+      oscore->updateChannel();
 
-      score->setLayoutAll(true);
+      score->setLayoutAll();
       score->doLayout();
       }
 
 void deleteExcerpt(Excerpt* excerpt)
       {
-      Score* oscore = excerpt->oscore();
-      Score* partScore  = excerpt->partScore();
+      MasterScore* oscore = excerpt->oscore();
+      Score* partScore    = excerpt->partScore();
+
+      if (!partScore) {
+            qDebug("deleteExcerpt: no partScore");
+            return;
+            }
+
       // unlink the staves in the excerpt
       for (Staff* s : partScore->staves()) {
             Staff* staff = nullptr;
@@ -415,17 +422,22 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                   nm->setTick(m->tick());
                   nm->setLen(m->len());
                   nm->setTimesig(m->timesig());
+
                   nm->setRepeatCount(m->repeatCount());
-                  nm->setRepeatFlags(m->repeatFlags());
+                  nm->setRepeatStart(m->repeatStart());
+                  nm->setRepeatEnd(m->repeatEnd());
+                  nm->setRepeatMeasure(m->repeatMeasure());
+                  nm->setRepeatJump(m->repeatJump());
+
                   nm->setIrregular(m->irregular());
                   nm->setNo(m->no());
                   nm->setNoOffset(m->noOffset());
-                  nm->setBreakMultiMeasureRest(m->getBreakMultiMeasureRest());
-                  nm->setEndBarLineType(
-                     m->endBarLineType(),
-                     m->endBarLineGenerated(),
-                     m->endBarLineVisible(),
-                     m->endBarLineColor());
+                  nm->setBreakMultiMeasureRest(m->breakMultiMeasureRest());
+//TODO                  nm->setEndBarLineType(
+//                     m->endBarLineType(),
+//                     m->endBarLineGenerated(),
+//                     m->endBarLineVisible(),
+//                     m->endBarLineColor());
 
                   // Fraction ts = nm->len();
                   int tracks = oscore->nstaves() * VOICES;
@@ -514,7 +526,7 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                                     ChordRest* ocr = static_cast<ChordRest*>(oe);
                                     ChordRest* ncr = static_cast<ChordRest*>(ne);
 
-                                    if (ocr->beam() && !ocr->beam()->isEmpty() && ocr->beam()->elements().front() == ocr) {
+                                    if (ocr->beam() && !ocr->beam()->empty() && ocr->beam()->elements().front() == ocr) {
                                           Beam* nb = ocr->beam()->clone();
                                           nb->clear();
                                           nb->setTrack(track);
@@ -1012,7 +1024,12 @@ void cloneStaff2(Staff* srcStaff, Staff* dstStaff, int stick, int etick)
             }
       }
 
-QList<Excerpt*> Excerpt::createAllExcerpt(Score *score) {
+//---------------------------------------------------------
+//   createAllExcerpt
+//---------------------------------------------------------
+
+QList<Excerpt*> Excerpt::createAllExcerpt(MasterScore *score)
+      {
       QList<Excerpt*> all;
       for (Part* part : score->parts()) {
             if (part->show()) {
@@ -1026,7 +1043,12 @@ QList<Excerpt*> Excerpt::createAllExcerpt(Score *score) {
       return all;
       }
 
-QString Excerpt::createName(const QString& partName, QList<Excerpt*> excerptList) {
+//---------------------------------------------------------
+//   createName
+//---------------------------------------------------------
+
+QString Excerpt::createName(const QString& partName, QList<Excerpt*> excerptList)
+      {
       QString n = partName.simplified();
       QString name;
       int count = excerptList.count();

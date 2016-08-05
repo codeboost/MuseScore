@@ -96,7 +96,7 @@ FretDiagram* FretDiagram::fromString(Score* score, const QString &s)
       for (int i = 0; i < s.size(); i++) {
             QChar c = s.at(i);
             if (c == 'X' or c == 'O')
-                  fd->setMarker(i, c.toAscii());
+                  fd->setMarker(i, c.unicode());
             else if (c == '-' && barreString == -1) {
                   fd->setBarre(1);
                   barreString = i;
@@ -372,11 +372,11 @@ void FretDiagram::layout()
 
       if (parent() == 0 || parent()->type() != Element::Type::SEGMENT)
             return;
-      Measure* m     = static_cast<Segment*>(parent())->measure();
-      int idx        = staffIdx();
-      MStaff* mstaff = m->mstaff(idx);
-      qreal dist = -(bbox().top());
-      mstaff->distanceUp = qMax(mstaff->distanceUp, dist + _spatium * 2);
+//      Measure* m     = static_cast<Segment*>(parent())->measure();
+//      int idx        = staffIdx();
+//      MStaff* mstaff = m->mstaff(idx);
+//      qreal dist = -(bbox().top());
+//      mstaff->distanceUp = qMax(mstaff->distanceUp, dist + _spatium * 2);
       }
 
 //---------------------------------------------------------
@@ -671,7 +671,7 @@ void FretDiagram::writeMusicXML(Xml& xml) const
 
 void FretDiagram::undoSetUserMag(qreal val)
       {
-      score()->undoChangeProperty(this, P_ID::MAG, val);
+      undoChangeProperty(P_ID::MAG, val);
       }
 
 //---------------------------------------------------------
@@ -680,7 +680,7 @@ void FretDiagram::undoSetUserMag(qreal val)
 
 void FretDiagram::undoSetStrings(int val)
       {
-      score()->undoChangeProperty(this, P_ID::FRET_STRINGS, val);
+      undoChangeProperty(P_ID::FRET_STRINGS, val);
       }
 
 //---------------------------------------------------------
@@ -689,7 +689,7 @@ void FretDiagram::undoSetStrings(int val)
 
 void FretDiagram::undoSetFrets(int val)
       {
-      score()->undoChangeProperty(this, P_ID::FRET_FRETS, val);
+      undoChangeProperty(P_ID::FRET_FRETS, val);
       }
 
 //---------------------------------------------------------
@@ -698,7 +698,7 @@ void FretDiagram::undoSetFrets(int val)
 
 void FretDiagram::undoSetBarre(int val)
       {
-      score()->undoChangeProperty(this, P_ID::FRET_BARRE, val);
+      undoChangeProperty(P_ID::FRET_BARRE, val);
       }
 
 //---------------------------------------------------------
@@ -707,7 +707,7 @@ void FretDiagram::undoSetBarre(int val)
 
 void FretDiagram::undoSetFretOffset(int val)
       {
-      score()->undoChangeProperty(this, P_ID::FRET_OFFSET, val);
+      undoChangeProperty(P_ID::FRET_OFFSET, val);
       }
 
 #endif // SCRIPT_INTERFACE
@@ -771,7 +771,7 @@ bool FretDiagram::setProperty(P_ID propertyId, const QVariant& v)
             default:
                   return Element::setProperty(propertyId, v);
             }
-      score()->setLayoutAll(true);
+      score()->setLayoutAll();
       return true;
       }
 

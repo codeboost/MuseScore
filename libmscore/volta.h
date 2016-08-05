@@ -92,11 +92,12 @@ class Volta : public TextLine {
       virtual PropertyStyle propertyStyle(P_ID) const override;
       virtual void resetProperty(P_ID id) override;
       virtual void styleChanged() override;
+      virtual StyleIdx getPropertyStyle(P_ID) const override;
 
       virtual void setYoff(qreal) override;
       virtual void reset() override;
       virtual bool systemFlag() const override  { return true;  }
-      virtual QString accessibleInfo() override;
+      virtual QString accessibleInfo() const override;
       };
 
 }     // namespace Ms

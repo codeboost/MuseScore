@@ -3,7 +3,7 @@
 //  Linux Music Score Editor
 //  $Id: playpanel.h 4722 2011-09-01 12:26:07Z wschweer $
 //
-//  Copyright (C) 2002-2011 Werner Schweer and others
+//  Copyright (C) 2002-2016 Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -50,11 +50,13 @@ class PlayPanel : public QWidget, private Ui::PlayPanelBase {
    private slots:
       void volumeChanged(double,int);
       void relTempoChanged(double,int);
-      void volumeChangedSlot(int);
-      void relTempoChangedSlot(int);
       void relTempoChanged();
-      void tempoSliderReleased();
-      void tempoSliderPressed();
+      void tempoSliderReleased(int);
+      void tempoSliderPressed(int);
+
+   protected:
+      virtual void changeEvent(QEvent *event);
+      void retranslate()  { retranslateUi(this); }
 
    signals:
       void relTempoChanged(double);
@@ -68,7 +70,7 @@ class PlayPanel : public QWidget, private Ui::PlayPanelBase {
       void heartBeat(int rpos, int apos, int samples);
 
    public:
-      PlayPanel(QWidget* parent = 0, Qt::WindowType windowType = Qt::Tool);
+      PlayPanel(QWidget* parent = 0);
       ~PlayPanel();
 
       void setTempo(double);
@@ -78,24 +80,6 @@ class PlayPanel : public QWidget, private Ui::PlayPanelBase {
       void setScore(Score* s);
       bool isTempoSliderPressed() {return tempoSliderIsPressed;}
       };
-
-    
-    class PlayPanelDockWidget : public QDockWidget
-    {
-    public:
-        PlayPanelDockWidget(QWidget* parent): QDockWidget(parent)
-        {
-            playPanel = new Ms::PlayPanel(this, Qt::Widget);
-            setWidget(playPanel);
-        }
-
-        Ms::PlayPanel* getPlayPanel() const
-        {
-            return playPanel;
-        }
-    private:
-        Ms::PlayPanel* playPanel;
-    };
 
 
 } // namespace Ms

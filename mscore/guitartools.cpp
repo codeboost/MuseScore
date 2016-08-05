@@ -106,6 +106,11 @@ namespace Ms
             int nFret = 0;
             if (stringData->convertPitch(note->pitch(), note->staff(), note->chord()->tick(), &nString, &nFret))
             {
+            //    Note: Strings are stored internally from lowest (0) to highest (strings()-1),
+            //          but the returned *string value references strings in reversed, 'visual', order:
+            //          from highest (0) to lowest (strings()-1)
+
+                //qDebug() << "Add highlight: string: " << nString << "; fret: " << nFret;
                 addHighlight(nString, nFret);
             }
             else

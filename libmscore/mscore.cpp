@@ -55,11 +55,23 @@
 #include "stemslash.h"
 #include "fraction.h"
 #include "excerpt.h"
+#include "spatium.h"
+#include "barline.h"
 
 namespace Ms {
 
-bool  MScore::debugMode;
-bool  MScore::testMode = false;
+bool MScore::debugMode;
+bool MScore::testMode = false;
+
+// #ifndef NDEBUG
+bool MScore::showSegmentShapes   = false;
+bool MScore::showMeasureShapes   = false;
+bool MScore::noHorizontalStretch = false;
+bool MScore::noVerticalStretch   = false;
+bool MScore::showBoundingRect    = false;
+bool MScore::showCorruptedMeasures = true;
+// #endif
+
 bool  MScore::saveTemplateMode = false;
 bool  MScore::noGui = false;
 
@@ -90,7 +102,6 @@ qreal   MScore::nudgeStep50;
 int     MScore::defaultPlayDuration;
 // QString MScore::partStyle;
 QString MScore::lastError;
-bool    MScore::layoutDebug = false;
 int     MScore::division    = 480; // 3840;   // pulses per quarter note (PPQ) // ticks per beat
 int     MScore::sampleRate  = 44100;
 int     MScore::mtcType;
@@ -111,21 +122,71 @@ extern void initScoreFonts();
 extern QString mscoreGlobalShare;
 
 //---------------------------------------------------------
+//   Direction
+//---------------------------------------------------------
+
+Direction::Direction(const QString& s)
+      {
+      if (s == "up")
+            val = UP;
+      else if (s == "down")
+            val = DOWN;
+      else if (s == "auto")
+            val = AUTO;
+      else
+            val = s.toInt();
+      }
+
+//---------------------------------------------------------
+//   Direction::toString
+//---------------------------------------------------------
+
+const char* Direction::toString() const
+      {
+      switch (val) {
+            case AUTO: return "auto";
+            case UP:   return "up";
+            case DOWN: return "down";
+            }
+      __builtin_unreachable();
+      }
+
+//---------------------------------------------------------
+//   fillComboBox
+//---------------------------------------------------------
+
+void Direction::fillComboBox(QComboBox* cb)
+      {
+      cb->clear();
+      cb->addItem(qApp->translate("Direction", "auto"), int(AUTO));
+      cb->addItem(qApp->translate("Direction", "up"),   int(UP));
+      cb->addItem(qApp->translate("Direction", "down"), int(DOWN));
+      }
+
+static Spatium doubleToSpatium(double d)       { return Spatium(d); }
+
+//---------------------------------------------------------
 //   init
 //---------------------------------------------------------
 
 void MScore::init()
       {
+      if (!QMetaType::registerConverter<Spatium, double>(&Spatium::toDouble))
+            qFatal("registerConverter Spatium::toDouble failed");
+      if (!QMetaType::registerConverter<double, Spatium>(&doubleToSpatium))
+            qFatal("registerConverter douobleToSpatium failed");
+
+
 #ifdef SCRIPT_INTERFACE
-      qRegisterMetaType<Element::Type>("ElementType");
-      qRegisterMetaType<Note::ValueType>("ValueType");
-      qRegisterMetaType<MScore::Direction>("Direction");
+      qRegisterMetaType<Element::Type>     ("ElementType");
+      qRegisterMetaType<Note::ValueType>   ("ValueType");
+
+      qRegisterMetaType<Direction::E>("Direction");
+
       qRegisterMetaType<MScore::DirectionH>("DirectionH");
       qRegisterMetaType<Element::Placement>("Placement");
-//      qRegisterMetaType<AccidentalRole>("AccidentalRole");
-//      qRegisterMetaType<AccidentalType>("AccidentalType");
-      qRegisterMetaType<Spanner::Anchor>("Anchor");
-      qRegisterMetaType<NoteHead::Group>("NoteHeadGroup");
+      qRegisterMetaType<Spanner::Anchor>   ("Anchor");
+      qRegisterMetaType<NoteHead::Group>   ("NoteHeadGroup");
       qRegisterMetaType<NoteHead::Type>("NoteHeadType");
       qRegisterMetaType<Segment::Type>("SegmentType");
       qRegisterMetaType<FiguredBassItem::Modifier>("Modifier");
@@ -145,7 +206,9 @@ void MScore::init()
 
       //classed enumerations
       qRegisterMetaType<MSQE_TextStyleType::E>("TextStyleType");
+      qRegisterMetaType<MSQE_BarLineType::E>("BarLineType");
 #endif
+      qRegisterMetaType<Fraction>("Fraction");
 
 //      DPMM = DPI / INCH;       // dots/mm
 
@@ -229,6 +292,10 @@ void MScore::init()
       StaffType::initStaffTypes();
       initDrumset();
       FiguredBass::readConfigFile(0);
+
+#ifdef DEBUG_SHAPES
+      testShapes();
+#endif
       }
 
 //---------------------------------------------------------
@@ -317,6 +384,8 @@ QQmlEngine* MScore::qml()
             qmlRegisterType<MsProcess>  ("MuseScore", 1, 0, "QProcess");
             qmlRegisterType<FileIO, 1>  ("FileIO",    1, 0, "FileIO");
             //-----------mscore bindings
+            qmlRegisterUncreatableType<Direction>("MuseScore", 1, 0, "Direction", tr("You can't create an enumeration"));
+
             qmlRegisterType<MScore>     ("MuseScore", 1, 0, "MScore");
             qmlRegisterType<MsScoreView>("MuseScore", 1, 0, "ScoreView");
 //            qmlRegisterType<QmlPlugin>  ("MuseScore", 1, 0, "MuseScore");
@@ -349,6 +418,8 @@ QQmlEngine* MScore::qml()
             qmlRegisterType<StemSlash>  ("MuseScore", 1, 0, "StemSlash");
             qmlRegisterType<Beam>       ("MuseScore", 1, 0, "Beam");
             qmlRegisterType<Excerpt>    ("MuseScore", 1, 0, "Excerpt");
+            qmlRegisterType<BarLine>    ("MuseScore", 1, 0, "BarLine");
+
             qmlRegisterType<FractionWrapper>   ("MuseScore", 1, 1, "Fraction");
             qRegisterMetaType<FractionWrapper*>("FractionWrapper*");
 
@@ -357,6 +428,7 @@ QQmlEngine* MScore::qml()
 
             //classed enumerations
             qmlRegisterUncreatableType<MSQE_TextStyleType>("MuseScore", 1, 0, "TextStyleType", tr("You can't create an enum"));
+            qmlRegisterUncreatableType<MSQE_BarLineType>("MuseScore", 1, 0, "BarLineType", tr("You can't create an enum"));
 
             //-----------virtual classes
             qmlRegisterType<ChordRest>();

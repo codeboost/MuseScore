@@ -3,7 +3,7 @@
 //  Linux Music Score Editor
 //  $Id: preferences.cpp 5660 2012-05-22 14:17:39Z wschweer $
 //
-//  Copyright (C) 2002-2011 Werner Schweer and others
+//  Copyright (C) 2002-2016 Werner Schweer and others
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2.
@@ -72,8 +72,8 @@ void Preferences::init()
 
       bgUseColor         = true;
       fgUseColor         = true;
-      bgWallpaper        = QString();
-      fgWallpaper        = ":/data/paper5.png";
+      bgWallpaper        = (QFileInfo(QString("%1%2").arg(mscoreGlobalShare).arg("wallpaper/background1.png")).absoluteFilePath());
+      fgWallpaper        = (QFileInfo(QString("%1%2").arg(mscoreGlobalShare).arg("wallpaper/paper5.png")).absoluteFilePath());
       fgColor.setNamedColor("#f9f9f9");
       pianoHlColor.setNamedColor("#1259d0");
       iconHeight         = 24;
@@ -171,7 +171,7 @@ void Preferences::init()
       animations              = true;
 #endif
 
-      QString wd      = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)).arg(QCoreApplication::applicationName());
+      QString wd      = QString("%1/%2").arg(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).arg(QCoreApplication::applicationName());
 
       myScoresPath    = QFileInfo(QString("%1/%2").arg(wd).arg(QCoreApplication::translate("scores_directory",     "Scores"))).absoluteFilePath();
       myStylesPath    = QFileInfo(QString("%1/%2").arg(wd).arg(QCoreApplication::translate("styles_directory",     "Styles"))).absoluteFilePath();
@@ -291,7 +291,7 @@ void Preferences::write()
       s.setValue("paperHeight", MScore::defaultStyle()->pageFormat()->height());
 
       s.setValue("twosided",    MScore::defaultStyle()->pageFormat()->twosided());
-      s.setValue("spatium",     MScore::defaultStyle()->spatium() / DPI);
+      s.setValue("spatium",     MScore::defaultStyle()->value(StyleIdx::spatium).toDouble() / DPI);
 
       s.setValue("mag", mag);
       s.setValue("showMidiControls", showMidiControls);
@@ -542,26 +542,11 @@ void MuseScore::startPreferenceDialog()
 //---------------------------------------------------------
 
 PreferenceDialog::PreferenceDialog(QWidget* parent)
-   : QDialog(parent)
+   : AbstractDialog(parent)
       {
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
       setModal(true);
-      startWithButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      instrumentList1Button->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      instrumentList2Button->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      defaultStyleButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      partStyleButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      myScoresButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      myStylesButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      myTemplatesButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      myPluginsButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      mySoundfontsButton->setIcon(*icons[int(Icons::edit_ICON)]);
-      myImagesButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-
-      bgWallpaperSelect->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      fgWallpaperSelect->setIcon(*icons[int(Icons::fileOpen_ICON)]);
-      styleFileButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
       shortcutsChanged        = false;
 
 #ifndef USE_JACK
@@ -648,9 +633,6 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       for (int idx = 0; idx < n; ++idx)
             exportAudioSampleRate->addItem(QString("%1").arg(exportAudioSampleRates[idx]));
 
-      restartWarningLanguage->setText("");
-      connect(language, SIGNAL(currentIndexChanged(int)), SLOT(languageChanged(int)));
-
       connect(recordButtons,          SIGNAL(buttonClicked(int)), SLOT(recordButtonClicked(int)));
       connect(midiRemoteControlClear, SIGNAL(clicked()), SLOT(midiRemoteControlClearClicked()));
       connect(portaudioDriver, SIGNAL(toggled(bool)), SLOT(exclusiveAudioDriver(bool)));
@@ -679,16 +661,6 @@ void PreferenceDialog::setPreferences(const Preferences& p)
 PreferenceDialog::~PreferenceDialog()
       {
       qDeleteAll(localShortcuts);
-      }
-
-
-//---------------------------------------------------------
-//   recordButtonClicked
-//---------------------------------------------------------
-
-void PreferenceDialog::languageChanged(int /*val*/)
-      {
-      restartWarningLanguage->setText(tr("The language will be changed once you restart MuseScore."));
       }
 
 //---------------------------------------------------------
@@ -846,7 +818,7 @@ void PreferenceDialog::updateValues()
                   }
             }
       language->blockSignals(false);
-      
+
       //
       // initialize local shortcut table
       //    we need a deep copy to be able to rewind all
@@ -857,8 +829,8 @@ void PreferenceDialog::updateValues()
       foreach(const Shortcut* s, Shortcut::shortcuts())
             localShortcuts[s->key()] = new Shortcut(*s);
       updateSCListView();
-      
-      //Generate the filtered Shortcut List 
+
+      //Generate the filtered Shortcut List
       filterShortcutsTextChanged(filterShortcuts->text());
 
       //
@@ -1149,7 +1121,7 @@ void PreferenceDialog::selectInstrumentList1()
          this,
          tr("Choose Instrument List"),
          instrumentList1->text(),
-         tr("Instrument List (*.xml)"),
+         tr("Instrument List") + " (*.xml)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );
@@ -1167,7 +1139,7 @@ void PreferenceDialog::selectInstrumentList2()
          this,
          tr("Choose Instrument List"),
          instrumentList2->text(),
-         tr("Instrument List (*.xml)"),
+         tr("Instrument List") + " (*.xml)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );
@@ -1185,7 +1157,7 @@ void PreferenceDialog::selectStartWith()
          this,
          tr("Choose Starting Score"),
          sessionScore->text(),
-         tr("VG/MuseScore Files (*.mscz *.mscx);;All (*)"),
+         tr("MuseScore Files") + " (*.mscz *.mscx);;" + tr("All") + " (*)",
          0,
          preferences.nativeDialogs ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog
          );

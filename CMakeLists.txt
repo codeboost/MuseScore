@@ -1,8 +1,8 @@
 #=============================================================================
-#  Mscore
+#  MuseScore
 #  Linux Music Score Editor
 #
-#  Copyright (C) 2002-2011 by Werner Schweer and others
+#  Copyright (C) 2002-2016 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2.
@@ -19,8 +19,8 @@
 
 project(mscore)
 
-#minimum tested, report if it works with older
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
+# Minimum tested, report if it works with older
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
 set (CI $ENV{CI})
 if (CI)
@@ -42,73 +42,66 @@ if(POLICY CMP0020)
       cmake_policy(SET CMP0020 OLD)
 endif(POLICY CMP0020)
 
-# silently ignore non-existent dependencies (mops1, mops2)
+# Silently ignore non-existent dependencies (mops1, mops2)
 if(POLICY CMP0046)
       cmake_policy(SET CMP0046 OLD)
 endif(POLICY CMP0046)
 
-# ignore MACOSX_RPATH is not specified for awlplugin
-if(POLICY CMP0042)
-      cmake_policy(SET CMP0042 OLD)
-endif(POLICY CMP0042)
-
-include (${PROJECT_SOURCE_DIR}/build/ECMQt4To5Porting.cmake)
-include (${PROJECT_SOURCE_DIR}/build/FindQt5Transitional.cmake)
-
-#include modules
+#  Look for Qt5
+SET(QT_MIN_VERSION    "5.6.0")
+# Include modules
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build" ${CMAKE_MODULE_PATH})
-include (UsePkgConfig1) #defines MACRO(PKGCONFIG1 _package _minVersion _include_DIR _link_DIR _link_FLAGS _cflags)
-include (TargetDoc)
+include (FindQt5)
+include (UsePkgConfig1) # Defines MACRO(PKGCONFIG1 _package _minVersion _include_DIR _link_DIR _link_FLAGS _cflags)
 include (FindPulseAudio)
 include (GetCompilerVersion)
 include (CreatePrecompiledHeader)
 
-# for debugging the make system uncomment next line:
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+# For debugging the make system uncomment next line:
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set (CMAKE_AUTOMOC TRUE)
-
-set(MSCORE_UNSTABLE  FALSE)          # mark as unstable
-
+set(CMAKE_AUTOMOC     TRUE)
+set(MSCORE_UNSTABLE   FALSE)          # Mark as unstable
 set(USE_SSE           TRUE)
 set(SCRIPT_INTERFACE  TRUE)
 
 # Disable components not supported on Windows
 if (MINGW)
-      set(WIN_NOT_AVAIL "not available on Windows")
+      set(WIN_NOT_AVAIL "Not available on Windows")
       option(BUILD_PULSEAUDIO ${WIN_NOT_AVAIL} OFF)
       option(BUILD_ALSA ${WIN_NOT_AVAIL} OFF)
 endif (MINGW)
 
 # Disable components not supported on Mac
 if (APPLE)
-      set(MAC_NOT_AVAIL "not available on Mac")
+      set(MAC_NOT_AVAIL "Not available on Mac")
       option(BUILD_PULSEAUDIO ${MAC_NOT_AVAIL} OFF)
       option(BUILD_ALSA ${MAC_NOT_AVAIL} OFF)
 endif (APPLE)
 
 # Disable components not supported on Linux/BSD
 if (NOT APPLE AND NOT MINGW)
-      set(NIX_NOT_AVAIL "not available on Linux/BSD")
+      set(NIX_NOT_AVAIL "Not available on Linux/BSD")
 endif (NOT APPLE AND NOT MINGW)
 
-option(AEOLUS        "enable pipe organ synthesizer"      OFF)
-option(ZERBERUS      "enable experimental sfz sampler"    ON)
-option(OSC           "enable OSC remote control protocol" ON)
-option(OMR           "enable PDF import"  OFF)                 # OMR - optical music recognition
-# for installation see: http://ubuntuforums.org/showthread.php?t=1647350
-option(OCR           "enable OCR, requires OMR" OFF)           # requires tesseract 3.0, needs work on mac/win
-option(SOUNDFONT3    "ogg vorbis compressed fonts" ON)         # enable ogg vorbis compressed fonts, require ogg & vorbis
-option(HAS_AUDIOFILE "enable audio export" ON)                 # requires libsndfile
+option(AEOLUS        "Enable pipe organ synthesizer"      OFF)
+option(ZERBERUS      "Enable experimental SFZ sampler"    ON)
+option(OSC           "Enable OSC remote control protocol" ON)
+option(OMR           "Enable PDF import"  ON)                 # OMR - optical music recognition
+# For installation see: http://ubuntuforums.org/showthread.php?t=1647350
+option(OCR           "Enable OCR, requires OMR" OFF)           # Requires tesseract 3.0, needs work on mac/win
+option(SOUNDFONT3    "Ogg Vorbis compressed fonts" ON)         # Enable Ogg Vorbis compressed fonts, requires Ogg & Vorbis
+option(HAS_AUDIOFILE "Enable audio export" ON)                 # Requires libsndfile
 option(USE_SYSTEM_QTSINGLEAPPLICATION "Use system QtSingleApplication" OFF)
-option(BUILD_LAME    "enable mp3 export" ON)                   # requires libmp3lame (non-free), call CMake with -DBUILD_LAME="OFF" to disable
+option(BUILD_LAME    "Enable MP3 export" ON)                   # Requires libmp3lame (non-free), call CMake with -DBUILD_LAME="OFF" to disable
 
-SET(JACK_LONGNAME "jack (jack audio connection kit)")
+SET(JACK_LONGNAME "JACK (Jack Audio Connection Kit)")
 SET(JACK_MIN_VERSION "0.98.0")
-option(BUILD_JACK    "Build with support for ${JACK_LONGNAME} audio backend. jack >= ${JACK_MIN_VERSION} will be needed." ON)
-option(BUILD_PULSEAUDIO "Build with support for Pulseaudio audio backend." ON)
+option(BUILD_JACK    "Build with support for ${JACK_LONGNAME} audio backend. JACK >= ${JACK_MIN_VERSION} will be needed." ON)
+option(BUILD_PULSEAUDIO "Build with support for PulseAudio audio backend." ON)
 option(BUILD_ALSA "Build with support for ALSA audio backend." ON)
-option(BUILD_PORTAUDIO "Build with support for Portaudio audio backend." ON)
+option(BUILD_PORTAUDIO "Build with support for PortAudio audio backend." ON)
+option(BUILD_PCH "Build using precompiled headers." OFF)
 
 if (APPLE)
       set (CMAKE_CXX_COMPILER   clang++)
@@ -122,10 +115,10 @@ if (APPLE)
 
       # Adjust and uncomment this variable, if you target a different version
       # of MacOSX.
-      # set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk)
+      #set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk)
 
-      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)      #min version required
-      set(HAS_AUDIOFILE TRUE)            # requires libsndfile
+      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)      # Min version required
+      set(HAS_AUDIOFILE TRUE)            # Requires libsndfile
 
       find_library(AudioToolboxFW        NAMES AudioToolbox)
       find_library(AudioUnitFW           NAMES AudioUnit)
@@ -137,12 +130,12 @@ if (APPLE)
 endif (APPLE)
 
 #
-#     Check for gcc compiler >= 4.7
+#     Check for GCC compiler >= 4.7
 #
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
       if (${CMAKE_CXX_COMPILER_MAJOR} LESS 4
         OR ((${CMAKE_CXX_COMPILER_MAJOR} EQUAL 4) AND (${CMAKE_CXX_COMPILER_MINOR} LESS 7)))
-            message(FATAL_ERROR "bad gcc compiler version " ${CMAKE_CXX_COMPILER_VERSION}
+            message(FATAL_ERROR "Bad GCC compiler version " ${CMAKE_CXX_COMPILER_VERSION}
                   " >= 4.7 required")
       endif()
 endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
@@ -150,6 +143,10 @@ endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 if (APPLE)
    set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -stdlib=libc++ -g -Wno-inconsistent-missing-override")
    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -stdlib=libc++ -O2 -DNDEBUG -DQT_NO_DEBUG -Wno-inconsistent-missing-override")
+   # This is necessary for genManual to be executed during the build phase,
+   # it needs to be able to get the Qt libs.
+   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+   SET(CMAKE_INSTALL_RPATH "${QT_INSTALL_PREFIX}/lib")
 else (APPLE)
    if (MINGW)
       # -mno-ms-bitfields see #22048
@@ -157,14 +154,15 @@ else (APPLE)
       set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -mno-ms-bitfields -O2 -DNDEBUG -DQT_NO_DEBUG")
       set(CMAKE_EXE_LINKER_FLAGS "-Wl,--large-address-aware")
    else (MINGW)
-      set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -g")
-      set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -O2 -DNDEBUG -DQT_NO_DEBUG")
+      set(CMAKE_CXX_FLAGS_DEBUG   "-std=c++11 -fPIC -g -Wall -Wextra -Woverloaded-virtual")
+      set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -O2 -DNDEBUG -DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT")
    endif (MINGW)
 endif(APPLE)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON) # Call CMake with option -DCMAKE_SKIP_RPATH to not set RPATH (Debian packaging requirement)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
 
 # The Mscore version number.
 SET (MUSESCORE_NAME "VirtualGuitar")
@@ -174,7 +172,7 @@ SET(MUSESCORE_VERSION_PATCH  "0")
 SET(MUSESCORE_VERSION       "${MUSESCORE_VERSION_MAJOR}.${MUSESCORE_VERSION_MINOR}")
 SET(MUSESCORE_NAME_VERSION "${MUSESCORE_NAME}")
 #
-# version schema x.x.x is hardcoded in source
+# Version schema x.x.x is hardcoded in source
 #
 SET(MUSESCORE_VERSION_FULL  "${MUSESCORE_VERSION}.${MUSESCORE_VERSION_PATCH}")
 
@@ -200,39 +198,7 @@ else (MINGW OR APPLE)
 endif (MINGW OR APPLE)
 
 ##
-##  look for Qt5
-##
-SET(QT_MIN_VERSION    "5.3.0")
-
-SET(QT_USE_QTXML         TRUE)
-SET(QT_USE_QTSVG         TRUE)
-SET(QT_USE_QTNETWORK     TRUE)
-SET(QT_USE_QTDESIGNER    TRUE)
-SET(QT_USE_QTWEBKIT      TRUE)
-SET(QT_USE_QTXMLPATTERNS TRUE)
-SET(QT_USE_QTHELP        TRUE)
-
-#find_package(Qt5 COMPONENTS Widgets Xml Svg Network Designer WebKit Declarative)
-
-##
-## freetype2 >= 2.5.2
-##
-
-##if (APPLE)
-##      PKGCONFIG1 (freetype2 2.5.2 FREETYPE_INCLUDE_DIRS FREETYPE_LIBDIR FREETYPE_LIBRARIES FREETYPE_CPP)
-##      if (FREETYPE_INCLUDE_DIRS)
-##          STRING(REGEX REPLACE  "\"" "" FREETYPE_INCLUDE_DIRS ${FREETYPE_INCLUDE_DIRS})
-##          STRING(REGEX REPLACE  "\"" "" FREETYPE_LIBDIR ${FREETYPE_LIBDIR})
-##          message("freetype2 detected ${FREETYPE_INCLUDE_DIRS} ${FREETYPE_LIBDIR} ${FREETYPE_LIBRARIES}")
-##      else (FREETYPE_INCLUDE_DIRS)
-##          message(FATAL_ERROR "freetype >= 2.5.2 is required\n")
-##      endif (FREETYPE_INCLUDE_DIRS)
-##else (APPLE)
-##    find_package(Freetype REQUIRED)
-##endif (APPLE)
-
-##
-## alsa >= 1.0.0
+## ALSA >= 1.0.0
 ##
 
 if (BUILD_ALSA)
@@ -260,22 +226,22 @@ else (APPLE OR MINGW)
 endif (APPLE OR MINGW)
 
 ##
-## pulseaudio
+## PulseAudio
 ##
 
 if (BUILD_PULSEAUDIO)
       if (PULSEAUDIO_FOUND)
             set(USE_PULSEAUDIO 1)
-            message("Pulseaudio found. Pulseaudio support enabled.")
+            message("PulseAudio found. PulseAudio support enabled.")
       else (PULSEAUDIO_FOUND)
-            message(SEND_ERROR "Error: Pulseaudio support requested (BUILD_PULSEAUDIO=${BUILD_PULSEAUDIO}), but Pulseaudio was not found.")
+            message(SEND_ERROR "Error: PulseAudio support requested (BUILD_PULSEAUDIO=${BUILD_PULSEAUDIO}), but PulseAudio was not found.")
       endif (PULSEAUDIO_FOUND)
 else (BUILD_PULSEAUDIO)
-      message(STATUS "Pulseaudio support disabled")
+      message(STATUS "PulseAudio support disabled")
 endif (BUILD_PULSEAUDIO)
 
 ##
-## lame
+## LAME
 ##
 if (APPLE OR MINGW)
       IF (BUILD_LAME)
@@ -293,12 +259,12 @@ else (APPLE OR MINGW)
                   MESSAGE("LAME not found.")
             ENDIF (LAME_FOUND)
       ELSE (BUILD_LAME)
-            MESSAGE(STATUS "LAME mp3 support disabled")
+            MESSAGE(STATUS "LAME MP3 support disabled")
       ENDIF (BUILD_LAME)
 endif (APPLE OR MINGW)
 
 ##
-## find jack >= JACK_MIN_VERSION
+## Find JACK >= JACK_MIN_VERSION
 ##
 
 IF(BUILD_JACK)
@@ -320,11 +286,11 @@ IF(BUILD_JACK)
                  set (JACK_INCDIR "$ENV{PROGRAMFILES(x86)}/Jack/includes")
                  set (JACK_LIB "$ENV{PROGRAMFILES(x86)}/Jack/lib/libjack.a")
               ELSE("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "x86")
-                 # theoretically impossible case...
+                 # Theoretically impossible case...
                  MESSAGE(SEND_ERROR "Error: Impossible program/environment bitness combination deduced: 64-bit program running in 32-bit environment. This is a programming error. PROCESSOR_ARCHITEW6432=$ENV{PROCESSOR_ARCHITEW6432}. PROCESSOR_ARCHITECTURE=$ENV{PROCESSOR_ARCHITECTURE}")
               ENDIF("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "x86")
            ENDIF("$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "")
-           MESSAGE("jack support enabled.")
+           MESSAGE("JACK support enabled.")
      ELSE(MINGW)
            PKGCONFIG1 (jack ${JACK_MIN_VERSION} JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP)
            IF(JACK_INCDIR)
@@ -332,7 +298,7 @@ IF(BUILD_JACK)
                  SET(USE_JACK 1)
            ELSE(JACK_INCDIR)
                  MESSAGE(STATUS "${JACK_LONGNAME} >= ${JACK_MIN_VERSION} not found")
-                 MESSAGE(SEND_ERROR "Error: jack support requested (BUILD_JACK=${BUILD_JACK}), but jack was not found")
+                 MESSAGE(SEND_ERROR "Error: JACK support requested (BUILD_JACK=${BUILD_JACK}), but JACK was not found")
            ENDIF(JACK_INCDIR)
      ENDIF(MINGW)
 ELSE(BUILD_JACK)
@@ -341,7 +307,7 @@ ENDIF(BUILD_JACK)
 
 
 ##
-## portaudio
+## PortAudio
 ##
 
 if (BUILD_PORTAUDIO)
@@ -351,10 +317,10 @@ if (BUILD_PORTAUDIO)
     else (MINGW)
         PKGCONFIG1 (portaudio-2.0 19 PORTAUDIO_INCDIR PORTAUDIO_LIBDIR PORTAUDIO_LIB PORTAUDIO_CPP)
         if (PORTAUDIO_INCDIR)
-              message(STATUS "Portaudio found. Portaudio support enabled. INCDIR ${PORTAUDIO_INCDIR}, LIBDIR ${PORTAUDIO_LIBDIR}, LIB ${PORTAUDIO_LIB}")
+              message(STATUS "PortAudio found. PortAudio support enabled. INCDIR ${PORTAUDIO_INCDIR}, LIBDIR ${PORTAUDIO_LIBDIR}, LIB ${PORTAUDIO_LIB}")
               set ( USE_PORTAUDIO 1 )
         else (PORTAUDIO_INCDIR)
-              message(SEND_ERROR "Error: Portaudio support requested (BUILD_PORTAUDIO=${BUILD_PORTAUDIO}), but portaudio-2.0 Version 19 was not found (package portaudio19-dev)")
+              message(SEND_ERROR "Error: PortAudio support requested (BUILD_PORTAUDIO=${BUILD_PORTAUDIO}), but portaudio-2.0 version 19 was not found (package portaudio19-dev)")
         endif (PORTAUDIO_INCDIR)
         if (APPLE)
           set (USE_PORTMIDI   1)
@@ -363,7 +329,7 @@ if (BUILD_PORTAUDIO)
         endif (APPLE)
     endif (MINGW)
 else (BUILD_PORTAUDIO)
-     message(STATUS "Portaudio support disabled")
+     message(STATUS "PortAudio support disabled")
 endif (BUILD_PORTAUDIO)
 
 
@@ -435,14 +401,6 @@ configure_file (
       ${PROJECT_SOURCE_DIR}/build/config.h.in
       ${PROJECT_BINARY_DIR}/config.h
       )
-configure_file (
-      ${PROJECT_SOURCE_DIR}/build/Doxyfile.in
-      ${PROJECT_BINARY_DIR}/Doxyfile
-      )
-configure_file (
-      ${PROJECT_SOURCE_DIR}/build/Doxyfile-LibMscore.in
-      ${PROJECT_BINARY_DIR}/Doxyfile-LibMscore
-      )
 
 if (NOT MINGW AND NOT APPLE)
     #### PACKAGING for Linux and BSD based systems (more in mscore/CMakeLists.txt) ####
@@ -450,20 +408,20 @@ if (NOT MINGW AND NOT APPLE)
     #     set library search path for runtime linker to load the same
     #     qt libraries as we used at compile time
     #
-    SET(CMAKE_INSTALL_RPATH "${_qt5Core_install_prefix}/lib") # ignored if CMAKE_SKIP_RPATH="TRUE"
+    SET(CMAKE_INSTALL_RPATH "${_qt5Core_install_prefix}/lib") # Ignored if CMAKE_SKIP_RPATH="TRUE"
     string(TOUPPER "mscore${MSCORE_INSTALL_SUFFIX}" MAN_MSCORE_UPPER) # Command name shown in uppercase in man pages by convention
     if (${MSCORE_INSTALL_SUFFIX} MATCHES "portable") # Note: "-portable-anything" would match
       # Build portable AppImage as per https://github.com/probonopd/AppImageKit
       if (NOT DEFINED ARCH)
-        execute_process(COMMAND arch OUTPUT_VARIABLE ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)# get architecture (strip trailing newline)
+        execute_process(COMMAND arch OUTPUT_VARIABLE ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)# Get architecture (strip trailing newline)
       endif (NOT DEFINED ARCH)
-      get_filename_component(PORTABLE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX} PATH)# get path (dirname)
-      get_filename_component(PORTABLE_INSTALL_NAME ${CMAKE_INSTALL_PREFIX} NAME)# strip path (basename)
+      get_filename_component(PORTABLE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX} PATH)# Get path (dirname)
+      get_filename_component(PORTABLE_INSTALL_NAME ${CMAKE_INSTALL_PREFIX} NAME)# Strip path (basename)
       if (NOT MSCORE_UNSTABLE)
-        set(PORTABLE_INSTALL_NAME "${PORTABLE_INSTALL_NAME}-${MUSESCORE_VERSION_FULL}") # append version info.
+        set(PORTABLE_INSTALL_NAME "${PORTABLE_INSTALL_NAME}-${MUSESCORE_VERSION_FULL}") # Append version info.
       endif (NOT MSCORE_UNSTABLE)
-      set(PORTABLE_INSTALL_NAME "${PORTABLE_INSTALL_NAME}-${ARCH}") # append system architecture.
-      set(CMAKE_INSTALL_PREFIX ${PORTABLE_INSTALL_PATH}/${PORTABLE_INSTALL_NAME}.AppDir) # e.g. "MuseScore-X.Y.Z-x86_64.AppDir"
+      set(PORTABLE_INSTALL_NAME "${PORTABLE_INSTALL_NAME}-${ARCH}") # Append system architecture.
+      set(CMAKE_INSTALL_PREFIX ${PORTABLE_INSTALL_PATH}/${PORTABLE_INSTALL_NAME}.AppDir) # E.g. "MuseScore-X.Y.Z-x86_64.AppDir"
       execute_process(COMMAND echo ${CMAKE_INSTALL_PREFIX} OUTPUT_FILE PREFIX.txt)
       # Prepare portable scripts:
       configure_file(build/Linux+BSD/portable/AppRun.in          AppRun         @ONLY)
@@ -475,12 +433,12 @@ if (NOT MINGW AND NOT APPLE)
                        build/rm-empty-dirs              DESTINATION bin COMPONENT portable ${SCRIPT_PERMS})
       install(FILES    build/Linux+BSD/portable/qt.conf DESTINATION bin COMPONENT portable)
     else (${MSCORE_INSTALL_SUFFIX} MATCHES "portable")
-      set(MAN_PORTABLE '.\"') # comment out lines in man page that are only relevent to the portable version
+      set(MAN_PORTABLE '.\"') # Comment out lines in man page that are only relevent to the portable version
     endif (${MSCORE_INSTALL_SUFFIX} MATCHES "portable")
-    # install desktop file (perform variable substitution first)
+    # Install desktop file (perform variable substitution first)
     configure_file(build/Linux+BSD/mscore.desktop.in mscore${MSCORE_INSTALL_SUFFIX}.desktop)
     install( FILES ${PROJECT_BINARY_DIR}/mscore${MSCORE_INSTALL_SUFFIX}.desktop DESTINATION share/applications)
-    # substitute variables within man pages
+    # Substitute variables within man pages
     set(MAN_NAME mscore)
     set(MAN_ALIAS musescore)
     set(MAN_EXTENSION .1)
@@ -489,11 +447,11 @@ if (NOT MINGW AND NOT APPLE)
     set(MAN_TARGET ${PROJECT_SOURCE_DIR}/build/Linux+BSD/${MAN_NAME}${MAN_EXTENSION}.in)
     set(MAN_BUILD ${PROJECT_BINARY_DIR}/${MAN_FULL_NAME})
     configure_file(${MAN_TARGET} ${MAN_BUILD})
-    # compress man pages if gzip is installed (don't on OpenBSD)
-    # note: compressing man pages is normal on Linux but not OpenBSD
+    # Compress man pages if gzip is installed (don't on OpenBSD)
+    # Note: Compressing man pages is normal on Linux but not OpenBSD
     find_program( GZIP_EXECUTABLE gzip DOC "A tool for compressing manpages (optional)." )
     if (GZIP_EXECUTABLE AND NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-        message(STATUS "Found gzip. Man pages will be compressed.")
+        message(STATUS "Found 'gzip'. Man pages will be compressed.")
         set(MAN_TARGET ${MAN_BUILD})
         set(MAN_EXTENSION ${MAN_EXTENSION}.gz)
         set(MAN_FULL_NAME ${MAN_NAME}${MSCORE_INSTALL_SUFFIX}${MAN_EXTENSION})
@@ -513,19 +471,19 @@ if (NOT MINGW AND NOT APPLE)
         if (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
             message(STATUS "System is OpenBSD: Man pages will not be compressed.")
         else (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-            message(STATUS "gzip not found (it is optional). Man pages will not be compressed.")
+            message(STATUS "'gzip' not found (it is optional). Man pages will not be compressed.")
         endif (CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
         add_custom_target(manpages ALL
             COMMAND echo "Man pages will be installed uncompressed."
             VERBATIM
             )
     endif (GZIP_EXECUTABLE AND NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-    # install man pages in either compressed or uncompressed form
+    # Install man pages in either compressed or uncompressed form
     install( FILES ${MAN_BUILD} DESTINATION share/man/man1 COMPONENT doc)
-    # create symlink alias for man pages so `man musescore` = `man mscore`
+    # Create symlink alias for man pages so `man musescore` = `man mscore`
     find_program( LN_EXECUTABLE ln DOC "A tool for creating symbolic link aliases (optional)." )
     if (LN_EXECUTABLE)
-        message(STATUS "Found ln. Symlink aliases will be created for MuseScore executable and the man pages.")
+        message(STATUS "Found 'ln'. Symlink aliases will be created for MuseScore executable and the man pages.")
         add_custom_command(
             TARGET manpages
             COMMAND echo "Creating symlink alias for man pages."
@@ -534,16 +492,16 @@ if (NOT MINGW AND NOT APPLE)
             )
         install( FILES ${PROJECT_BINARY_DIR}/${MAN_FULL_ALIAS} DESTINATION share/man/man1 COMPONENT doc)
      else (LN_EXECUTABLE)
-         message(STATUS "ln not found (it is optional). No symlink aliases will be created.")
+         message(STATUS "'ln' not found (it is optional). No symlink aliases will be created.")
      endif (LN_EXECUTABLE)
-    # add .MSCZ and .MSCX to MIME database (informs system that filetypes .MSCZ & .MSCX are MuseScore files)
+    # Add .MSCZ and .MSCX to MIME database (informs system that filetypes .MSCZ & .MSCX are MuseScore files)
     configure_file(build/Linux+BSD/musescore.xml.in musescore${MSCORE_INSTALL_SUFFIX}.xml)
     install( FILES ${PROJECT_BINARY_DIR}/musescore${MSCORE_INSTALL_SUFFIX}.xml DESTINATION share/mime/packages COMPONENT doc)
-    # Note: must now run "update-mime-database" to apply changes. This is done in the Makefile.
+    # Note: Must now run "update-mime-database" to apply changes. This is done in the Makefile.
 endif (NOT MINGW AND NOT APPLE)
 
 #
-#  create precompiled header file
+#  Create precompiled header file
 #
 
 # all.h is expected in PROJECT_BINARY_DIR by subdirs
@@ -554,11 +512,9 @@ add_custom_command(
     DEPENDS ${PROJECT_SOURCE_DIR}/all.h
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
-if (MINGW)
-  set(BUILD_PCH false)
-else (MINGW)
+if (NOT MINGW)
   set(BUILD_PCH true)
-endif(MINGW)
+endif(NOT MINGW)
 
 precompiled_header(QT_INCLUDES all ${BUILD_PCH})
 
@@ -566,15 +522,17 @@ ADD_CUSTOM_TARGET(mops1 DEPENDS ${PROJECT_BINARY_DIR}/all.h)
 ADD_CUSTOM_TARGET(mops2 DEPENDS ${PCH})
 
 ##
-## add subdirs
+## Add subdirs
 ##
 subdirs(
       mscore  awl bww2mxml share midi audiofile fluid mstyle libmscore synthesizer
       effects thirdparty/rtf2html thirdparty/diff thirdparty/beatroot
-      thirdparty/xmlstream thirdparty/qzip thirdparty/kQOAuth
+      thirdparty/qzip thirdparty/kQOAuth
       )
+#      thirdparty/xmlstream
+
 if (APPLE AND CMAKE_BUILD_TYPE MATCHES "DEBUG")
-#with xcode, we need to have all the targets in the same project
+# With xcode, we need to have all the targets in the same project
 add_subdirectory(mtest)
 else(APPLE AND CMAKE_BUILD_TYPE MATCHES "DEBUG")
 add_subdirectory(mtest EXCLUDE_FROM_ALL)
@@ -599,7 +557,7 @@ if (ZERBERUS)
 endif (ZERBERUS)
 
 if (OMR)
-      subdirs (omr)
+      subdirs (omr thirdparty/poppler)
 endif (OMR)
 
 if (OSC)
@@ -610,7 +568,7 @@ subdirs (thirdparty/freetype)
 
 
 ##
-## includes
+## Includes
 ##
 include_directories(
    ${PROJECT_SOURCE_DIR}
@@ -626,6 +584,11 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/thirdparty/freetype/include
 )
 
+if (OMR)
+   include_directories(${PROJECT_SOURCE_DIR}/thirdparty/poppler)
+   include_directories(${PROJECT_SOURCE_DIR}/thirdparty/poppler/poppler)
+endif (OMR)
+
 ##
 ##  Include packaging
 ##
@@ -633,31 +596,28 @@ include_directories(
 include(Packaging)
 
 ##
-##  custom target for translation generation
+##  Custom target for translation generation
 ##
 
 add_custom_target(lupdate
    COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR} > mscore.pro
-   COMMAND ${QT_LUPDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/mscore.pro
+   COMMAND Qt5::lupdate ${PROJECT_BINARY_DIR}/mscore.pro
    COMMAND ${PROJECT_SOURCE_DIR}/build/gen-instruments-projectfile ${PROJECT_SOURCE_DIR}/share/instruments > instruments.pro
-   COMMAND ${QT_LUPDATE_EXECUTABLE} ${PROJECT_BINARY_DIR}/instruments.pro
+   COMMAND Qt5::lupdate ${PROJECT_BINARY_DIR}/instruments.pro
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
 add_custom_target(lrelease
-   COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR} > mscore.pro
-   COMMAND ${PROJECT_SOURCE_DIR}/build/gen-qt-projectfile ${PROJECT_SOURCE_DIR}/share/instruments > instruments.pro
-   COMMAND ${QT_LRELEASE_EXECUTABLE} ${PROJECT_SOURCE_DIR}/share/locale/*.ts
+   COMMAND Qt5::lrelease ${PROJECT_SOURCE_DIR}/share/locale_vg/*.ts
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
 
 ##
-##  create and install the plugin framework manual
+##  Create and install the plugin framework manual
 ##
 
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/plugins
    COMMAND genManual ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}
    DEPENDS genManual
    )
-

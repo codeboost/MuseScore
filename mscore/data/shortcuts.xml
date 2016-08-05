@@ -53,12 +53,20 @@
     <seq>Ctrl+V</seq>
     </SC>
   <SC>
+    <key>swap</key>
+    <seq>Ctrl+Shift+X</seq>
+    </SC>
+  <SC>
     <key>instruments</key>
     <seq>I</seq>
     </SC>
   <SC>
     <key>note-input</key>
     <seq>N</seq>
+    </SC>
+  <SC>
+    <key>note-input-repitch</key>
+    <seq>Ctrl+Shift+I</seq>
     </SC>
   <SC>
     <key>interval1</key>
@@ -677,10 +685,7 @@
   <SC>
     <key>fullscreen</key>
     <seq>Ctrl+U</seq>
-    </SC>
-  <SC>
-    <key>repitch</key>
-    <seq>Ctrl+Shift+I</seq>
+    <seq>Meta+Ctrl+F</seq>
     </SC>
   <SC>
     <key>toggle-piano</key>
@@ -969,5 +974,10 @@
     <key>startcenter</key>
     <seq>F4</seq>
     </SC>
+  <SC>
+    <key>viewmode</key>
+    <seq>Ctrl+Shift+V</seq>
+    </SC>
+
   </Shortcuts>
 
