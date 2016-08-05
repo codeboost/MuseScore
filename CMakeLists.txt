@@ -61,7 +61,7 @@ include (CreatePrecompiledHeader)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_AUTOMOC     TRUE)
-set(MSCORE_UNSTABLE   TRUE)          # Mark as unstable
+set(MSCORE_UNSTABLE   FALSE)          # Mark as unstable
 set(USE_SSE           TRUE)
 set(SCRIPT_INTERFACE  TRUE)
 
